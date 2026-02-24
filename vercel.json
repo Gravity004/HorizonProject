@@ -1,13 +1,8 @@
 {
   "version": 2,
-  "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/auth/(.*)",
+      "source": "/(.*)",
       "destination": "/api/index.js"
     }
   ]
