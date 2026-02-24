@@ -9,7 +9,7 @@
         "dev": "npx concurrently \"npm run server\" \"npm run client\"",
         "build": "cd frontend && npm run build",
         "encrypt": "node tools/encrypt-page.mjs winchester.html eternity && node tools/encrypt-page.mjs rachata_house.html eternity",
-        "vercel-build": "npm install"
+        "vercel-build": "echo 'No build needed'"
     },
     "dependencies": {
         "connect-mongo": "^5.1.0",
