@@ -14,7 +14,7 @@ router.get('/house/:houseName', async (req, res) => {
     try {
         const users = await User.find({
             roles: houseName
-        }).select('discordId username avatar balance roles house').sort({ username: 1 });
+        }).select('-_id discordId username avatar balance roles house').sort({ username: 1 });
 
         res.json(users);
     } catch (err) {
@@ -27,7 +27,7 @@ const { isAuthenticated, hasRole } = require('../middleware/auth');
 
 router.get('/all', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
     try {
-        const users = await User.find().select('discordId username avatar balance roles house').sort({ username: 1 });
+        const users = await User.find().select('-_id discordId username avatar balance roles house').sort({ username: 1 });
         res.json(users);
     } catch (err) {
         res.status(500).json({ message: err.message });

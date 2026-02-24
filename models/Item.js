@@ -9,6 +9,8 @@ const itemSchema = new mongoose.Schema({
     image: { type: String }, // URL or path to image
     rarity: { type: String, enum: ['common', 'rare', 'epic', 'legendary'], default: 'common' },
     effects: { type: Object } // JSON for special effects stats
+}, {
+    toJSON: { versionKey: false }
 });
 
 module.exports = mongoose.model('Item', itemSchema);

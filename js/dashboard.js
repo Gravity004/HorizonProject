@@ -16,8 +16,10 @@ async function checkAuth() {
         const response = await fetch('/auth/me', { credentials: 'include' });
         const data = await response.json();
 
-        if (!data.authenticated) {
-            window.location.href = '/';
+        // ถูก kick ออกจาก guild หรือไม่มีสิทธิ์ — redirect ทันที
+        if (!response.ok || !data.authenticated) {
+            const dest = data?.redirect || '/?error=access_denied';
+            window.location.href = dest;
             return;
         }
 
@@ -32,6 +34,7 @@ async function checkAuth() {
 
     } catch (err) {
         console.error('Auth check failed', err);
+        window.location.href = '/';
     }
 }
 
@@ -486,10 +489,13 @@ async function fetchInventory() {
     try {
         const r = await fetch('/auth/me', { credentials: 'include' });
         const data = await r.json();
-        if (data.authenticated) {
-            currentUser = data.user;
-            renderInventory();
+        if (!r.ok || !data.authenticated) {
+            // session หมดหรือถูกเตะออก
+            if (data?.redirect) window.location.href = data.redirect;
+            return;
         }
+        currentUser = data.user;
+        renderInventory();
     } catch (err) { console.error('Inventory fetch failed', err); }
 }
 

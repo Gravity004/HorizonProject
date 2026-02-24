@@ -24,7 +24,7 @@ router.get('/transactions', isAuthenticated, async (req, res) => {
     try {
         const transactions = await Transaction.find({
             $or: [{ senderId: req.user.id }, { recipientId: req.user.id }]
-        }).sort({ timestamp: -1 }).limit(50);
+        }).select('-_id -senderId -recipientId -__v').sort({ timestamp: -1 }).limit(50);
         res.json(transactions);
     } catch (err) {
         res.status(500).json({ message: err.message });

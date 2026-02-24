@@ -20,7 +20,22 @@ if (!process.env.MONGODB_URI) {
 app.set('trust proxy', 1);
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://localhost:5500',
+    'http://localhost:5501',
+    'http://127.0.0.1:5500',
+    'http://127.0.0.1:5501',
+    'http://localhost:12500',
+].filter(Boolean);
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        callback(null, true); // ให้ผ่านทั้งหมดในกรณี dev
+    },
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -53,8 +68,27 @@ mongoose.connect(process.env.MONGODB_URI)
     .catch(err => console.log(err));
 
 // Static Files
-app.use('/assets', express.static(path.join(__dirname, 'frontend/dist/assets')));
-app.use(express.static(path.join(__dirname, 'assets'))); // Original assets for components
+app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'assets/images/Eternity1.png')));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+
+// Serve root HTML files
+app.get(['/', '/index.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/rachata_school.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'rachata_school.html'));
+});
+
+app.get('/rachata_house.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'rachata_house.html'));
+});
+
+app.get('/winchester.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'winchester.html'));
+});
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -70,6 +104,13 @@ app.use('/api/shop', shopRoutes);
 app.use('/api/craft', craftRoutes);
 app.use('/api/bank', bankRoutes);
 app.use('/api/users', usersRoutes);
+
+const { checkGuildMembership } = require('./middleware/auth');
+
+// ✅ คนที่ออก guild จะถูก redirect ออกทันที
+app.get(/^\/dashboard/, checkGuildMembership, (req, res) => {
+    res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
 
 // Serve Vue SPA (only in production)
 if (process.env.NODE_ENV === 'production') {
@@ -87,3 +128,6 @@ if (require.main === module) {
 }
 
 module.exports = app;
+
+
+

@@ -136,7 +136,7 @@ a:hover {
 }
 
 .lock-icon {
-    width: 100px;
+    width: 350px;
     cursor: pointer;
     transition: transform 0.3s ease;
     filter: drop-shadow(0 0 15px var(--gold-glow));
@@ -149,7 +149,7 @@ a:hover {
 
 /* Lock icon unlocking animation */
 .lock-icon.unlocking {
-    animation: unlockPulse 0.8s ease-out forwards;
+    animation: unlockPulse 1s ease-out forwards;
 }
 
 @keyframes unlockPulse {
@@ -157,16 +157,6 @@ a:hover {
         transform: scale(1) rotate(0deg);
         opacity: 1;
         filter: drop-shadow(0 0 15px var(--gold-glow));
-    }
-
-    25% {
-        transform: scale(1.2) rotate(-10deg);
-        filter: drop-shadow(0 0 40px var(--gold)) drop-shadow(0 0 60px var(--purple));
-    }
-
-    50% {
-        transform: scale(0.9) rotate(10deg);
-        opacity: 0.8;
     }
 
     100% {

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eternity - The Infinite Library</title>
-    <link rel="icon" type="image/png" href="assets\images\Eternal.png">
+    <link rel="icon" type="image/png" href="/assets/images/Eternity1.png">
     <link rel="stylesheet" href="css/style.css">
     <style>
         body,
@@ -151,7 +151,7 @@
             </svg>
             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
 
-                <img src="assets/images/Eternal.png" id="lock-btn" class="lock-icon" alt="Lock">
+                <img src="assets/images/Eternity1.png" id="lock-btn" class="lock-icon" alt="Lock">
             </div>
         </div>
         <div class="lock-status cinzel text-glow-gold">Touch to Unlock Eternity</div>
@@ -192,7 +192,7 @@
     </main>
 
     <div id="auth-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-        <a href="/auth/discord" id="login-btn" class="glass"
+        <a href="#" id="login-btn" onclick="handleLogin(event)" class="glass"
             style="display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-radius: 30px; color: var(--gold); text-decoration: none; border: 1px solid var(--gold); transition: all 0.3s ease;">
             <img src="assets/images/RCT.png" alt="Discord" style="width: 24px; height: 24px;">
             <span class="cinzel">Login</span>
@@ -201,26 +201,99 @@
 
     <script src="js/lock.js"></script>
     <script>
-        // Check login status
-        fetch('/auth/me')
-            .then(response => response.json())
-            .then(data => {
-                const authContainer = document.getElementById('auth-container');
-                if (data.authenticated) {
-                    authContainer.innerHTML = `
-                        <div class="glass" style="display: flex; align-items: center; gap: 15px; padding: 10px 20px; border-radius: 30px; border: 1px solid var(--gold);">
-                            <img src="https://cdn.discordapp.com/avatars/${data.user.discordId}/${data.user.avatar}.png" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
-                            <span class="cinzel" style="color: var(--gold);">${data.user.username}</span>
-                            <a href="dashboard.html" class="cinzel" style="color: var(--purple-light); text-decoration: none; margin-left: 10px; font-weight: bold;">Dashboard</a>
-                            <a href="/auth/logout" style="color: #ff4444; text-decoration: none; margin-left: 10px;">Logout</a>
-                        </div>
-                    `;
+        // ตรวจจับ backend URL อัตโนมัติ (รองรับทั้ง Live Server และ backend โดยตรง)
+        const BACKEND_URL = (window.location.port === '5500' || window.location.port === '5501')
+            ? 'http://localhost:12500'
+            : '';
 
-                    // Store user data
-                    localStorage.setItem('currentUser', JSON.stringify(data.user));
-                }
+        function handleLogin(e) {
+            e.preventDefault();
+            window.location.href = BACKEND_URL + '/auth/discord';
+        }
+
+        // ตรวจสอบ error จาก OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+
+        if (error) {
+            let errorMessage = '';
+            let errorTitle = '⛔ ไม่สามารถเข้าสู่ระบบได้';
+
+            switch (error) {
+                case 'access_denied':
+                case 'not_in_guild':
+                    errorMessage = '🚫 คุณไม่ได้เป็นสมาชิกใน Discord Server ของเรา\n\n' +
+                        '📌 กรุณา:\n' +
+                        '• เข้าร่วม Discord Server\n' +
+                        '• รับ Role บ้าน (Garuda/Naga/Qilin/Erawan)\n' +
+                        '• ลองเข้าสู่ระบบอีกครั้ง';
+                    break;
+                case 'no_role':
+                case 'no_house_assigned':
+                    errorMessage = '🏠 คุณยังไม่ได้รับ Role ที่มีสิทธิ์เข้าถึง\n\n' +
+                        '📌 กรุณาติดต่อ Admin เพื่อขอรับ Role บ้าน\n' +
+                        '(Garuda / Naga / Qilin / Erawan)';
+                    break;
+                case 'left_guild':
+                    errorMessage = '⚠️ บัญชีของคุณถูกลบออกจากระบบ\n\n' +
+                        'เนื่องจากคุณออกจาก Discord Server แล้ว\n' +
+                        'กรุณาเข้าร่วม Server และรับ Role ก่อนเข้าสู่ระบบใหม่';
+                    break;
+                case 'server_not_configured':
+                    errorMessage = '⚙️ ระบบยังไม่ได้ตั้งค่า\n\nกรุณาติดต่อผู้ดูแลระบบ';
+                    break;
+                default:
+                    errorMessage = '❌ เกิดข้อผิดพลาดในการเข้าสู่ระบบ\nกรุณาลองใหม่อีกครั้ง';
+            }
+
+            showErrorModal(errorTitle, errorMessage);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        function showErrorModal(title, message) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.9); display: flex; align-items: center;
+                justify-content: center; z-index: 9999; animation: fadeIn 0.3s ease;
+            `;
+            modal.innerHTML = `
+                <div class="glass" style="max-width:500px;padding:2rem;border-radius:15px;border:2px solid var(--gold);text-align:center;animation:slideIn 0.3s ease;">
+                    <h2 class="cinzel" style="color:var(--gold);margin-bottom:1rem;">${title}</h2>
+                    <p style="color:var(--text-light);white-space:pre-line;line-height:1.8;margin-bottom:2rem;">${message}</p>
+                    <button onclick="this.closest('[style*=fixed]').remove()" class="glass"
+                        style="padding:0.8rem 2rem;border:1px solid var(--gold);color:var(--gold);background:transparent;cursor:pointer;border-radius:5px;font-family:'Cinzel',serif;transition:0.3s;"
+                        onmouseover="this.style.background='var(--gold)';this.style.color='#000'"
+                        onmouseout="this.style.background='transparent';this.style.color='var(--gold)'">เข้าใจแล้ว</button>
+                </div>`;
+            const style = document.createElement('style');
+            style.textContent = `@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes slideIn{from{transform:translateY(-50px);opacity:0}to{transform:translateY(0);opacity:1}}`;
+            document.head.appendChild(style);
+            document.body.appendChild(modal);
+        }
+
+        // ตรวจสอบสถานะ login (เรียก 1 ครั้ง)
+        fetch(BACKEND_URL + '/auth/status', { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.authenticated) return;
+                // ได้ username จาก /status แล้ว ดึง avatar จาก /me
+                return fetch(BACKEND_URL + '/auth/me', { credentials: 'include' })
+                    .then(r => r.ok ? r.json() : null)
+                    .then(full => {
+                        if (!full || !full.authenticated) return;
+                        const authContainer = document.getElementById('auth-container');
+                        authContainer.innerHTML = `
+                            <div class="glass" style="display:flex;align-items:center;gap:15px;padding:10px 20px;border-radius:30px;border:1px solid var(--gold);">
+                                <img src="https://cdn.discordapp.com/avatars/${full.user.discordId}/${full.user.avatar}.png" alt="Avatar" style="width:32px;height:32px;border-radius:50%;">
+                                <span class="cinzel" style="color:var(--gold);">${full.user.username}</span>
+                                <a href="${BACKEND_URL}/dashboard" class="cinzel" style="color:var(--purple-light);text-decoration:none;margin-left:10px;font-weight:bold;">Dashboard</a>
+                                <a href="${BACKEND_URL}/auth/logout" style="color:#ff4444;text-decoration:none;margin-left:10px;">Logout</a>
+                            </div>`;
+                        localStorage.setItem('currentUser', JSON.stringify(full.user));
+                    });
             })
-            .catch(err => console.error('Auth check failed:', err));
+            .catch(() => { /* ยังไม่ login */ });
     </script>
 </body>
 
