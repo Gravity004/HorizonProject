@@ -19,14 +19,35 @@ passport.deserializeUser(async (id, done) => {
 async function checkGuildWithBot(discordId) {
     const botToken = process.env.DISCORD_BOT_TOKEN?.trim();
     const guildId = process.env.GUILD_ID?.trim();
-    if (!botToken || !guildId) return null;
+
+    if (!botToken) {
+        console.error('[Guild Check] ❌ DISCORD_BOT_TOKEN is missing or empty!');
+        return null;
+    }
+    if (!guildId) {
+        console.error('[Guild Check] ❌ GUILD_ID is missing or empty!');
+        return null;
+    }
+
+    console.log(`[Guild Check] Calling Discord API for user ${discordId} in guild ${guildId}`);
 
     const response = await fetch(
         `https://discord.com/api/guilds/${guildId}/members/${discordId}`,
         { headers: { Authorization: `Bot ${botToken}` } }
     );
-    if (response.status === 404) return null;
-    if (!response.ok) throw new Error(`Discord API error: ${response.status}`);
+
+    console.log(`[Guild Check] Discord API response status: ${response.status}`);
+
+    if (response.status === 404) {
+        console.log(`[Guild Check] User ${discordId} NOT found in guild`);
+        return null;
+    }
+    if (!response.ok) {
+        const body = await response.text();
+        console.error(`[Guild Check] ❌ Discord API error ${response.status}: ${body}`);
+        throw new Error(`Discord API error: ${response.status} - ${body}`);
+    }
+    console.log(`[Guild Check] ✅ User ${discordId} found in guild`);
     return await response.json();
 }
 
@@ -37,11 +58,14 @@ passport.use(new DiscordStrategy({
     scope: ['identify', 'guilds']
 }, async (accessToken, refreshToken, profile, done) => {
     try {
-        console.log(`[OAuth] Login attempt for ${profile.username} (${profile.id})`);
+        console.log(`[OAuth] ===== Login attempt: ${profile.username} (${profile.id}) =====`);
+        console.log(`[OAuth] ENV CHECK - GUILD_ID: ${process.env.GUILD_ID ? '✅ set' : '❌ MISSING'}`);
+        console.log(`[OAuth] ENV CHECK - DISCORD_BOT_TOKEN: ${process.env.DISCORD_BOT_TOKEN ? '✅ set' : '❌ MISSING'}`);
+        console.log(`[OAuth] ENV CHECK - ROLE_GARUDA_ID: ${process.env.ROLE_GARUDA_ID ? '✅ set' : '❌ MISSING'}`);
 
         const GuildId = process.env.GUILD_ID?.trim();
         if (!GuildId) {
-            console.error('[OAuth] GUILD_ID not configured - blocking login');
+            console.error('[OAuth] ❌ GUILD_ID not configured - blocking login');
             return done(null, false, { message: 'server_not_configured' });
         }
 
@@ -51,12 +75,13 @@ passport.use(new DiscordStrategy({
 
         // ❌ ไม่อยู่ใน guild
         if (!memberData) {
-            console.error(`[OAuth] User ${profile.username} NOT in guild`);
+            console.error(`[OAuth] ❌ User ${profile.username} NOT in guild or bot error`);
             return done(null, false, { message: 'not_in_guild' });
         }
 
         const discordRoles = memberData.roles || [];
-        console.log(`[OAuth] User roles in guild: ${discordRoles.length} roles found`);
+        console.log(`[OAuth] User roles in guild: [${discordRoles.join(', ')}]`);
+        console.log(`[OAuth] Looking for GARUDA_ID=${process.env.ROLE_GARUDA_ID}, NAGA_ID=${process.env.ROLE_NAGA_ID}, QILIN_ID=${process.env.ROLE_QILIN_ID}, ERAWAN_ID=${process.env.ROLE_ERAWAN_ID}`);
 
         // กำหนด roles สำหรับ website
         let assignedRoles = ['student'];
@@ -72,18 +97,20 @@ passport.use(new DiscordStrategy({
         if (process.env.ROLE_ERAWAN_ID && discordRoles.includes(process.env.ROLE_ERAWAN_ID.trim()))
             assignedRoles.push('erawan');
 
+        console.log(`[OAuth] Assigned roles: [${assignedRoles.join(', ')}]`);
+
         // ❌ ต้องมี role บ้านอย่างน้อย 1 บ้าน
         const houseRoles = ['garuda', 'naga', 'qilin', 'erawan'];
         const hasHouse = assignedRoles.some(role => houseRoles.includes(role));
 
         if (!hasHouse) {
-            console.error('[OAuth] User has no house role - blocking login');
+            console.error('[OAuth] ❌ User has no house role - blocking login');
             return done(null, false, { message: 'no_house_assigned' });
         }
 
         console.log(`[OAuth] ✅ User verified - Roles: ${assignedRoles.join(', ')}`);
 
-        // สร้างหรืออัพเดท user (ไม่ต้องเก็บ accessToken แล้ว)
+        // สร้างหรืออัพเดท user
         let user = await User.findOne({ discordId: profile.id });
 
         if (user) {
@@ -106,8 +133,8 @@ passport.use(new DiscordStrategy({
         }
 
     } catch (err) {
-        console.error('[OAuth] Strategy Error:', err);
-        return done(err, null);
+        console.error('[OAuth] ❌ Strategy Error:', err.message, err.stack);
+        return done(null, false, { message: 'server_error' });
     }
 }));
 
