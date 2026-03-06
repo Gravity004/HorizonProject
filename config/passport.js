@@ -99,13 +99,20 @@ passport.use(new DiscordStrategy({
 
         console.log(`[OAuth] Assigned roles: [${assignedRoles.join(', ')}]`);
 
-        // ❌ ต้องมี role บ้านอย่างน้อย 1 บ้าน
-        const houseRoles = ['garuda', 'naga', 'qilin', 'erawan'];
-        const hasHouse = assignedRoles.some(role => houseRoles.includes(role));
+        // ✅ Admin ผ่านได้เลยแม้ไม่มี house role
+        const isAdmin = assignedRoles.includes('admin');
 
-        if (!hasHouse) {
-            console.error('[OAuth] ❌ User has no house role - blocking login');
-            return done(null, false, { message: 'no_house_assigned' });
+        if (!isAdmin) {
+            // ❌ ต้องมี role บ้านอย่างน้อย 1 บ้าน (สำหรับคนที่ไม่ใช่ admin)
+            const houseRoles = ['garuda', 'naga', 'qilin', 'erawan'];
+            const hasHouse = assignedRoles.some(role => houseRoles.includes(role));
+
+            if (!hasHouse) {
+                console.error('[OAuth] ❌ User has no house role - blocking login');
+                return done(null, false, { message: 'no_house_assigned' });
+            }
+        } else {
+            console.log('[OAuth] ✅ Admin user - bypassing house role requirement');
         }
 
         console.log(`[OAuth] ✅ User verified - Roles: ${assignedRoles.join(', ')}`);
