@@ -1484,8 +1484,8 @@ select.parchment-input {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 101;
-    max-width: 760px;
-    width: 95vw;
+    max-width: 900px;
+    width: 96vw;
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -1493,27 +1493,27 @@ select.parchment-input {
 .letter-parchment {
     background: url('../assets/images/LetterTemplate.png') center/100% 100% no-repeat;
     border-radius: 6px;
-    padding: 5rem 5.5rem 3.5rem;
+    padding: 6rem 6.5rem 4rem;
     position: relative;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
     aspect-ratio: 1.45 / 1;
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 1.2rem;
     box-sizing: border-box;
 }
 
 .letter-close-btn {
     position: absolute;
-    top: 35px;
-    right: 45px;
-    width: 32px;
-    height: 32px;
+    top: 40px;
+    right: 55px;
+    width: 36px;
+    height: 36px;
     background: transparent;
     border: 2px solid #a66a38;
     color: #a66a38;
     border-radius: 50%;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
     z-index: 10;
@@ -1550,13 +1550,13 @@ select.parchment-input {
 .letter-item-row {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.2rem;
     background: rgba(185, 165, 135, 0.2);
     border: 1px solid rgba(140, 100, 50, 0.2);
     border-radius: 8px;
-    padding: 0.6rem 1rem;
+    padding: 0.8rem 1.2rem;
     width: 100%;
-    margin: 0 auto 0.2rem;
+    margin: 0 auto 0.5rem;
     box-sizing: border-box;
 }
 
@@ -1571,8 +1571,8 @@ select.parchment-input {
 } */
 
 .letter-item-img {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     object-fit: contain;
     border-radius: 6px;
     background: rgba(0, 0, 0, 0.3);
@@ -1581,7 +1581,7 @@ select.parchment-input {
 }
 
 .letter-item-name {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     color: #4e342e;
     font-family: 'Cinzel', serif;
     font-weight: bold;
@@ -1598,7 +1598,7 @@ select.parchment-input {
 .letter-fields-row {
     display: grid;
     grid-template-columns: 3fr 1fr;
-    gap: 0.6rem;
+    gap: 1rem;
 }
 
 .letter-field {
@@ -1615,19 +1615,19 @@ select.parchment-input {
 }
 
 .letter-label {
-    font-size: 0.8rem;
+    font-size: 0.95rem;
     font-family: 'Cinzel', serif;
     color: #4e342e;
     font-weight: bold;
 }
 
 .letter-input {
-    background: rgba(210, 185, 145, 0.4);
-    border: 1px solid rgba(140, 100, 50, 0.5);
-    border-radius: 4px;
-    padding: 0.4rem 0.6rem;
+    background: rgba(220, 200, 160, 0.3);
+    border: 1px solid rgba(140, 100, 50, 0.4);
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
     font-family: 'Sarabun', 'Playfair Display', serif;
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     color: #3e2723;
     transition: background 0.2s, border-color 0.2s;
 }
@@ -1651,13 +1651,13 @@ select.parchment-input {
 
 .letter-send-btn {
     align-self: center;
-    margin-top: 0.5rem;
-    padding: 0.5rem 2.5rem;
+    margin-top: 0.8rem;
+    padding: 0.75rem 3.5rem;
     background: linear-gradient(135deg, #a66a38, #7a4a2b);
     border: 2px solid rgba(180, 140, 80, 0.4);
     color: #fff8e8;
     font-family: 'Cinzel', serif;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: bold;
     border-radius: 30px;
     cursor: pointer;
