@@ -1484,8 +1484,8 @@ select.parchment-input {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 101;
-    max-width: 1200px;
-    width: 96vw;
+    width: 650px;
+    max-width: 90vw;
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -1493,14 +1493,17 @@ select.parchment-input {
 .letter-parchment {
     background: url('../assets/images/LetterTemplate.png') center/100% 100% no-repeat;
     border-radius: 6px;
-    padding: 13% 10% 6%;
+    padding: 80px 60px 60px;
+    /* px แทน % */
     position: relative;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
-    aspect-ratio: 1.45 / 1;
+    /* aspect-ratio: 1.45 / 1;  ← ลบออก */
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
     box-sizing: border-box;
+    min-height: 500px;
+    /* กำหนด min-height แทน */
 }
 
 .letter-close-btn {
@@ -1555,8 +1558,9 @@ select.parchment-input {
     border: 1px solid rgba(140, 100, 50, 0.2);
     border-radius: 8px;
     padding: 0.8rem 1.2rem;
-    width: 85%;
+    width: 100%;
     margin: 1rem auto 0.5rem;
+    max-width: 100%;
     box-sizing: border-box;
 }
 
@@ -1597,25 +1601,26 @@ select.parchment-input {
 
 .letter-fields-row {
     display: grid;
-    grid-template-columns: 3fr 1fr;
-    gap: 1rem;
-    width: 90%;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 100%;
     margin: 0.5rem auto 0;
 }
 
 .letter-field {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.4rem;
 }
 
 .letter-field-full {
     grid-column: 1/-1;
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    width: 90%;
+    max-width: 100%;
     margin: 0 auto;
+    width: 100%;
 }
 
 .letter-label {
@@ -1629,11 +1634,13 @@ select.parchment-input {
     background: rgba(220, 200, 160, 0.3);
     border: 1px solid rgba(140, 100, 50, 0.4);
     border-radius: 6px;
-    padding: 0.6rem 0.8rem;
+    box-sizing: border-box;
+    padding: 0.5rem 0.8rem;
     font-family: 'Sarabun', 'Playfair Display', serif;
-    font-size: 1.05rem;
+    font-size: 1rem;
     color: #3e2723;
     transition: background 0.2s, border-color 0.2s;
+    width: 100%;
 }
 
 .letter-input::placeholder {
@@ -1649,8 +1656,7 @@ select.parchment-input {
 
 .letter-textarea {
     resize: none;
-    flex-grow: 1;
-    min-height: 80px;
+    min-height: 50px;
 }
 
 .letter-send-btn {
