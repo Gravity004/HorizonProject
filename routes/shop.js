@@ -87,6 +87,7 @@ router.post('/use', isAuthenticated, async (req, res) => {
         if (item) {
             if (item.name === 'ชาอัญชัน') healAmount = 10;
             else if (item.name === 'ต้มยำ') healAmount = 50;
+            else if (item.type === 'food') healAmount = 25;
 
             if (healAmount > 0) {
                 user.health = Math.min(user.maxHealth, user.health + healAmount);

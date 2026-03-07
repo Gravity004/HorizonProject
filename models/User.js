@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     accessToken: { type: String }, // ✅ เพิ่มบรรทัดนี้
     balance: { type: Number, default: 100 }, // Starting gold
     lastDailyReward: { type: Date, default: null }, // Tracking daily reward
+    lastHealthDecrease: { type: Date, default: null }, // Tracking daily HP penalty
     health: { type: Number, default: 100 },
     maxHealth: { type: Number, default: 100 },
     inventory: [{

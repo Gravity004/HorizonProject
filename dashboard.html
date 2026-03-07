@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard-magic.css">
     <style>
-        /* ── Top Actions (Home & Daily Magic) ── */
+        /* ── Top Actions (Daily Magic & Home) ── */
         .top-actions-container {
             position: fixed;
             top: 1rem;
@@ -21,7 +21,7 @@
             align-items: center;
             gap: 0.8rem;
         }
-        .back-home-btn {
+        .top-pill-btn {
             background: linear-gradient(135deg, #2a1b38, #1a1228);
             border: 1px solid #8b6914;
             color: #d4af37;
@@ -35,33 +35,20 @@
             display: flex;
             align-items: center;
             gap: 0.4rem;
+            cursor: pointer;
         }
-        .back-home-btn:hover {
+        .top-pill-btn:hover {
             background: linear-gradient(135deg, #3a2548, #2a1b38);
             box-shadow: 0 0 20px rgba(212,175,55,0.6);
             transform: translateY(-2px);
             color: #fff;
         }
-        .daily-magic-icon {
-            width: 44px;
-            height: 44px;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.3s;
-            background: rgba(0,0,0,0.6);
-            border-radius: 50%;
-            border: 1px solid #8b6914;
-            box-shadow: 0 0 10px rgba(139,105,20,0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .top-pill-btn.claimed {
+            opacity: 0.5;
+            filter: grayscale(0.8);
+            cursor: not-allowed;
+            pointer-events: none;
         }
-        .daily-magic-icon:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(212,175,55,0.6); }
-        .daily-magic-icon.claimed { opacity: 0.5; filter: grayscale(0.8); cursor: not-allowed; }
-        .daily-magic-icon svg { width: 32px; height: 32px; transform: rotate(-90deg); }
-        .daily-magic-icon.casting svg .magic-circle-trace,
-        .daily-magic-icon.casting svg .magic-star-trace { stroke-dashoffset: 0; stroke: #fff; filter: drop-shadow(0 0 5px var(--gold)); }
-        .daily-magic-icon.exploded .magic-core-glow { width: 100px; height: 100px; opacity: 1; animation: fadeOut 1s forwards 0.5s; }
 
         /* ── Custom Confirm / Alert Dialog ── */
         .confirm-overlay {
@@ -155,17 +142,12 @@
 
 <body>
     <div class="magic-background"></div>
-    <!-- Top Actions (Home & Daily Magic) -->
+    <!-- Top Actions (Daily Magic & Home) -->
     <div class="top-actions-container">
-        <div class="daily-magic-icon" onclick="castDailyMagic()" id="dailyMagicBtn" title="Cast Daily Magic">
-            <svg class="magic-circle-svg" viewBox="0 0 100 100">
-                <circle class="magic-circle-bg" cx="50" cy="50" r="45"></circle>
-                <circle class="magic-circle-trace" cx="50" cy="50" r="45"></circle>
-                <polygon class="magic-star-trace" points="50,5 61,38 95,38 68,58 78,91 50,71 22,91 32,58 5,38 39,38"></polygon>
-            </svg>
-            <div class="magic-core-glow"></div>
-        </div>
-        <a href="/" class="back-home-btn" title="กลับหน้าหลัก">🏠 Home</a>
+        <button class="top-pill-btn" onclick="castDailyMagic()" id="dailyMagicBtn" title="Daily rewards">
+            🪙 Daily rewards
+        </button>
+        <a href="/" class="top-pill-btn" title="กลับหน้าหลัก">🏠 HOME</a>
     </div>
     <div class="dashboard-wrapper">
 
@@ -372,6 +354,7 @@
                 <select name="type" required class="parchment-input">
                     <option value="material">Material</option>
                     <option value="potion">Potion</option>
+                    <option value="food">Food</option>
                     <option value="equipment">Equipment</option>
                 </select>
                 <select name="rarity" class="parchment-input">

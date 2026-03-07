@@ -49,6 +49,31 @@ router.get('/me', checkGuildMembership, async (req, res) => {
     const User = require('../models/User');
     try {
         const user = await User.findById(req.user.id).populate('inventory.itemId');
+
+        // --- Daily Health Penalty ---
+        const isAdmin = user.roles.includes('admin') || user.roles.includes('professor');
+        if (!isAdmin) {
+            const now = new Date();
+            const thTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+            const threshold = new Date(
+                thTime.getUTCFullYear(),
+                thTime.getUTCMonth(),
+                thTime.getUTCDate(),
+                8, 0, 0, 0
+            );
+            if (thTime < threshold) {
+                threshold.setUTCDate(threshold.getUTCDate() - 1);
+            }
+            const utcThreshold = new Date(threshold.getTime() - (7 * 60 * 60 * 1000));
+
+            if (!user.lastHealthDecrease || user.lastHealthDecrease < utcThreshold) {
+                user.health = Math.max(0, user.health - 10);
+                user.lastHealthDecrease = now;
+                await user.save();
+            }
+        }
+        // ----------------------------
+
         res.json({
             authenticated: true,
             user: {

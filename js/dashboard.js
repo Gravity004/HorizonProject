@@ -650,9 +650,7 @@ window.castDailyMagic = async function () {
     }
 
     isDailyMagicCasting = true;
-    
-    // Start drawing animation
-    btn.classList.add('casting');
+    spawnEffect('✨', 'Casting Daily Magic...');
 
     try {
         const response = await fetch('/api/bank/daily', {
@@ -661,34 +659,23 @@ window.castDailyMagic = async function () {
         });
         const data = await response.json();
 
-        // Wait for the SVG to trace (2 seconds based on CSS)
-        setTimeout(() => {
-            btn.classList.remove('casting');
-            btn.classList.add('exploded');
-
-            setTimeout(() => {
-                isDailyMagicCasting = false;
-                btn.classList.remove('exploded');
-                
-                if (response.ok) {
-                    btn.classList.add('claimed');
-                    currentUser.balance = data.newBalance;
-                    renderUserProfile();
-                    fetchTransactions();
-                    spawnEffect('🌟', data.message);
-                } else {
-                    spawnEffect('❌', data.message);
-                    if (response.status === 400 && data.message.includes('tomorrow')) {
-                        btn.classList.add('claimed');
-                    }
-                }
-            }, 1000); // 1s for explosion fade
-        }, 2000);
-
+        isDailyMagicCasting = false;
+        
+        if (response.ok) {
+            btn.classList.add('claimed');
+            currentUser.balance = data.newBalance;
+            renderUserProfile();
+            fetchTransactions();
+            spawnEffect('🌟', data.message);
+        } else {
+            spawnEffect('❌', data.message);
+            if (response.status === 400 && data.message.includes('tomorrow')) {
+                btn.classList.add('claimed');
+            }
+        }
     } catch (err) {
         console.error(err);
         isDailyMagicCasting = false;
-        btn.classList.remove('casting');
         spawnEffect('❌', 'The spell fizzled...');
     }
 }
