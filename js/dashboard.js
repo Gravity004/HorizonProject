@@ -70,7 +70,6 @@ function renderUserProfile() {
             `https://cdn.discordapp.com/avatars/${currentUser.discordId}/${currentUser.avatar}.png?size=128`;
     }
     document.getElementById('userGold').textContent = currentUser.balance;
-    document.getElementById('bankBalance').textContent = currentUser.balance;
 
     const roleContainer = document.getElementById('userRole');
     if (roleContainer) {
@@ -95,7 +94,7 @@ function renderHealthUI() {
     document.getElementById('userHpBar').style.width = `${hpPercentage}%`;
 
     const faintedOverlay = document.getElementById('faintedOverlay');
-    const navButtons = document.querySelectorAll('.spell-btn:not([onclick*="inventory"]):not(#adminTabBtn):not([onclick*="openLogModal"])');
+    const navButtons = document.querySelectorAll('.spell-btn:not([onclick*="inventory"]):not([onclick*="shop"]):not(#adminTabBtn):not([onclick*="openLogModal"])');
     
     if (hp < 30) {
         // FATIGUED/FAINTED State
@@ -126,7 +125,7 @@ function setupAdminControls() {
 // NAVIGATION
 // ═══════════════════════════════════════════════
 window.switchNav = function (tabId) {
-    if (currentUser && currentUser.health < 30 && tabId !== 'inventory' && tabId !== 'admin') {
+    if (currentUser && currentUser.health < 30 && tabId !== 'inventory' && tabId !== 'shop' && tabId !== 'admin') {
         spawnEffect('❌', 'You are too exhausted to do this. Eat food first.');
         document.getElementById('faintedOverlay').classList.add('active');
         return;
