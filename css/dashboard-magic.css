@@ -370,17 +370,25 @@ body {
     margin: 0.3rem 0;
 }
 
+.tags-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 0.5rem 0;
+    flex-wrap: wrap;
+}
+
 .item-type {
     display: inline-block;
-    padding: 3px 10px;
-    border-radius: 12px;
+    padding: 4px 12px;
+    border-radius: 4px;
     font-size: 0.72rem;
     font-family: 'Cinzel', serif;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-right: 4px;
     border: 1px solid rgba(255,255,255,0.15);
-    font-weight: 600;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .type-material {
@@ -401,13 +409,14 @@ body {
 
 .item-rarity-tag {
     display: inline-block;
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 0.68rem;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.7rem;
     font-family: 'Cinzel', serif;
     letter-spacing: 0.5px;
     font-weight: bold;
     border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .rarity-common {

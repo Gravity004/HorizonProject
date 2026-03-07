@@ -179,8 +179,10 @@ function renderShop(items) {
             <div class="card-info">
                 <h3>${item.name}</h3>
                 ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
-                <span class="item-type type-${item.type}">${item.type}</span>
-                <span class="item-rarity-tag rarity-${item.rarity || 'common'}">${(item.rarity || 'common').toUpperCase()}</span>
+                <div class="tags-row">
+                    <span class="item-type type-${item.type}">${item.type}</span>
+                    <span class="item-rarity-tag rarity-${item.rarity || 'common'}">${(item.rarity || 'common').toUpperCase()}</span>
+                </div>
                 <div class="price-tag">🪙 ${item.price} G</div>
                 <div class="card-buy-row">
                     <input type="number" id="qty-${item._id}" class="buy-qty-input" min="1" value="1" title="Quantity">
