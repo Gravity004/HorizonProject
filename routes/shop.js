@@ -62,6 +62,7 @@ router.post('/buy', isAuthenticated, async (req, res) => {
             user.inventory.push({ itemId, quantity });
         }
 
+        user.markModified('inventory');
         await user.save();
         res.json({ message: 'Purchase successful', balance: user.balance, inventory: user.inventory });
     } catch (err) {
@@ -86,6 +87,7 @@ router.post('/use', isAuthenticated, async (req, res) => {
             user.inventory = user.inventory.filter(i => i.itemId.toString() !== itemId);
         }
 
+        user.markModified('inventory');
         await user.save();
 
         const item = await Item.findById(itemId);
@@ -110,12 +112,18 @@ router.post('/upload', isAuthenticated, hasRole(['admin', 'professor']), upload.
 router.post('/add', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
     const { name, type, price, image, rarity, effects, description } = req.body;
 
+    // Check for existing item with the same name
+    const existingItem = await Item.findOne({ name });
+    if (existingItem) {
+        return res.status(400).json({ message: 'Item with this name already exists in the shop!' });
+    }
+
     const newItem = new Item({
         name,
         description,
         type,
         price,
-        image,
+        image: image || '/assets/images/item.png',
         rarity: rarity || 'common',
         effects
     });

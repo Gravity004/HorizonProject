@@ -102,6 +102,7 @@ router.post('/craft', isAuthenticated, async (req, res) => {
         }
         // If no resultItemId, the item is a "story" or "custom" item – just deduct ingredients & log
 
+        user.markModified('inventory');
         await user.save();
 
         res.json({
