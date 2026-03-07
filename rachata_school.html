@@ -267,28 +267,110 @@
             line-height: 1.5;
         }
 
-        /* House Themes */
+        /* House Themes - Premium Thai Magic */
         .house-garuda {
-            --accent-color: #ff4d4d;
-            --accent-glow: rgba(255, 77, 77, 0.3);
+            --accent-color: #ff6b35;
+            --accent-glow: rgba(255, 107, 53, 0.4);
         }
-
         .house-erawan {
-            --accent-color: #3498db;
-            --accent-glow: rgba(52, 152, 219, 0.3);
+            --accent-color: #4fc3f7;
+            --accent-glow: rgba(79, 195, 247, 0.4);
         }
-
         .house-qilin {
-            --accent-color: #2ecc71;
-            --accent-glow: rgba(46, 204, 113, 0.3);
+            --accent-color: #66bb6a;
+            --accent-glow: rgba(102, 187, 106, 0.4);
+        }
+        .house-naga {
+            --accent-color: #ce93d8;
+            --accent-glow: rgba(206, 147, 216, 0.5);
         }
 
-        .house-naga {
-            --accent-color: #444444;
-            /* Changed slightly for better visibility against dark bg */
-            --accent-glow: rgba(255, 255, 255, 0.1);
-            background: rgba(5, 5, 5, 0.9) !important;
+        /* ─── Four Houses Banner ─── */
+        .houses-banner {
+            position: relative;
+            background: linear-gradient(135deg, #1a0933 0%, #2d0e5a 40%, #1a0933 100%);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #d4af37, #9c6102, #d4af37, #9c6102, #d4af37) 1;
+            border-radius: 18px;
+            padding: 2.5rem 2rem 2rem;
+            box-shadow: 0 0 60px rgba(138,43,226,0.25), inset 0 0 40px rgba(75,0,130,0.2);
+            overflow: hidden;
         }
+        .houses-banner::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(212,175,55,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        /* Floating sparkle particles */
+        .houses-banner::after {
+            content: '✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦';
+            position: absolute; top: 0.6rem; left: 0; right: 0;
+            text-align: center; font-size: 0.7rem; color: rgba(212,175,55,0.35);
+            letter-spacing: 0.6rem; pointer-events: none;
+        }
+
+        .banner-title-wrap {
+            text-align: center; margin-bottom: 2rem; position: relative;
+        }
+        .banner-title-wrap h2 {
+            font-family: 'Cinzel Decorative','Cinzel',serif;
+            font-size: 2.4rem; color: #d4af37;
+            text-shadow: 0 0 30px rgba(212,175,55,0.6), 0 0 60px rgba(212,175,55,0.3);
+            margin: 0.5rem 0 0.3rem; letter-spacing: 3px;
+        }
+        .thai-divider {
+            color: #d4af37; font-size: 1.1rem;
+            letter-spacing: 0.5rem; opacity: 0.6;
+            margin: 0.3rem 0;
+        }
+
+        /* New house card style */
+        .house-card {
+            position: relative;
+            background: linear-gradient(160deg, rgba(30,10,60,0.95) 0%, rgba(10,5,25,0.98) 100%);
+            border: 1px solid rgba(212,175,55,0.25);
+            padding: 2rem 1.2rem 1.8rem;
+            border-radius: 14px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+            overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer;
+        }
+        .house-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            transition: height 0.3s;
+        }
+        .house-card::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 65%);
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .house-card:hover { transform: translateY(-10px); border-color: var(--accent-color); box-shadow: 0 14px 40px rgba(0,0,0,0.6), 0 0 25px var(--accent-glow); }
+        .house-card:hover::after { opacity: 1; }
+        .house-card:hover::before { height: 100%; opacity: 0.05; }
+        .house-card * { position: relative; z-index: 2; }
+
+        .house-badge {
+            width: 110px; height: 110px; margin-bottom: 1.2rem;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle, rgba(30,10,60,0.9) 0%, rgba(5,2,15,0.95) 100%);
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-glow), inset 0 0 15px rgba(0,0,0,0.5);
+            transition: transform 0.6s ease, box-shadow 0.3s;
+            overflow: hidden;
+        }
+        .house-badge img { width: 85%; height: 85%; object-fit: contain; }
+        .house-card:hover .house-badge { transform: rotateY(360deg); box-shadow: 0 0 35px var(--accent-glow); }
+
+        .house-name-th { font-size: 1.5rem; color: var(--gold); margin: 0.3rem 0; font-weight: bold; font-family: 'Sarabun','Outfit',sans-serif; text-shadow: 0 0 8px rgba(212,175,55,0.5); }
+        .house-name-en { font-size: 0.72rem; letter-spacing: 2.5px; color: var(--accent-color); text-transform: uppercase; margin-bottom: 1rem; font-family:'Cinzel',serif; }
+        .house-desc { font-size: 0.85rem; color: #c5b8e0; line-height: 1.7; }
     </style>
 </head>
 
@@ -339,46 +421,56 @@
 
         <section id="houses">
             <h2 class="section-title cinzel">The Four Houses</h2>
-            <div class="houses-grid">
-                <!-- Garuda House -->
-                <div class="house-card house-garuda">
-                    <div class="house-badge">
-                        <img src="assets/images/Garuda.png" alt="Garuda House Badge">
-                    </div>
-                    <div class="house-name-th">พญาครุฑ</div>
-                    <div class="house-name-en">GARUDA HOUSE</div>
-                    <p class="house-desc">บ้านแห่งความกล้าหาญและพละกำลัง เปี่ยมด้วยจิตวิญญาณของนักรบผู้พิทักษ์</p>
+            <!-- Premium Thai-Magic Banner Frame -->
+            <div class="houses-banner">
+                <div class="banner-title-wrap">
+                    <div class="thai-divider">❋ ❋ ❋</div>
+                    <h2>The Four Houses</h2>
+                    <div class="thai-divider">『 โรงเรียนรชต สายตระกูลทั้งสี่ 』</div>
                 </div>
+                <div class="houses-grid">
+                    <!-- Garuda House -->
+                    <div class="house-card house-garuda">
+                        <div class="house-badge">
+                            <img src="assets/images/Garuda.png" alt="Garuda House Badge">
+                        </div>
+                        <div class="house-name-th">พญาครุฑ</div>
+                        <div class="house-name-en">GARUDA HOUSE</div>
+                        <p class="house-desc">บ้านแห่งความกล้าหาญและพละกำลัง เปี่ยมด้วยจิตวิญญาณของนักรบผู้พิทักษ์</p>
+                    </div>
 
-                <!-- Erawan House -->
-                <div class="house-card house-erawan">
-                    <div class="house-badge">
-                        <img src="assets/images/Erawan.png" alt="Erawan House Badge">
+                    <!-- Erawan House -->
+                    <div class="house-card house-erawan">
+                        <div class="house-badge">
+                            <img src="assets/images/Erawan.png" alt="Erawan House Badge">
+                        </div>
+                        <div class="house-name-th">เอราวัณ</div>
+                        <div class="house-name-en">ERAWAN HOUSE</div>
+                        <p class="house-desc">บ้านแห่งบารมีและความบริสุทธิ์ ตัวแทนของความมั่นคงและจริยธรรมที่ผุดผ่อง</p>
                     </div>
-                    <div class="house-name-th">เอราวัณ</div>
-                    <div class="house-name-en">ERAWAN HOUSE</div>
-                    <p class="house-desc">บ้านแห่งบารมีและความบริสุทธิ์ ตัวแทนของความมั่นคงและจริยธรรมที่ผุดผ่อง</p>
-                </div>
 
-                <!-- Qilin House -->
-                <div class="house-card house-qilin">
-                    <div class="house-badge">
-                        <img src="assets/images/Qilin.png" alt="Qilin House Badge">
+                    <!-- Qilin House -->
+                    <div class="house-card house-qilin">
+                        <div class="house-badge">
+                            <img src="assets/images/Qilin.png" alt="Qilin House Badge">
+                        </div>
+                        <div class="house-name-th">กิเลน</div>
+                        <div class="house-name-en">QILIN HOUSE</div>
+                        <p class="house-desc">บ้านแห่งปัญญาและความโชคดี เน้นการเรียนรู้และความเมตตาต่อทุกสรรพสิ่ง</p>
                     </div>
-                    <div class="house-name-th">กิเลน</div>
-                    <div class="house-name-en">QILIN HOUSE</div>
-                    <p class="house-desc">บ้านแห่งปัญญาและความโชคดี เน้นการเรียนรู้และความเมตตาต่อทุกสรรพสิ่ง</p>
-                </div>
 
-                <!-- Naga House -->
-                <div class="house-card house-naga">
-                    <div class="house-badge">
-                        <img src="assets/images/King of Nagas.png" alt="King of Nagas House Badge">
+                    <!-- Naga House -->
+                    <div class="house-card house-naga">
+                        <div class="house-badge">
+                            <img src="assets/images/King of Nagas.png" alt="King of Nagas House Badge">
+                        </div>
+                        <div class="house-name-th">พญานาค</div>
+                        <div class="house-name-en">KING OF NAGAS HOUSE</div>
+                        <p class="house-desc">บ้านแห่งความเร้นลับและโชคลาภ ผู้ครองปัญญาจากห้วงลึกและมนตราโบราณ</p>
                     </div>
-                    <div class="house-name-th">พญานาค</div>
-                    <div class="house-name-en">KING OF NAGAS HOUSE</div>
-                    <p class="house-desc">บ้านแห่งความเร้นลับและโชคลาภ ผู้ครองปัญญาจากห้วงลึกและมนตราโบราณ</p>
                 </div>
+                <!-- Bottom sparkle row -->
+                <div style="text-align:center;margin-top:1.5rem;color:rgba(212,175,55,0.3);font-size:0.7rem;letter-spacing:0.8rem;">✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦</div>
             </div>
         </section>
 
