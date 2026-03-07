@@ -158,7 +158,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
 }
 
 .spell-btn:hover,
@@ -171,7 +171,8 @@ body {
     transform: translateY(-2px);
 }
 
-.spell-btn:disabled, .spell-btn.disabled-btn {
+.spell-btn:disabled,
+.spell-btn.disabled-btn {
     pointer-events: none;
     opacity: 0.4;
     filter: grayscale(1);
@@ -344,7 +345,7 @@ body {
 .buy-qty-input {
     width: 60px;
     padding: 0.6rem 0.4rem;
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid #554433;
     color: #f0e6d2;
     border-radius: 4px;
@@ -386,9 +387,9 @@ body {
     font-family: 'Cinzel', serif;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .type-material {
@@ -415,8 +416,8 @@ body {
     font-family: 'Cinzel', serif;
     letter-spacing: 0.5px;
     font-weight: bold;
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .rarity-common {
@@ -684,7 +685,7 @@ body {
     padding: 3rem;
     background: rgba(10, 5, 0, 0.6);
     border-radius: 16px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
     position: relative;
     max-width: 700px;
     margin: 0 auto;
@@ -828,7 +829,8 @@ select.parchment-input {
     stroke-width: 2;
 }
 
-.magic-circle-trace, .magic-star-trace {
+.magic-circle-trace,
+.magic-star-trace {
     fill: none;
     stroke: var(--gold);
     stroke-width: 2;
@@ -867,7 +869,10 @@ select.parchment-input {
 }
 
 @keyframes fadeOut {
-    to { opacity: 0; transform: translate(-50%, -50%) scale(2); }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2);
+    }
 }
 
 /* Transaction History */
@@ -1229,7 +1234,10 @@ select.parchment-input {
 ═══════════════════════════════════════ */
 .fainted-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     pointer-events: none;
     z-index: 10000;
     opacity: 0;
@@ -1243,8 +1251,13 @@ select.parchment-input {
 }
 
 @keyframes pulseFaint {
-    from { box-shadow: inset 0 0 30px 15px rgba(255, 0, 0, 0.3); }
-    to { box-shadow: inset 0 0 80px 30px rgba(255, 0, 0, 0.7); }
+    from {
+        box-shadow: inset 0 0 30px 15px rgba(255, 0, 0, 0.3);
+    }
+
+    to {
+        box-shadow: inset 0 0 80px 30px rgba(255, 0, 0, 0.7);
+    }
 }
 
 /* Toast */
@@ -1482,7 +1495,7 @@ select.parchment-input {
     border-radius: 6px;
     padding: 2.5rem 3.5rem 3.5rem;
     position: relative;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
     min-height: 520px;
     display: flex;
     flex-direction: column;
@@ -1509,13 +1522,19 @@ select.parchment-input {
     justify-content: center;
     transition: 0.2s;
 }
-.letter-close-btn:hover { background: rgba(166, 106, 56, 0.2); color: #7a4a2b; border-color: #7a4a2b; }
 
-.letter-school-title {
-    display: none; /* removed from HTML, hiding just in case */
+.letter-close-btn:hover {
+    background: rgba(166, 106, 56, 0.2);
+    color: #7a4a2b;
+    border-color: #7a4a2b;
 }
 
-.letter-item-row {
+.letter-school-title {
+    display: none;
+    /* removed from HTML, hiding just in case */
+}
+
+/* .letter-item-row {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -1523,18 +1542,37 @@ select.parchment-input {
     border: 2px solid rgba(140, 100, 50, 0.4);
     border-radius: 0;
     padding: 0.5rem 1rem;
-    width: 65%;
+    width: 100%;
     margin: 1rem auto 0;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+} */
+
+.letter-item-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    /* เพิ่มระยะห่างระหว่างรูปกับชื่อ */
+    background: rgba(185, 165, 135, 0.4);
+    border: 2px solid rgba(140, 100, 50, 0.4);
+    padding: 1rem 1.5rem;
+    /* เพิ่มพื้นที่ข้างในให้ดูโปร่งขึ้น */
+    width: 100%;
+    /* ขยายเต็มพื้นที่จดหมาย */
+    margin: 1rem 0;
+    /* เปลี่ยนจาก auto เป็น 0 เพื่อให้ชิดขอบ */
+    box-sizing: border-box;
+    /* สำคัญ: เพื่อไม่ให้ Padding ดันขอบจนล้น */
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
 .letter-item-img {
-    width: 44px;
-    height: 44px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
     border-radius: 4px;
     background: #000;
     border: 1px solid #c8a060;
+    flex-shrink: 0;
 }
 
 .letter-item-name {
@@ -1571,7 +1609,7 @@ select.parchment-input {
     font-family: 'Cinzel', serif;
     color: #4e342e;
     font-weight: bold;
-    text-shadow: 0 0 1px rgba(255,255,255,0.4);
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.4);
 }
 
 .letter-input {
@@ -1584,10 +1622,22 @@ select.parchment-input {
     color: #3e2723;
     transition: background 0.2s, border-color 0.2s;
 }
-.letter-input::placeholder { color: #8a6b52; opacity: 0.7; }
-.letter-input:focus { outline: none; border-color: #5c3a21; background: rgba(210, 185, 145, 0.6); }
 
-.letter-textarea { resize: vertical; min-height: 90px; }
+.letter-input::placeholder {
+    color: #8a6b52;
+    opacity: 0.7;
+}
+
+.letter-input:focus {
+    outline: none;
+    border-color: #5c3a21;
+    background: rgba(210, 185, 145, 0.6);
+}
+
+.letter-textarea {
+    resize: vertical;
+    min-height: 90px;
+}
 
 .letter-send-btn {
     align-self: center;
@@ -1603,17 +1653,30 @@ select.parchment-input {
     cursor: pointer;
     transition: 0.25s;
     letter-spacing: 1px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
-.letter-send-btn:hover { background: linear-gradient(135deg, #bf8040, #8d5524); box-shadow: 0 6px 20px rgba(0,0,0,0.4); transform: translateY(-2px); }
+
+.letter-send-btn:hover {
+    background: linear-gradient(135deg, #bf8040, #8d5524);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
 
 /* Received letter view inside mailbox */
 .gift-card.letter-style {
     background: url('../assets/images/LetterTemplate.png') center/cover no-repeat;
-    border: 1px solid rgba(120,80,30,0.4);
+    border: 1px solid rgba(120, 80, 30, 0.4);
     border-radius: 6px;
     padding: 1.5rem;
     color: #3e2723;
 }
-.gift-card.letter-style .gift-sender { color: #4e342e; font-weight: bold; }
-.gift-card.letter-style .gift-msg { color: #5d3a1a; font-style: italic; }
+
+.gift-card.letter-style .gift-sender {
+    color: #4e342e;
+    font-weight: bold;
+}
+
+.gift-card.letter-style .gift-msg {
+    color: #5d3a1a;
+    font-style: italic;
+}
