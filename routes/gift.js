@@ -1,0 +1,122 @@
+const express = require('express');
+const router = express.Router();
+const User = require('../models/User');
+const Item = require('../models/Item');
+const Gift = require('../models/Gift');
+const Transaction = require('../models/Transaction');
+const { isAuthenticated } = require('../middleware/auth');
+const crypto = require('crypto');
+
+function generateTxId() {
+    return 'GFT-' + Date.now().toString(36).toUpperCase() + '-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+}
+
+// Send Gift/Letter
+router.post('/send', isAuthenticated, async (req, res) => {
+    const { recipientId, itemId, quantity, message } = req.body;
+    const sendQuantity = parseInt(quantity) || 1;
+
+    try {
+        const sender = await User.findById(req.user.id);
+        const recipient = await User.findOne({
+            $or: [{ discordId: recipientId }, { username: recipientId }]
+        });
+
+        if (!recipient) return res.status(404).json({ message: 'Recipient wizard not found.' });
+        if (recipient.id === sender.id) return res.status(400).json({ message: 'You cannot send a gift to yourself.' });
+
+        const item = await Item.findById(itemId);
+        if (!item) return res.status(404).json({ message: 'Item not found in archives.' });
+
+        // Check if sender has enough of the item
+        const senderItemIndex = sender.inventory.findIndex(i => i.itemId.toString() === itemId);
+        if (senderItemIndex === -1 || sender.inventory[senderItemIndex].quantity < sendQuantity) {
+            return res.status(400).json({ message: `You do not have enough ${item.name} to send.` });
+        }
+
+        // Deduct from sender
+        sender.inventory[senderItemIndex].quantity -= sendQuantity;
+        if (sender.inventory[senderItemIndex].quantity <= 0) {
+            sender.inventory = sender.inventory.filter(i => i.itemId.toString() !== itemId);
+        }
+        sender.markModified('inventory');
+        await sender.save();
+
+        // Create Gift Note
+        const gift = new Gift({
+            senderId: sender._id,
+            senderName: sender.username,
+            recipientId: recipient._id,
+            recipientName: recipient.username,
+            itemId: item._id,
+            quantity: sendQuantity,
+            message: message || '',
+            isClaimed: false
+        });
+        await gift.save();
+
+        // Log transaction
+        const txId = generateTxId();
+        const transaction = new Transaction({
+            transactionId: txId,
+            type: 'transfer',
+            senderId: sender._id,
+            senderName: sender.username,
+            recipientId: recipient._id,
+            recipientName: recipient.username,
+            amount: 0,
+            description: `Gifted ${sendQuantity}x ${item.name}`
+        });
+        await transaction.save();
+
+        res.json({ message: `Sent ${item.name} to ${recipient.username} successfully!` });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// View Inbox (list unclaimed gifts)
+router.get('/inbox', isAuthenticated, async (req, res) => {
+    try {
+        const gifts = await Gift.find({ recipientId: req.user.id, isClaimed: false })
+            .populate('itemId')
+            .sort({ timestamp: -1 });
+        res.json(gifts);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Claim Gift
+router.post('/claim', isAuthenticated, async (req, res) => {
+    const { giftId } = req.body;
+
+    try {
+        const gift = await Gift.findById(giftId).populate('itemId');
+        if (!gift) return res.status(404).json({ message: 'Gift not found.' });
+        if (gift.recipientId.toString() !== req.user.id) return res.status(403).json({ message: 'This gift is not for you.' });
+        if (gift.isClaimed) return res.status(400).json({ message: 'Gift already claimed.' });
+
+        const recipient = await User.findById(req.user.id);
+
+        // Add item to recipient inventory
+        const existingItemIndex = recipient.inventory.findIndex(i => i.itemId.toString() === gift.itemId._id.toString());
+        if (existingItemIndex > -1) {
+            recipient.inventory[existingItemIndex].quantity += gift.quantity;
+        } else {
+            recipient.inventory.push({ itemId: gift.itemId._id, quantity: gift.quantity });
+        }
+        
+        recipient.markModified('inventory');
+        await recipient.save();
+
+        gift.isClaimed = true;
+        await gift.save();
+
+        res.json({ message: `Claimed ${gift.quantity}x ${gift.itemId.name}!`, inventory: recipient.inventory });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+module.exports = router;

@@ -18,6 +18,25 @@
             right: 1.5rem;
             left: auto !important;
             z-index: 9999;
+            background: linear-gradient(135deg, #2a1b38, #1a1228);
+            border: 1px solid #8b6914;
+            color: #d4af37;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            text-decoration: none;
+            box-shadow: 0 0 10px rgba(139,105,20,0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .back-home-btn:hover {
+            background: linear-gradient(135deg, #3a2548, #2a1b38);
+            box-shadow: 0 0 20px rgba(212,175,55,0.6);
+            transform: translateY(-2px);
+            color: #fff;
         }
 
         /* ── Custom Confirm / Alert Dialog ── */
@@ -88,6 +107,25 @@
 
         /* Recipe result name input */
         #recipeResultName { margin-top: .5rem; }
+
+        /* ── Gift / Mailbox ── */
+        .mailbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+        .gift-card { background: rgba(0,0,0,0.25); border: 1px solid #554433; border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; transition: border-color .2s; }
+        .gift-card:hover { border-color: #8b6914; }
+        .gift-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(139,105,20,0.3); padding-bottom: .75rem; }
+        .gift-sender { font-weight: 700; color: #d4af37; font-size: 1.1rem; }
+        .gift-time { font-size: 0.75rem; color: #a89070; }
+        .gift-body { display: flex; gap: 1rem; align-items: center; }
+        .gift-item-img { width: 48px; height: 48px; object-fit: contain; }
+        .gift-item-details { display: flex; flex-direction: column; }
+        .gift-msg { padding: .75rem; background: rgba(0,0,0,0.4); border-left: 3px solid #6ab0f5; font-style: italic; font-size: 0.9rem; color: #e0d0b0; border-radius: 4px; margin: 0;}
+        .claim-gift-btn { width: 100%; background: #2a3d2a; color: #6af56a; border: 1px solid #3d5c3d; padding: .65rem; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-weight: 700; transition: all .2s; }
+        .claim-gift-btn:hover { background: #3d5c3d; color: #fff; }
+        
+        .inv-actions { display: flex; gap: .5rem; justify-content: center; margin-top: auto; }
+        .use-item-btn, .gift-item-btn { flex: 1; padding: .4rem 0; font-size: .8rem; }
+        .gift-item-btn { background: #1a3a5c; border-color: #2a5c8f; color: #6ab0f5; }
+        .gift-item-btn:hover { background: #2a5c8f; color: #fff; }
     </style>
 </head>
 
@@ -112,10 +150,11 @@
             </div>
 
             <nav class="spell-nav">
-                <button class="spell-btn active" onclick="switchNav('shop')">🔮 Magic Shop</button>
+                <button class="spell-btn active" onclick="switchNav('shop')">🔮 Shop</button>
                 <button class="spell-btn" onclick="switchNav('craft')">⚗️ Crafting Station</button>
                 <button class="spell-btn" onclick="switchNav('bank')">🏦 Thanaraksh Bank</button>
                 <button class="spell-btn" onclick="switchNav('inventory')">🎒 Inventory</button>
+                <button class="spell-btn" onclick="switchNav('mailbox')">📮 Mailbox <span id="mailBadge" class="badge role-admin hidden" style="font-size:0.6rem;padding:0.1rem 0.3rem">!</span></button>
                 <button class="spell-btn admin-only hidden" id="adminTabBtn" onclick="switchNav('admin')">⚙️
                     Admin</button>
                 <button class="spell-btn admin-only hidden" onclick="openLogModal()">📋 Log</button>
@@ -128,7 +167,7 @@
             <!-- SHOP SECTION -->
             <section id="shop" class="magic-section active">
                 <div class="section-header">
-                    <h2>Diagon Alley Market</h2>
+                    <h2>Shop</h2>
                     <div id="adminControls" class="admin-panel hidden">
                         <button class="admin-btn" onclick="openAdminModal()">+ Stock New Item</button>
                     </div>
@@ -195,6 +234,13 @@
             <section id="inventory" class="magic-section">
                 <h2>Wizard's Satchel</h2>
                 <div class="inventory-grid" id="inventoryContainer"></div>
+            </section>
+
+            <!-- MAILBOX SECTION -->
+            <section id="mailbox" class="magic-section">
+                <h2>📮 Owl Mailbox</h2>
+                <p style="color:#a89070; margin-bottom: 1rem; font-size: 0.9rem;">Check your incoming gifts and letters.</p>
+                <div id="mailboxContainer" class="mailbox-grid"></div>
             </section>
 
             <!-- ADMIN SECTION -->
@@ -323,6 +369,36 @@
                 <button class="confirm-cancel" id="confirmCancelBtn">ยกเลิก</button>
                 <button class="confirm-ok" id="confirmOkBtn">ยืนยัน</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Send Gift Modal -->
+    <div id="sendGiftModal" class="modal">
+        <div class="modal-content parchment" style="max-width: 450px;">
+            <span class="close-modal" onclick="closeSendGiftModal()">×</span>
+            <h2>Send Gift via Owl</h2>
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding:1rem;background:rgba(0,0,0,0.2);border-radius:8px;">
+                <img id="giftModalItemImg" src="" style="width:48px;height:48px;object-fit:contain;">
+                <div>
+                    <strong id="giftModalItemName" style="color:#d4af37;font-size:1.1rem;">Item Name</strong>
+                    <div style="font-size:0.8rem;color:#a89070;" id="giftModalItemQty">You have: 0</div>
+                </div>
+            </div>
+            
+            <input type="hidden" id="giftModalItemId">
+            <div class="input-group">
+                <label>Recipient Discord ID or Username</label>
+                <input type="text" id="giftModalRecipient" class="parchment-input" placeholder="e.g. nxvxn_">
+            </div>
+            <div class="input-group">
+                <label>Quantity to Send</label>
+                <input type="number" id="giftModalQuantity" class="parchment-input" min="1" value="1">
+            </div>
+            <div class="input-group">
+                <label>Letter Message (Optional)</label>
+                <textarea id="giftModalMessage" class="parchment-input" rows="3" placeholder="Write a nice letter..."></textarea>
+            </div>
+            <button class="conjure-btn" style="width:100%;" onclick="submitSendGift()">📨 Dispatch Owl</button>
         </div>
     </div>
 

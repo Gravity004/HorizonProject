@@ -55,6 +55,7 @@ async function checkAuth() {
         fetchInventory();
         fetchRecipes();
         fetchBalance();
+        fetchMailbox(); // Initialize mailbox badge
 
     } catch (err) {
         console.error('Auth check failed', err);
@@ -98,7 +99,7 @@ function setupAdminControls() {
 // ═══════════════════════════════════════════════
 window.switchNav = function (tabId) {
     document.querySelectorAll('.spell-btn').forEach(btn => btn.classList.remove('active'));
-    const tabs = { shop: 'shop', craft: 'crafting', bank: 'bank', inventory: 'inventory', admin: 'admin' };
+    const tabs = { shop: 'shop', craft: 'crafting', bank: 'bank', inventory: 'inventory', mailbox: 'mailbox', admin: 'admin' };
     document.querySelectorAll('.spell-btn').forEach(btn => {
         const text = btn.textContent.toLowerCase();
         if (text.includes(tabs[tabId] || tabId)) btn.classList.add('active');
@@ -111,6 +112,7 @@ window.switchNav = function (tabId) {
     // Load data when switching to specific tabs
     if (tabId === 'bank') fetchTransactions();
     if (tabId === 'admin') loadAdminData();
+    if (tabId === 'mailbox') fetchMailbox();
 }
 
 // ═══════════════════════════════════════════════
@@ -566,7 +568,10 @@ function renderInventory() {
                 <div class="inv-tooltip">
                     <strong>${name}</strong>
                     <small>${type}</small>
-                    <button class="use-item-btn" onclick="useItem('${id}', '${name}')">Use</button>
+                    <div class="inv-actions">
+                        <button class="use-item-btn" onclick="useItem('${id}', '${name}')">Use</button>
+                        <button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -592,6 +597,131 @@ window.useItem = async function (itemId, itemName) {
             }
         } catch (err) { spawnEffect('❌', 'Failed to use item.'); }
     });
+}
+
+// ═══════════════════════════════════════════════
+// MAILBOX & GIFTING 
+// ═══════════════════════════════════════════════
+
+// Fetch Inbox
+async function fetchMailbox() {
+    try {
+        const r = await fetch('/api/gift/inbox', { credentials: 'include' });
+        const gifts = await r.json();
+        renderMailbox(gifts);
+        
+        // Update notification badge
+        const badge = document.getElementById('mailBadge');
+        if (badge) {
+            if (gifts.length > 0) {
+                badge.classList.remove('hidden');
+                badge.textContent = gifts.length;
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+    } catch (err) { console.error('Mailbox fetch failed', err); }
+}
+
+function renderMailbox(gifts) {
+    const container = document.getElementById('mailboxContainer');
+    if (!container) return;
+
+    if (!gifts.length) {
+        container.innerHTML = '<p class="empty-msg" style="grid-column: 1/-1;">Your mailbox is empty. No owls today...</p>';
+        return;
+    }
+
+    container.innerHTML = gifts.map(gift => {
+        const itemName = gift.itemId?.name || 'Unknown Artifact';
+        const itemImg = gift.itemId?.image || 'assets/images/placeholder_item.png';
+        const msgHtml = gift.message ? `<p class="gift-msg">"${gift.message}"</p>` : '';
+        
+        return `
+            <div class="gift-card">
+                <div class="gift-header">
+                    <span class="gift-sender">From: ${gift.senderName}</span>
+                    <span class="gift-time">${new Date(gift.timestamp).toLocaleDateString('th-TH')}</span>
+                </div>
+                ${msgHtml}
+                <div class="gift-body">
+                    <img src="${itemImg}" alt="${itemName}" class="gift-item-img">
+                    <div class="gift-item-details">
+                        <strong>${itemName}</strong>
+                        <small>Qty: ${gift.quantity}</small>
+                    </div>
+                </div>
+                <button class="claim-gift-btn" onclick="claimGift('${gift._id}')">📦 Claim Gift</button>
+            </div>
+        `;
+    }).join('');
+}
+
+window.claimGift = async function(giftId) {
+    try {
+        const r = await fetch('/api/gift/claim', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ giftId }), credentials: 'include'
+        });
+        const data = await r.json();
+        if (r.ok) {
+            spawnEffect('✨', data.message);
+            fetchMailbox();
+            fetchInventory();
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) {
+        spawnEffect('❌', 'Failed to claim gift.');
+    }
+}
+
+// Send Gift Modal
+window.openSendGiftModal = function (itemId, itemName, itemImg, maxQty) {
+    document.getElementById('giftModalItemId').value = itemId;
+    document.getElementById('giftModalItemName').textContent = itemName;
+    document.getElementById('giftModalItemImg').src = itemImg;
+    document.getElementById('giftModalItemQty').textContent = `You have: ${maxQty}`;
+    document.getElementById('giftModalQuantity').max = maxQty;
+    document.getElementById('giftModalQuantity').value = 1;
+
+    document.getElementById('sendGiftModal').style.display = 'block';
+}
+
+window.closeSendGiftModal = function() {
+    document.getElementById('sendGiftModal').style.display = 'none';
+    document.getElementById('giftModalRecipient').value = '';
+    document.getElementById('giftModalMessage').value = '';
+}
+
+window.submitSendGift = async function() {
+    const itemId = document.getElementById('giftModalItemId').value;
+    const recipientId = document.getElementById('giftModalRecipient').value.trim();
+    const quantity = parseInt(document.getElementById('giftModalQuantity').value) || 1;
+    const message = document.getElementById('giftModalMessage').value.trim();
+
+    if (!recipientId) {
+        spawnEffect('❌', 'Please enter a recipient.'); return;
+    }
+
+    try {
+        const r = await fetch('/api/gift/send', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipientId, itemId, quantity, message }), 
+            credentials: 'include'
+        });
+        const data = await r.json();
+        if (r.ok) {
+            spawnEffect('📨', data.message);
+            closeSendGiftModal();
+            fetchInventory();
+            fetchTransactions();
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) {
+        spawnEffect('❌', 'Owl failed to deliver the gift.');
+    }
 }
 
 // ═══════════════════════════════════════════════
@@ -775,10 +905,13 @@ window.closeLogModal = () => document.getElementById('logModal').style.display =
 
 // Close modals when clicking outside
 window.onclick = function (event) {
-    const modals = ['adminModal', 'receiptModal', 'logModal'];
+    const modals = ['adminModal', 'receiptModal', 'logModal', 'sendGiftModal'];
     modals.forEach(id => {
         const modal = document.getElementById(id);
-        if (event.target === modal) modal.style.display = 'none';
+        if (event.target === modal) {
+            if (id === 'sendGiftModal') closeSendGiftModal();
+            else modal.style.display = 'none';
+        }
     });
 };
 

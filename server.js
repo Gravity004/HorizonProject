@@ -99,11 +99,13 @@ const shopRoutes = require('./routes/shop');
 const craftRoutes = require('./routes/craft');
 const bankRoutes = require('./routes/bank');
 const usersRoutes = require('./routes/users');
+const giftRoutes = require('./routes/gift');
 
 app.use('/api/shop', shopRoutes);
 app.use('/api/craft', craftRoutes);
 app.use('/api/bank', bankRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/gift', giftRoutes);
 
 const { checkGuildMembership } = require('./middleware/auth');
 

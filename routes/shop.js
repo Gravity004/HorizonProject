@@ -7,19 +7,12 @@ const User = require('../models/User');
 const { isAuthenticated, hasRole } = require('../middleware/auth');
 
 // Multer config for image uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '..', 'assets', 'item'));
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = 'item_' + Date.now() + path.extname(file.originalname);
-        cb(null, uniqueName);
-    }
-});
+// Multer config for image uploads (Memory Storage for Base64)
+const storage = multer.memoryStorage();
 
 const upload = multer({
     storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
     fileFilter: (req, file, cb) => {
         const allowed = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
         const ext = path.extname(file.originalname).toLowerCase();
@@ -101,11 +94,13 @@ router.post('/use', isAuthenticated, async (req, res) => {
     }
 });
 
-// Upload image (Admin only) - returns the URL
+// Upload image (Admin only) - returns Base64 URL
 router.post('/upload', isAuthenticated, hasRole(['admin', 'professor']), upload.single('image'), (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No image uploaded' });
-    const imageUrl = '/assets/item/' + req.file.filename;
-    res.json({ imageUrl });
+    
+    // Convert buffer to Base64 string
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    res.json({ imageUrl: base64Image });
 });
 
 // Add item (Admin only)
