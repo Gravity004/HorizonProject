@@ -1484,8 +1484,8 @@ select.parchment-input {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 101;
-    max-width: 620px;
-    width: 92vw;
+    max-width: 760px;
+    width: 95vw;
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -1493,20 +1493,20 @@ select.parchment-input {
 .letter-parchment {
     background: url('../assets/images/LetterTemplate.png') center/100% 100% no-repeat;
     border-radius: 6px;
-    padding: 2.5rem 3.5rem 3.5rem;
+    padding: 5rem 5.5rem 3.5rem;
     position: relative;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
-    min-height: 520px;
+    aspect-ratio: 1.45 / 1;
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 0.8rem;
     box-sizing: border-box;
 }
 
 .letter-close-btn {
     position: absolute;
-    top: 15px;
-    right: 20px;
+    top: 35px;
+    right: 45px;
     width: 32px;
     height: 32px;
     background: transparent;
@@ -1550,22 +1550,17 @@ select.parchment-input {
 .letter-item-row {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    /* เพิ่มระยะห่างระหว่างรูปกับชื่อ */
-    background: rgba(185, 165, 135, 0.4);
-    border: 2px solid rgba(140, 100, 50, 0.4);
-    padding: 1rem 1.5rem;
-    /* เพิ่มพื้นที่ข้างในให้ดูโปร่งขึ้น */
+    gap: 1rem;
+    background: rgba(185, 165, 135, 0.2);
+    border: 1px solid rgba(140, 100, 50, 0.2);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
     width: 100%;
-    /* ขยายเต็มพื้นที่จดหมาย */
-    margin: 1rem 0;
-    /* เปลี่ยนจาก auto เป็น 0 เพื่อให้ชิดขอบ */
+    margin: 0 auto 0.2rem;
     box-sizing: border-box;
-    /* สำคัญ: เพื่อไม่ให้ Padding ดันขอบจนล้น */
-    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
-.letter-item-img {
+/* .letter-item-img {
     width: 80px;
     height: 80px;
     object-fit: contain;
@@ -1573,13 +1568,25 @@ select.parchment-input {
     background: #000;
     border: 1px solid #c8a060;
     flex-shrink: 0;
+} */
+
+.letter-item-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #c8a060;
+    flex-shrink: 0;
 }
 
 .letter-item-name {
     font-size: 1.1rem;
-    color: #5c3a21;
-    font-family: 'Cinzel', 'Playfair Display', serif;
+    color: #4e342e;
+    font-family: 'Cinzel', serif;
     font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .letter-item-qty {
@@ -1591,34 +1598,36 @@ select.parchment-input {
 .letter-fields-row {
     display: grid;
     grid-template-columns: 3fr 1fr;
-    gap: 0.8rem;
+    gap: 0.6rem;
 }
 
 .letter-field {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.2rem;
 }
 
 .letter-field-full {
     grid-column: 1/-1;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .letter-label {
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     font-family: 'Cinzel', serif;
     color: #4e342e;
     font-weight: bold;
-    text-shadow: 0 0 1px rgba(255, 255, 255, 0.4);
 }
 
 .letter-input {
     background: rgba(210, 185, 145, 0.4);
     border: 1px solid rgba(140, 100, 50, 0.5);
     border-radius: 4px;
-    padding: 0.65rem 0.75rem;
+    padding: 0.4rem 0.6rem;
     font-family: 'Sarabun', 'Playfair Display', serif;
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #3e2723;
     transition: background 0.2s, border-color 0.2s;
 }
@@ -1635,19 +1644,20 @@ select.parchment-input {
 }
 
 .letter-textarea {
-    resize: vertical;
-    min-height: 90px;
+    resize: none;
+    flex-grow: 1;
+    min-height: 80px;
 }
 
 .letter-send-btn {
     align-self: center;
     margin-top: 0.5rem;
-    padding: 0.75rem 3rem;
+    padding: 0.5rem 2.5rem;
     background: linear-gradient(135deg, #a66a38, #7a4a2b);
-    border: 3px solid rgba(180, 140, 80, 0.4);
+    border: 2px solid rgba(180, 140, 80, 0.4);
     color: #fff8e8;
     font-family: 'Cinzel', serif;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: bold;
     border-radius: 30px;
     cursor: pointer;
