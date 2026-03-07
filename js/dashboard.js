@@ -741,6 +741,26 @@ async function loadAdminData() {
     });
     // Load current recipes for management
     renderAdminRecipes();
+
+    // Attach listener for item preview
+    const resSel = document.getElementById('recipeResultItem');
+    if (resSel && !resSel.dataset.listener) {
+        resSel.dataset.listener = 'true';
+        resSel.addEventListener('change', (e) => {
+            const val = e.target.value;
+            const preview = document.getElementById('recipeImagePreview');
+            if (!val || !preview) {
+                if(preview) preview.innerHTML = '';
+                return;
+            }
+            const item = items.find(i => i._id === val);
+            if (item && item.image) {
+                preview.innerHTML = `<img src="${item.image}" alt="Preview" style="width:64px;height:64px;object-fit:contain;margin-top:0.75rem;border-radius:4px;border:1px solid rgba(212,175,55,0.3);background:rgba(0,0,0,0.5);padding:4px;">`;
+            } else {
+                preview.innerHTML = '';
+            }
+        });
+    }
 }
 
 function renderAdminRecipes() {
@@ -812,6 +832,8 @@ window.adminAddRecipe = async function () {
             // Reset recipe form
             document.getElementById('recipeResultName').value = '';
             document.getElementById('recipeResultItem').value = '';
+            const preview = document.getElementById('recipeImagePreview');
+            if (preview) preview.innerHTML = '';
             const firstRow = document.querySelector('#ingredientInputs .ingredient-row');
             if (firstRow) {
                 firstRow.querySelector('.ing-item').value = '';

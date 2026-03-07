@@ -115,23 +115,30 @@ body {
 }
 
 .spell-btn {
-    background: transparent;
-    border: 1px solid var(--gold-dark);
-    color: var(--gold);
-    padding: 0.6rem 1rem;
+    background: linear-gradient(135deg, #1a122a, #100b17);
+    border: 1px solid #554433;
+    color: #a89070;
+    padding: 0.6rem 1.2rem;
     cursor: pointer;
     font-family: 'Cinzel', serif;
     font-size: 0.85rem;
     transition: all 0.3s;
     position: relative;
-    overflow: hidden;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
 }
 
 .spell-btn:hover,
 .spell-btn.active {
-    background: rgba(255, 215, 0, 0.1);
-    box-shadow: 0 0 15px var(--gold-dark);
+    background: linear-gradient(135deg, #2a1b38, #1a1228);
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
     text-shadow: 0 0 5px var(--gold);
+    transform: translateY(-2px);
 }
 
 /* ═══════════════════════════════════════
@@ -589,12 +596,15 @@ body {
 ═══════════════════════════════════════ */
 .Thanaraksh-vault {
     text-align: center;
-    padding: 2rem;
-    border: 6px solid var(--gold-dark);
-    background: linear-gradient(180deg, rgba(26, 17, 6, 0.85) 0%, rgba(13, 13, 13, 0.9) 100%),
-        url('../assets/item/Template4.png') center/cover no-repeat;
-    border-radius: 12px;
+    padding: 6rem 3rem 4rem 3rem;
+    background: url('../assets/item/Template4.png') center/100% 100% no-repeat;
     position: relative;
+    max-width: 520px;
+    margin: 0 auto;
+    min-height: 850px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .vault-gold-pile {
@@ -629,7 +639,7 @@ body {
 }
 
 .huge-balance {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     color: var(--gold);
     text-shadow: 0 0 20px var(--gold);
     margin: 0.5rem 0;
@@ -658,12 +668,12 @@ select.parchment-input {
 }
 
 .goblin-teller {
-    max-width: 450px;
-    margin: 1.5rem auto;
+    width: 100%;
+    margin: 1.5rem 0;
     padding: 1.5rem;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(10, 5, 0, 0.85);
     border-radius: 10px;
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    border: 1px solid rgba(212, 175, 55, 0.2);
     backdrop-filter: blur(8px);
 }
 
@@ -699,9 +709,13 @@ select.parchment-input {
 
 /* Transaction History */
 .transaction-history {
-    max-width: 600px;
-    margin: 2rem auto 0;
+    width: 100%;
+    margin: 0;
+    padding: 1rem;
     text-align: left;
+    background: rgba(10, 5, 0, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 8px;
 }
 
 .tx-row {
