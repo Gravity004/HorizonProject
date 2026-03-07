@@ -11,7 +11,7 @@ const run = async () => {
         if (!teaExists) {
             const tea = new Item({
                 name: 'ชาอัญชัน',
-                description: 'A soothing magical tea that restores a small amount of energy.',
+                description: '+10 HP',
                 type: 'food',
                 rarity: 'common',
                 price: 15,
@@ -29,7 +29,7 @@ const run = async () => {
         if (!tomYumExists) {
             const tomYum = new Item({
                 name: 'ต้มยำ',
-                description: 'A spicy and sour magical soup that restores a massive amount of energy!',
+                description: '+50 HP',
                 type: 'food',
                 rarity: 'rare',
                 price: 50,

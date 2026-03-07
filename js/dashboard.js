@@ -182,7 +182,10 @@ function renderShop(items) {
                 <span class="item-type type-${item.type}">${item.type}</span>
                 <span class="item-rarity-tag rarity-${item.rarity || 'common'}">${(item.rarity || 'common').toUpperCase()}</span>
                 <div class="price-tag">🪙 ${item.price} G</div>
-                <button class="buy-spell-btn" onclick="buyItem('${item._id}')">Acquire</button>
+                <div class="card-buy-row">
+                    <input type="number" id="qty-${item._id}" class="buy-qty-input" min="1" value="1" title="Quantity">
+                    <button class="buy-spell-btn" onclick="buyItem('${item._id}')">Acquire</button>
+                </div>
             </div>
         </div>
     `).join('');
@@ -200,18 +203,20 @@ window.deleteItem = async function (itemId) {
 
 window.buyItem = async function (itemId) {
     const item = currentItems.find(i => i._id === itemId);
-    showConfirm('Acquire Item', `Buy "${item?.name}" for ${item?.price}G?`, async () => {
+    const qtyInput = document.getElementById(`qty-${itemId}`);
+    const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+    showConfirm('Acquire Item', `Buy ${qty}x "${item?.name}" for ${(item?.price || 0) * qty}G?`, async () => {
         try {
             const r = await fetch('/api/shop/buy', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ itemId, quantity: 1 }), credentials: 'include'
+                body: JSON.stringify({ itemId, quantity: qty }), credentials: 'include'
             });
             const data = await r.json();
             if (r.ok) {
                 currentUser.balance = data.balance;
                 renderUserProfile();
                 fetchInventory();
-                spawnEffect('🛍️', `Acquired ${item?.name}!`);
+                spawnEffect('🛍️', `Acquired ${qty}x ${item?.name}!`);
             } else spawnEffect('❌', data.message);
         } catch (err) { spawnEffect('❌', 'Transaction failed'); }
     });
@@ -641,16 +646,71 @@ window.useItem = async function (itemId, itemName) {
 // ═══════════════════════════════════════════════
 let isDailyMagicCasting = false;
 
+function showChestReward(amount) {
+    // Remove any existing chest overlay
+    const old = document.getElementById('chestRewardOverlay');
+    if (old) old.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'chestRewardOverlay';
+    overlay.style.cssText = `
+        position:fixed;top:0;left:0;width:100%;height:100%;
+        z-index:99999;display:flex;flex-direction:column;
+        justify-content:center;align-items:center;
+        background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
+        animation:fadeInBg 0.3s ease;
+    `;
+
+    // Spawn particles
+    const particles = Array.from({length: 20}, (_, i) => {
+        const angle = (i / 20) * 360;
+        const dist = 80 + Math.random() * 80;
+        const x = Math.cos(angle * Math.PI / 180) * dist;
+        const y = Math.sin(angle * Math.PI / 180) * dist;
+        const emojis = ['✨','🌟','💫','🪙','⭐'];
+        return `<span class="chest-particle" style="
+            --px:${x}px;--py:${y}px;--d:${0.3+Math.random()*0.6}s;
+            position:absolute;font-size:1.2rem;
+            animation:burstOut var(--d) ease-out forwards;
+        ">${emojis[Math.floor(Math.random()*emojis.length)]}</span>`;
+    }).join('');
+
+    overlay.innerHTML = `
+        <style>
+            @keyframes fadeInBg { from{opacity:0} to{opacity:1} }
+            @keyframes chestOpen { 0%{transform:translateY(0) scale(1)} 30%{transform:translateY(-10px) scale(1.1)} 60%{transform:translateY(0) scale(1.05)} 100%{transform:scale(1)} }
+            @keyframes burstOut { 0%{transform:translate(0,0) scale(1);opacity:1} 100%{transform:translate(var(--px),var(--py)) scale(0);opacity:0} }
+            @keyframes popIn { from{transform:scale(0.2);opacity:0} to{transform:scale(1);opacity:1} }
+        </style>
+        <div style="position:relative;text-align:center;">
+            <div style="font-size:5rem;animation:chestOpen 0.6s ease forwards;">🎁</div>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">${particles}</div>
+            <div style="animation:popIn 0.4s 0.5s ease both;background:linear-gradient(135deg,#2a1b38,#1a0f28);border:2px solid #d4af37;border-radius:16px;padding:2rem 3rem;margin-top:1rem;box-shadow:0 0 40px rgba(212,175,55,0.5);">
+                <div style="font-size:1rem;color:#d4af37;font-family:'Cinzel',serif;letter-spacing:2px;margin-bottom:0.5rem;">DAILY REWARD</div>
+                <div style="font-size:3rem;color:#fff;font-family:'Cinzel',serif;font-weight:bold;text-shadow:0 0 20px #d4af37;">+${amount} G</div>
+                <div style="color:#a89070;font-size:0.85rem;margin-top:0.5rem;">Galleons received!</div>
+            </div>
+            <button onclick="document.getElementById('chestRewardOverlay').remove()"
+                style="margin-top:1.5rem;padding:0.6rem 2rem;background:linear-gradient(135deg,#d4af37,#b8902e);border:none;border-radius:20px;color:#1a0f28;font-family:'Cinzel',serif;font-weight:bold;cursor:pointer;font-size:0.9rem;">
+                ✓ Claim
+            </button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    // Auto-remove after 6s
+    setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 6000);
+}
+
 window.castDailyMagic = async function () {
     if (isDailyMagicCasting) return;
     const btn = document.getElementById('dailyMagicBtn');
-    if (btn.classList.contains('claimed')) {
+    if (btn && btn.classList.contains('claimed')) {
         spawnEffect('⏳', 'Come back tomorrow at 8:00 AM!');
         return;
     }
 
     isDailyMagicCasting = true;
-    spawnEffect('✨', 'Casting Daily Magic...');
 
     try {
         const response = await fetch('/api/bank/daily', {
@@ -660,17 +720,18 @@ window.castDailyMagic = async function () {
         const data = await response.json();
 
         isDailyMagicCasting = false;
-        
+
         if (response.ok) {
-            btn.classList.add('claimed');
+            if (btn) btn.classList.add('claimed');
             currentUser.balance = data.newBalance;
             renderUserProfile();
             fetchTransactions();
-            spawnEffect('🌟', data.message);
+            // Show treasure chest pop-up
+            showChestReward(data.rewardAmount || 0);
         } else {
             spawnEffect('❌', data.message);
-            if (response.status === 400 && data.message.includes('tomorrow')) {
-                btn.classList.add('claimed');
+            if (response.status === 400 && data.message && data.message.includes('tomorrow')) {
+                if (btn) btn.classList.add('claimed');
             }
         }
     } catch (err) {
@@ -716,23 +777,23 @@ function renderMailbox(gifts) {
     container.innerHTML = gifts.map(gift => {
         const itemName = gift.itemId?.name || 'Unknown Artifact';
         const itemImg = gift.itemId?.image || 'assets/images/placeholder_item.png';
-        const msgHtml = gift.message ? `<p class="gift-msg">"${gift.message}"</p>` : '';
+        const msgHtml = gift.message ? `<p class="gift-msg" style="font-style:italic;font-size:0.9rem;color:#5d3a1a;margin:0.4rem 0;">"${gift.message}"</p>` : '';
         
         return `
-            <div class="gift-card">
-                <div class="gift-header">
-                    <span class="gift-sender">From: ${gift.senderName}</span>
-                    <span class="gift-time">${new Date(gift.timestamp).toLocaleDateString('th-TH')}</span>
+            <div class="gift-card letter-style">
+                <div class="gift-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+                    <span class="gift-sender" style="font-family:'Cinzel',serif;font-size:0.9rem;color:#4e342e;font-weight:bold;">✉ From: ${gift.senderName}</span>
+                    <span class="gift-time" style="font-size:0.75rem;color:#8d6e63;">${new Date(gift.timestamp).toLocaleDateString('th-TH')}</span>
                 </div>
                 ${msgHtml}
-                <div class="gift-body">
-                    <img src="${itemImg}" alt="${itemName}" class="gift-item-img">
-                    <div class="gift-item-details">
-                        <strong>${itemName}</strong>
-                        <small>Qty: ${gift.quantity}</small>
+                <div class="gift-body" style="display:flex;align-items:center;gap:0.8rem;background:rgba(200,170,120,0.25);border-radius:6px;padding:0.6rem;margin:0.5rem 0;">
+                    <img src="${itemImg}" alt="${itemName}" style="width:42px;height:42px;object-fit:contain;border-radius:4px;">
+                    <div>
+                        <strong style="color:#3e2723;font-size:0.9rem;">${itemName}</strong><br>
+                        <small style="color:#6d4c41;">Qty: ${gift.quantity}</small>
                     </div>
                 </div>
-                <button class="claim-gift-btn" onclick="claimGift('${gift._id}')">📦 Claim Gift</button>
+                <button class="letter-send-btn" style="width:100%;margin-top:0.5rem;padding:0.5rem;" onclick="claimGift('${gift._id}')">📦 Claim Gift</button>
             </div>
         `;
     }).join('');

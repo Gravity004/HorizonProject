@@ -414,35 +414,39 @@
     <div id="faintedOverlay" class="fainted-overlay" style="pointer-events: none;">
     </div>
 
-    <!-- Send Gift Modal -->
+    <!-- Send Gift Modal (Letter Style) -->
     <div id="sendGiftModal" class="modal">
-        <div class="modal-content parchment" style="max-width: 450px;">
-            <span class="close-modal" onclick="closeSendGiftModal()">×</span>
-            <h2>Send Gift via Owl</h2>
-            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding:1rem;background:rgba(0,0,0,0.2);border-radius:8px;">
-                <img id="giftModalItemImg" src="" style="width:48px;height:48px;object-fit:contain;">
-                <div>
-                    <strong id="giftModalItemName" style="color:#d4af37;font-size:1.1rem;">Item Name</strong>
-                    <div style="font-size:0.8rem;color:#a89070;" id="giftModalItemQty">You have: 0</div>
+        <div class="letter-modal-outer">
+            <button class="letter-close-btn" onclick="closeSendGiftModal()">✕</button>
+            <div class="letter-parchment">
+                <h2 class="letter-school-title">Rachata School of Wizardry</h2>
+                <div class="letter-item-row">
+                    <img id="giftModalItemImg" src="" class="letter-item-img">
+                    <div>
+                        <strong id="giftModalItemName" class="letter-item-name">Item Name</strong>
+                        <div class="letter-item-qty" id="giftModalItemQty">You have: 0</div>
+                    </div>
                 </div>
+                <input type="hidden" id="giftModalItemId">
+                <div class="letter-fields-row">
+                    <div class="letter-field">
+                        <label class="letter-label">To. ชื่อผู้รับ (Recipient)</label>
+                        <input type="text" id="giftModalRecipient" class="letter-input" placeholder="Discord ID / Username">
+                    </div>
+                    <div class="letter-field">
+                        <label class="letter-label">จำนวน (Quantity)</label>
+                        <input type="number" id="giftModalQuantity" class="letter-input" min="1" value="1">
+                    </div>
+                </div>
+                <div class="letter-field letter-field-full">
+                    <label class="letter-label">ข้อความ (Message)</label>
+                    <textarea id="giftModalMessage" class="letter-input letter-textarea" rows="4" placeholder="Write your message..."></textarea>
+                </div>
+                <button class="letter-send-btn" onclick="submitSendGift()">📨 Send via owl</button>
             </div>
-            
-            <input type="hidden" id="giftModalItemId">
-            <div class="input-group">
-                <label>Recipient Discord ID or Username</label>
-                <input type="text" id="giftModalRecipient" class="parchment-input" placeholder="e.g. nxvxn_">
-            </div>
-            <div class="input-group">
-                <label>Quantity to Send</label>
-                <input type="number" id="giftModalQuantity" class="parchment-input" min="1" value="1">
-            </div>
-            <div class="input-group">
-                <label>Letter Message (Optional)</label>
-                <textarea id="giftModalMessage" class="parchment-input" rows="3" placeholder="Write a nice letter..."></textarea>
-            </div>
-            <button class="conjure-btn" style="width:100%;" onclick="submitSendGift()">📨 Dispatch Owl</button>
         </div>
     </div>
+
 
     <!-- Effects Overlay -->
     <div id="effectsOverlay" class="effects-overlay"></div>
