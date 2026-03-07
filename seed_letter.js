@@ -8,7 +8,7 @@ const run = async () => {
     try {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to target DB.');
-        
+
         const existing = await Item.findOne({ name: 'Parchment Letter' });
         if (existing) {
             console.log('Letter already exists in Shop.');
@@ -24,7 +24,7 @@ const run = async () => {
             description: 'A magical blank parchment for sending formal letters or short messages to other wizards using the Owl Mailbox.',
             type: 'material',
             rarity: 'common',
-            price: 15,
+            price: 5,
             image: base64Img
         });
 

@@ -83,6 +83,34 @@ function renderUserProfile() {
         ).join('');
     }
     updateGoldStacks(currentUser.balance);
+    renderHealthUI();
+}
+
+function renderHealthUI() {
+    const hp = currentUser.health || 0;
+    const maxHp = currentUser.maxHealth || 100;
+    document.getElementById('userHpText').textContent = `${hp}/${maxHp}`;
+    
+    const hpPercentage = Math.max(0, Math.min(100, (hp / maxHp) * 100));
+    document.getElementById('userHpBar').style.width = `${hpPercentage}%`;
+
+    const faintedOverlay = document.getElementById('faintedOverlay');
+    const navButtons = document.querySelectorAll('.spell-btn:not([onclick*="inventory"]):not(#adminTabBtn):not([onclick*="openLogModal"])');
+    
+    if (hp < 30) {
+        // FATIGUED/FAINTED State
+        faintedOverlay.classList.add('active');
+        navButtons.forEach(btn => btn.classList.add('disabled-btn'));
+    } else {
+        // NORMAL State
+        faintedOverlay.classList.remove('active');
+        navButtons.forEach(btn => btn.classList.remove('disabled-btn'));
+    }
+}
+
+window.openRecoveryInventory = function() {
+    document.getElementById('faintedOverlay').classList.remove('active');
+    switchNav('inventory');
 }
 
 function setupAdminControls() {
@@ -98,6 +126,12 @@ function setupAdminControls() {
 // NAVIGATION
 // ═══════════════════════════════════════════════
 window.switchNav = function (tabId) {
+    if (currentUser && currentUser.health < 30 && tabId !== 'inventory' && tabId !== 'admin') {
+        spawnEffect('❌', 'You are too exhausted to do this. Eat food first.');
+        document.getElementById('faintedOverlay').classList.add('active');
+        return;
+    }
+
     document.querySelectorAll('.spell-btn').forEach(btn => btn.classList.remove('active'));
     const tabs = { shop: 'shop', craft: 'crafting', bank: 'bank', inventory: 'inventory', mailbox: 'mailbox', admin: 'admin' };
     document.querySelectorAll('.spell-btn').forEach(btn => {
@@ -591,12 +625,73 @@ window.useItem = async function (itemId, itemName) {
             const data = await r.json();
             if (r.ok) {
                 spawnEffect('🌟', data.message);
+                if (data.newHealth !== undefined) {
+                    currentUser.health = data.newHealth;
+                    renderHealthUI();
+                }
                 fetchInventory();
             } else {
                 spawnEffect('❌', data.message);
             }
         } catch (err) { spawnEffect('❌', 'Failed to use item.'); }
     });
+}
+
+// ═══════════════════════════════════════════════
+// DAILY MAGIC REWARD
+// ═══════════════════════════════════════════════
+let isDailyMagicCasting = false;
+
+window.castDailyMagic = async function () {
+    if (isDailyMagicCasting) return;
+    const btn = document.getElementById('dailyMagicBtn');
+    if (btn.classList.contains('claimed')) {
+        spawnEffect('⏳', 'Come back tomorrow at 8:00 AM!');
+        return;
+    }
+
+    isDailyMagicCasting = true;
+    
+    // Start drawing animation
+    btn.classList.add('casting');
+
+    try {
+        const response = await fetch('/api/bank/daily', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        const data = await response.json();
+
+        // Wait for the SVG to trace (2 seconds based on CSS)
+        setTimeout(() => {
+            btn.classList.remove('casting');
+            btn.classList.add('exploded');
+
+            setTimeout(() => {
+                isDailyMagicCasting = false;
+                btn.classList.remove('exploded');
+                
+                if (response.ok) {
+                    btn.classList.add('claimed');
+                    currentUser.balance = data.newBalance;
+                    renderUserProfile();
+                    fetchTransactions();
+                    spawnEffect('🌟', data.message);
+                } else {
+                    spawnEffect('❌', data.message);
+                    if (response.status === 400 && data.message.includes('tomorrow')) {
+                        btn.classList.add('claimed');
+                    }
+                }
+            }, 1000); // 1s for explosion fade
+        }, 2000);
+
+    } catch (err) {
+        console.error(err);
+        isDailyMagicCasting = false;
+        btn.classList.remove('casting');
+        spawnEffect('❌', 'The spell fizzled...');
+    }
 }
 
 // ═══════════════════════════════════════════════
@@ -733,12 +828,15 @@ async function loadAdminData() {
     const selects = document.querySelectorAll('#recipeResultItem, .ing-item');
     selects.forEach(sel => {
         if (sel.options.length <= 1) {
-            const optionsHtml = items.map(i => `<option value="${i._id}">${i.name} (${i.type})</option>`).join('');
+            const optionsHtml = items.map(i => `<option value="${i._id}" data-img="${i.image || ''}">${i.name} (${i.type})</option>`).join('');
             sel.innerHTML = sel.id === 'recipeResultItem'
                 ? '<option value="">Select existing item (optional)...</option>' + optionsHtml
                 : '<option value="">Select item...</option>' + optionsHtml;
         }
     });
+
+    // Attach listener for ingredient previews
+    document.querySelectorAll('.ing-item').forEach(attachIngredientListener);
     // Load current recipes for management
     renderAdminRecipes();
 
@@ -787,15 +885,38 @@ window.addIngredientRow = function () {
     const items = allItems.length ? allItems : currentItems;
     const row = document.createElement('div');
     row.className = 'ingredient-row';
+    row.style.display = 'flex';
+    row.style.gap = '0.5rem';
+    row.style.alignItems = 'center';
     row.innerHTML = `
-        <select class="parchment-input ing-item">
+        <select class="parchment-input ing-item" style="flex:1;">
             <option value="">Select item...</option>
-            ${items.map(i => `<option value="${i._id}">${i.name} (${i.type})</option>`).join('')}
+            ${items.map(i => `<option value="${i._id}" data-img="${i.image || ''}">${i.name} (${i.type})</option>`).join('')}
         </select>
-        <input type="number" class="parchment-input ing-qty" placeholder="Qty" min="1" value="1">
+        <img src="" class="ing-preview" style="width:32px;height:32px;object-fit:contain;display:none;">
+        <input type="number" class="parchment-input ing-qty" placeholder="Qty" min="1" value="1" style="width:70px;">
         <button class="delete-btn small" onclick="this.parentElement.remove()">×</button>
     `;
     container.appendChild(row);
+    attachIngredientListener(row.querySelector('.ing-item'));
+}
+
+function attachIngredientListener(selectElement) {
+    if(!selectElement || selectElement.dataset.listener) return;
+    selectElement.dataset.listener = 'true';
+    selectElement.addEventListener('change', (e) => {
+        const option = e.target.options[e.target.selectedIndex];
+        const previewEl = e.target.parentElement.querySelector('.ing-preview');
+        if(!previewEl) return;
+        
+        if (option && option.dataset.img) {
+            previewEl.src = option.dataset.img;
+            previewEl.style.display = 'block';
+        } else {
+            previewEl.src = '';
+            previewEl.style.display = 'none';
+        }
+    });
 }
 
 window.adminAddRecipe = async function () {
@@ -838,6 +959,8 @@ window.adminAddRecipe = async function () {
             if (firstRow) {
                 firstRow.querySelector('.ing-item').value = '';
                 firstRow.querySelector('.ing-qty').value = '1';
+                const fPreview = firstRow.querySelector('.ing-preview');
+                if(fPreview) { fPreview.src = ''; fPreview.style.display = 'none'; }
             }
             // Remove extra rows
             document.querySelectorAll('#ingredientInputs .ingredient-row:not(:first-child)').forEach(r => r.remove());
@@ -886,6 +1009,39 @@ window.adminAdjustGold = async function () {
             } else spawnEffect('❌', data.message);
         } catch (err) { console.error(err); }
     });
+}
+
+window.adminAdjustHealth = async function () {
+    const targetUserId = document.getElementById('adminTargetHpUser').value.trim();
+    const healthAmount = document.getElementById('adminHpAmount').value;
+
+    if (!targetUserId || !healthAmount) {
+        spawnEffect('❌', 'Please enter target and HP amount.');
+        return;
+    }
+
+    try {
+        const r = await fetch('/api/users/admin/health', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUserId, healthAmount }),
+            credentials: 'include'
+        });
+        const data = await r.json();
+        if (r.ok) {
+            spawnEffect('✨', data.message);
+            // If admin adjusted THEIR OWN health, reflect immediately
+            if (targetUserId.toLowerCase() === currentUser.username.toLowerCase() || targetUserId === currentUser.discordId) {
+                currentUser.health = data.newHealth;
+                renderHealthUI();
+            }
+            document.getElementById('adminTargetHpUser').value = '';
+            document.getElementById('adminHpAmount').value = '';
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) {
+        spawnEffect('❌', 'Failed to adjust HP.');
+    }
 }
 
 // ═══════════════════════════════════════════════

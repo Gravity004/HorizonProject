@@ -103,6 +103,36 @@ body {
     color: var(--gold);
     font-weight: bold;
     text-shadow: 0 0 5px var(--gold);
+    margin-bottom: 0.5rem;
+}
+
+.health-container {
+    width: 100%;
+    max-width: 250px;
+}
+
+.hp-label {
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+    font-weight: bold;
+    color: #ffcccc;
+}
+
+.hp-bar-bg {
+    width: 100%;
+    height: 12px;
+    background: #331111;
+    border: 1px solid #772222;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.hp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff4444, #ff8888);
+    transition: width 0.5s ease-out;
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
 }
 
 /* ═══════════════════════════════════════
@@ -139,6 +169,12 @@ body {
     box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
     text-shadow: 0 0 5px var(--gold);
     transform: translateY(-2px);
+}
+
+.spell-btn:disabled, .spell-btn.disabled-btn {
+    pointer-events: none;
+    opacity: 0.4;
+    filter: grayscale(1);
 }
 
 /* ═══════════════════════════════════════
@@ -705,6 +741,82 @@ select.parchment-input {
 .goblin-btn:hover {
     background: #b71c1c;
     box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+}
+
+/* ═══════════════════════════════════════
+   DAILY MAGIC
+═══════════════════════════════════════ */
+.daily-magic-circle-container {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.daily-magic-circle-container:hover {
+    transform: scale(1.05);
+}
+
+.daily-magic-circle-container.claimed {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+}
+
+.magic-circle-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.magic-circle-bg {
+    fill: none;
+    stroke: rgba(212, 175, 55, 0.1);
+    stroke-width: 2;
+}
+
+.magic-circle-trace, .magic-star-trace {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 2;
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+    transition: stroke-dashoffset 2s ease-in-out;
+}
+
+/* When casting */
+.daily-magic-circle-container.casting .magic-circle-trace,
+.daily-magic-circle-container.casting .magic-star-trace {
+    stroke-dashoffset: 0;
+    stroke: #fff;
+    filter: drop-shadow(0 0 8px var(--gold));
+}
+
+.magic-core-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, #fff 0%, var(--gold) 50%, transparent 100%);
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* The explosion at the end */
+.daily-magic-circle-container.exploded .magic-core-glow {
+    width: 200px;
+    height: 200px;
+    opacity: 1;
+    animation: fadeOut 1s forwards 0.5s;
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; transform: translate(-50%, -50%) scale(2); }
 }
 
 /* Transaction History */

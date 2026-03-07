@@ -80,13 +80,27 @@ router.post('/use', isAuthenticated, async (req, res) => {
             user.inventory = user.inventory.filter(i => i.itemId.toString() !== itemId);
         }
 
+        const item = await Item.findById(itemId);
+        let healAmount = 0;
+        let healthMsg = '';
+        
+        if (item) {
+            if (item.name === 'ชาอัญชัน') healAmount = 10;
+            else if (item.name === 'ต้มยำ') healAmount = 50;
+
+            if (healAmount > 0) {
+                user.health = Math.min(user.maxHealth, user.health + healAmount);
+                healthMsg = ` (Restored +${healAmount} HP)`;
+            }
+        }
+
         user.markModified('inventory');
         await user.save();
 
-        const item = await Item.findById(itemId);
         res.json({
-            message: `Used ${item ? item.name : 'item'} successfully`,
+            message: `Consumed ${item ? item.name : 'item'} successfully${healthMsg}`,
             itemName: item ? item.name : 'Unknown',
+            newHealth: user.health,
             inventory: user.inventory
         });
     } catch (err) {

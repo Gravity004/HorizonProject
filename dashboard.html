@@ -146,6 +146,12 @@
                         <span class="gold-icon">🪙</span>
                         <span id="userGold" class="gold-amount">0</span> <span class="currency">Galleons</span>
                     </div>
+                    <div class="health-container">
+                        <div class="hp-label">❤️ HP: <span id="userHpText">100/100</span></div>
+                        <div class="hp-bar-bg">
+                            <div class="hp-bar-fill" id="userHpBar" style="width: 100%;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -208,9 +214,22 @@
                 <div class="Thanaraksh-vault">
                     <div class="vault-door">
                         <div class="vault-gold-pile"></div>
-                        <h2>Vault Balance</h2>
                         <div class="huge-balance"><span id="bankBalance">0</span> G</div>
                     </div>
+                    <div class="goblin-teller">
+                        <h3>✨ Daily Magic</h3>
+                        <p style="font-size:0.8rem; color:#a89070; margin-bottom:1rem;">Cast the daily spell to receive a random Galleon blessing (Resets 8:00 AM).</p>
+                        
+                        <div class="daily-magic-circle-container" onclick="castDailyMagic()" id="dailyMagicBtn" title="Cast Daily Magic">
+                            <svg class="magic-circle-svg" viewBox="0 0 100 100">
+                                <circle class="magic-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle class="magic-circle-trace" cx="50" cy="50" r="45"></circle>
+                                <polygon class="magic-star-trace" points="50,5 61,38 95,38 68,58 78,91 50,71 22,91 32,58 5,38 39,38"></polygon>
+                            </svg>
+                            <div class="magic-core-glow"></div>
+                        </div>
+                    </div>
+
                     <div class="goblin-teller">
                         <h3>💸 Transfer Funds</h3>
                         <div class="input-group">
@@ -267,6 +286,20 @@
                         <button onclick="adminAdjustGold()" class="admin-btn">Apply</button>
                     </div>
 
+                    <!-- Admin: Manage Health -->
+                    <div class="admin-card">
+                        <h3>❤️ Manage Health</h3>
+                        <div class="input-group">
+                            <label>Target (Discord username)</label>
+                            <input type="text" id="adminTargetHpUser" class="parchment-input" placeholder="e.g. nxvxn_">
+                        </div>
+                        <div class="input-group">
+                            <label>Set HP To (0-100)</label>
+                            <input type="number" id="adminHpAmount" class="parchment-input" placeholder="100" min="0" max="100">
+                        </div>
+                        <button onclick="adminAdjustHealth()" class="admin-btn" style="background:#5c1a1a;border-color:#8b2a2a;color:#f0e6c8;">Set Health</button>
+                    </div>
+
                     <!-- Admin: Add Recipe -->
                     <div class="admin-card">
                         <h3>📜 Add Recipe</h3>
@@ -286,10 +319,11 @@
                             </select>
                         </div>
                         <div id="ingredientInputs">
-                            <div class="ingredient-row">
-                                <select class="parchment-input ing-item"><option value="">Select item...</option></select>
+                            <div class="ingredient-row" style="display:flex; gap:0.5rem; align-items:center;">
+                                <select class="parchment-input ing-item" style="flex:1;"><option value="">Select item...</option></select>
+                                <img src="" class="ing-preview" style="width:32px;height:32px;object-fit:contain;display:none;">
                                 <input type="number" class="parchment-input ing-qty" placeholder="Qty" min="1"
-                                    value="1">
+                                    value="1" style="width:70px;">
                                 <button class="delete-btn small" onclick="this.parentElement.remove()">×</button>
                             </div>
                         </div>
@@ -370,6 +404,16 @@
                 <button class="confirm-cancel" id="confirmCancelBtn">ยกเลิก</button>
                 <button class="confirm-ok" id="confirmOkBtn">ยืนยัน</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Fainted Block Overlay -->
+    <div id="faintedOverlay" class="fainted-overlay">
+        <div class="fainted-box">
+            <h2 style="color:#ff4444; font-size:2rem; margin:0 0 1rem; text-shadow:0 0 10px #ff0000; font-family:'Cinzel', serif;">FATIGUED</h2>
+            <p>You have fainted from exhaustion (HP is critically low).</p>
+            <p>You must eat food to recover and restore your health.</p>
+            <button class="conjure-btn" style="margin-top:1.5rem;" onclick="openRecoveryInventory()">Open Satchel / Eat Food</button>
         </div>
     </div>
 

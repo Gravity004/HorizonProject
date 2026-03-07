@@ -31,6 +31,71 @@ router.get('/transactions', isAuthenticated, async (req, res) => {
     }
 });
 
+// Daily Reward
+router.post('/daily', isAuthenticated, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const now = new Date();
+        // Shift time to UTC+7 (Thailand)
+        const thTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+        
+        // Define the threshold: Today at 08:00:00 TH time
+        const threshold = new Date(
+            thTime.getUTCFullYear(),
+            thTime.getUTCMonth(),
+            thTime.getUTCDate(),
+            8, 0, 0, 0
+        );
+
+        // If current TH time is before 8 AM, the threshold belongs to *yesterday* 8 AM
+        if (thTime < threshold) {
+            threshold.setUTCDate(threshold.getUTCDate() - 1);
+        }
+
+        // Convert threshold back to UTC for database comparison
+        const utcThreshold = new Date(threshold.getTime() - (7 * 60 * 60 * 1000));
+
+        // Check if user has already claimed since the threshold
+        if (user.lastDailyReward && new Date(user.lastDailyReward) >= utcThreshold) {
+            return res.status(400).json({ 
+                message: 'You have already claimed your daily magic today! The stars will realign tomorrow at 8:00 AM.' 
+            });
+        }
+
+        // Calculate reward (1 to 10 Galleons)
+        const reward = Math.floor(Math.random() * 10) + 1;
+
+        user.balance += reward;
+        user.lastDailyReward = now;
+        await user.save();
+
+        // Log transaction
+        const txId = generateTxId();
+        const transaction = new Transaction({
+            transactionId: txId,
+            type: 'daily_reward',
+            senderId: user._id, // System sending to user
+            senderName: 'Daily Magic',
+            recipientId: user._id,
+            recipientName: user.username,
+            amount: reward,
+            description: `Daily magic convergence reward`
+        });
+        await transaction.save();
+
+        res.json({
+            message: `Magic converges... You found ${reward} Galleons!`,
+            rewardAmount: reward,
+            newBalance: user.balance
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Transfer Funds
 router.post('/transfer', isAuthenticated, async (req, res) => {
     const { recipientId, amount } = req.body;

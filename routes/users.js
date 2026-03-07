@@ -34,4 +34,30 @@ router.get('/all', isAuthenticated, hasRole(['admin', 'professor']), async (req,
     }
 });
 
+// Admin: Adjust user health
+router.post('/admin/health', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+    const { targetUserId, healthAmount } = req.body;
+    const newHealth = parseInt(healthAmount);
+
+    if (isNaN(newHealth) || newHealth < 0) return res.status(400).json({ message: 'Invalid health amount' });
+
+    try {
+        const target = await User.findOne({
+            $or: [{ discordId: targetUserId }, { username: targetUserId }]
+        });
+
+        if (!target) return res.status(404).json({ message: 'User not found' });
+
+        target.health = Math.min(newHealth, target.maxHealth);
+        await target.save();
+
+        res.json({
+            message: `Adjusted ${target.username}'s health to ${target.health}/${target.maxHealth}`,
+            newHealth: target.health
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

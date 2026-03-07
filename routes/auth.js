@@ -58,6 +58,8 @@ router.get('/me', checkGuildMembership, async (req, res) => {
                 roles: user.roles,
                 balance: user.balance,
                 house: user.house,
+                health: user.health || 100,
+                maxHealth: user.maxHealth || 100,
                 inventory: user.inventory
             }
         });
@@ -71,6 +73,8 @@ router.get('/me', checkGuildMembership, async (req, res) => {
                 roles: req.user.roles,
                 balance: req.user.balance,
                 house: req.user.house,
+                health: req.user.health || 100,
+                maxHealth: req.user.maxHealth || 100,
                 inventory: req.user.inventory || []
             }
         });
