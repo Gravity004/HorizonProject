@@ -1484,7 +1484,7 @@ select.parchment-input {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 101;
-    max-width: 900px;
+    max-width: 1200px;
     width: 96vw;
     max-height: 90vh;
     overflow-y: auto;
