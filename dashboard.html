@@ -21,6 +21,7 @@
             align-items: center;
             gap: 0.8rem;
         }
+
         .top-pill-btn {
             background: linear-gradient(135deg, #2a1b38, #1a1228);
             border: 1px solid #8b6914;
@@ -30,19 +31,21 @@
             font-family: 'Cinzel', serif;
             font-size: 0.8rem;
             text-decoration: none;
-            box-shadow: 0 0 10px rgba(139,105,20,0.3);
+            box-shadow: 0 0 10px rgba(139, 105, 20, 0.3);
             transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 0.4rem;
             cursor: pointer;
         }
+
         .top-pill-btn:hover {
             background: linear-gradient(135deg, #3a2548, #2a1b38);
-            box-shadow: 0 0 20px rgba(212,175,55,0.6);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
             transform: translateY(-2px);
             color: #fff;
         }
+
         .top-pill-btn.claimed {
             opacity: 0.5;
             filter: grayscale(0.8);
@@ -55,12 +58,16 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,.65);
+            background: rgba(0, 0, 0, .65);
             z-index: 20000;
             align-items: center;
             justify-content: center;
         }
-        .confirm-overlay.active { display: flex; }
+
+        .confirm-overlay.active {
+            display: flex;
+        }
+
         .confirm-box {
             background: #1a1228;
             border: 2px solid #8b6914;
@@ -69,31 +76,128 @@
             max-width: 420px;
             width: 90%;
             text-align: center;
-            box-shadow: 0 0 40px rgba(139,105,20,.4);
+            box-shadow: 0 0 40px rgba(139, 105, 20, .4);
             font-family: 'Cinzel', serif;
             color: #f0e6c8;
         }
-        .confirm-box h3 { margin: 0 0 .75rem; font-size: 1.1rem; color: #d4af37; }
-        .confirm-box p  { margin: 0 0 1.5rem; font-size: .9rem; line-height: 1.5; }
-        .confirm-btns   { display: flex; gap: .75rem; justify-content: center; }
-        .confirm-ok  { background: #8b6914; color: #fff; border: none; padding: .5rem 1.5rem; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: .85rem; transition: background .2s; }
-        .confirm-ok:hover { background: #d4af37; }
-        .confirm-cancel { background: transparent; color: #a89070; border: 1px solid #554433; padding: .5rem 1.5rem; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: .85rem; transition: all .2s; }
-        .confirm-cancel:hover { border-color: #8b6914; color: #d4af37; }
+
+        .confirm-box h3 {
+            margin: 0 0 .75rem;
+            font-size: 1.1rem;
+            color: #d4af37;
+        }
+
+        .confirm-box p {
+            margin: 0 0 1.5rem;
+            font-size: .9rem;
+            line-height: 1.5;
+        }
+
+        .confirm-btns {
+            display: flex;
+            gap: .75rem;
+            justify-content: center;
+        }
+
+        .confirm-ok {
+            background: #8b6914;
+            color: #fff;
+            border: none;
+            padding: .5rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: .85rem;
+            transition: background .2s;
+        }
+
+        .confirm-ok:hover {
+            background: #d4af37;
+        }
+
+        .confirm-cancel {
+            background: transparent;
+            color: #a89070;
+            border: 1px solid #554433;
+            padding: .5rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: .85rem;
+            transition: all .2s;
+        }
+
+        .confirm-cancel:hover {
+            border-color: #8b6914;
+            color: #d4af37;
+        }
 
         /* ── Log Modal ── */
-        .log-modal-content { max-width: 760px; max-height: 80vh; overflow-y: auto; }
-        .log-row { display: grid; grid-template-columns: auto 1fr auto; gap: .5rem 1rem; align-items: center; padding: .55rem .75rem; border-bottom: 1px solid #2a2030; font-size: .8rem; }
-        .log-row:nth-child(even) { background: rgba(255,255,255,.03); }
-        .log-type  { font-weight: 700; padding: .15rem .4rem; border-radius: 4px; font-size: .7rem; text-transform: uppercase; }
-        .log-type.transfer   { background: #1a3a5c; color: #6ab0f5; }
-        .log-type.purchase   { background: #1a3d1a; color: #6af56a; }
-        .log-type.craft      { background: #3a1a3a; color: #c96af5; }
-        .log-type.admin_adjust { background: #3a2a00; color: #f5c86a; }
-        .log-time  { color: #6a5a3a; font-size: .72rem; }
-        .log-amount { font-weight: 700; white-space: nowrap; }
-        .log-amount.pos { color: #6af56a; }
-        .log-amount.neg { color: #f56a6a; }
+        .log-modal-content {
+            max-width: 760px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .log-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: .5rem 1rem;
+            align-items: center;
+            padding: .55rem .75rem;
+            border-bottom: 1px solid #2a2030;
+            font-size: .8rem;
+        }
+
+        .log-row:nth-child(even) {
+            background: rgba(255, 255, 255, .03);
+        }
+
+        .log-type {
+            font-weight: 700;
+            padding: .15rem .4rem;
+            border-radius: 4px;
+            font-size: .7rem;
+            text-transform: uppercase;
+        }
+
+        .log-type.transfer {
+            background: #1a3a5c;
+            color: #6ab0f5;
+        }
+
+        .log-type.purchase {
+            background: #1a3d1a;
+            color: #6af56a;
+        }
+
+        .log-type.craft {
+            background: #3a1a3a;
+            color: #c96af5;
+        }
+
+        .log-type.admin_adjust {
+            background: #3a2a00;
+            color: #f5c86a;
+        }
+
+        .log-time {
+            color: #6a5a3a;
+            font-size: .72rem;
+        }
+
+        .log-amount {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .log-amount.pos {
+            color: #6af56a;
+        }
+
+        .log-amount.neg {
+            color: #f56a6a;
+        }
 
         /* ── Stock Item modal submit button ── */
         .conjure-btn {
@@ -110,33 +214,146 @@
             cursor: pointer;
             transition: all .2s;
         }
-        .conjure-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(212,175,55,.4); }
+
+        .conjure-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(212, 175, 55, .4);
+        }
 
         /* File clear button */
-        .file-clear-btn { background: #5c1a1a; color: #f56a6a; border: 1px solid #8b2a2a; padding: .25rem .6rem; border-radius: 4px; cursor: pointer; font-size: .75rem; margin-left: .4rem; vertical-align: middle; }
-        .file-clear-btn:hover { background: #8b2a2a; }
+        .file-clear-btn {
+            background: #5c1a1a;
+            color: #f56a6a;
+            border: 1px solid #8b2a2a;
+            padding: .25rem .6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: .75rem;
+            margin-left: .4rem;
+            vertical-align: middle;
+        }
+
+        .file-clear-btn:hover {
+            background: #8b2a2a;
+        }
 
         /* Recipe result name input */
-        #recipeResultName { margin-top: .5rem; }
+        #recipeResultName {
+            margin-top: .5rem;
+        }
 
         /* ── Gift / Mailbox ── */
-        .mailbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-        .gift-card { background: rgba(0,0,0,0.25); border: 1px solid #554433; border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; transition: border-color .2s; }
-        .gift-card:hover { border-color: #8b6914; }
-        .gift-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(139,105,20,0.3); padding-bottom: .75rem; }
-        .gift-sender { font-weight: 700; color: #d4af37; font-size: 1.1rem; }
-        .gift-time { font-size: 0.75rem; color: #a89070; }
-        .gift-body { display: flex; gap: 1rem; align-items: center; }
-        .gift-item-img { width: 48px; height: 48px; object-fit: contain; }
-        .gift-item-details { display: flex; flex-direction: column; }
-        .gift-msg { padding: .75rem; background: rgba(0,0,0,0.4); border-left: 3px solid #6ab0f5; font-style: italic; font-size: 0.9rem; color: #e0d0b0; border-radius: 4px; margin: 0;}
-        .claim-gift-btn { width: 100%; background: #2a3d2a; color: #6af56a; border: 1px solid #3d5c3d; padding: .65rem; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-weight: 700; transition: all .2s; }
-        .claim-gift-btn:hover { background: #3d5c3d; color: #fff; }
-        
-        .inv-actions { display: flex; gap: .5rem; justify-content: center; margin-top: auto; }
-        .use-item-btn, .gift-item-btn { flex: 1; padding: .4rem 0; font-size: .8rem; }
-        .gift-item-btn { background: #1a3a5c; border-color: #2a5c8f; color: #6ab0f5; }
-        .gift-item-btn:hover { background: #2a5c8f; color: #fff; }
+        .mailbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .gift-card {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid #554433;
+            border-radius: 8px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: border-color .2s;
+        }
+
+        .gift-card:hover {
+            border-color: #8b6914;
+        }
+
+        .gift-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid rgba(139, 105, 20, 0.3);
+            padding-bottom: .75rem;
+        }
+
+        .gift-sender {
+            font-weight: 700;
+            color: #d4af37;
+            font-size: 1.1rem;
+        }
+
+        .gift-time {
+            font-size: 0.75rem;
+            color: #a89070;
+        }
+
+        .gift-body {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .gift-item-img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .gift-item-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gift-msg {
+            padding: .75rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 3px solid #6ab0f5;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: #e0d0b0;
+            border-radius: 4px;
+            margin: 0;
+        }
+
+        .claim-gift-btn {
+            width: 100%;
+            background: #2a3d2a;
+            color: #6af56a;
+            border: 1px solid #3d5c3d;
+            padding: .65rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            transition: all .2s;
+        }
+
+        .claim-gift-btn:hover {
+            background: #3d5c3d;
+            color: #fff;
+        }
+
+        .inv-actions {
+            display: flex;
+            gap: .5rem;
+            justify-content: center;
+            margin-top: auto;
+        }
+
+        .use-item-btn,
+        .gift-item-btn {
+            flex: 1;
+            padding: .4rem 0;
+            font-size: .8rem;
+        }
+
+        .gift-item-btn {
+            background: #1a3a5c;
+            border-color: #2a5c8f;
+            color: #6ab0f5;
+        }
+
+        .gift-item-btn:hover {
+            background: #2a5c8f;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -176,7 +393,8 @@
                 <button class="spell-btn" onclick="switchNav('craft')">⚗️ Crafting Station</button>
                 <button class="spell-btn" onclick="switchNav('bank')">🏦 Thanaraksh Bank</button>
                 <button class="spell-btn" onclick="switchNav('inventory')">🎒 Inventory</button>
-                <button class="spell-btn" onclick="switchNav('mailbox')">📮 Mailbox <span id="mailBadge" class="badge role-admin hidden" style="font-size:0.6rem;padding:0.1rem 0.3rem">!</span></button>
+                <button class="spell-btn" onclick="switchNav('mailbox')">📮 Mailbox <span id="mailBadge"
+                        class="badge role-admin hidden" style="font-size:0.6rem;padding:0.1rem 0.3rem">!</span></button>
                 <button class="spell-btn admin-only hidden" id="adminTabBtn" onclick="switchNav('admin')">⚙️
                     Admin</button>
                 <button class="spell-btn admin-only hidden" onclick="openLogModal()">📋 Log</button>
@@ -260,7 +478,8 @@
             <!-- MAILBOX SECTION -->
             <section id="mailbox" class="magic-section">
                 <h2>📮 Owl Mailbox</h2>
-                <p style="color:#a89070; margin-bottom: 1rem; font-size: 0.9rem;">Check your incoming gifts and letters.</p>
+                <p style="color:#a89070; margin-bottom: 1rem; font-size: 0.9rem;">Check your incoming gifts and letters.
+                </p>
                 <div id="mailboxContainer" class="mailbox-grid"></div>
             </section>
 
@@ -297,9 +516,11 @@
                         </div>
                         <div class="input-group">
                             <label>Set HP To (0-100)</label>
-                            <input type="number" id="adminHpAmount" class="parchment-input" placeholder="100" min="0" max="100">
+                            <input type="number" id="adminHpAmount" class="parchment-input" placeholder="100" min="0"
+                                max="100">
                         </div>
-                        <button onclick="adminAdjustHealth()" class="admin-btn" style="background:#5c1a1a;border-color:#8b2a2a;color:#f0e6c8;">Set Health</button>
+                        <button onclick="adminAdjustHealth()" class="admin-btn"
+                            style="background:#5c1a1a;border-color:#8b2a2a;color:#f0e6c8;">Set Health</button>
                     </div>
 
                     <!-- Admin: Add Recipe -->
@@ -307,9 +528,13 @@
                         <h3>📜 Add Recipe</h3>
                         <div class="input-group">
                             <label>Result Item Name (custom)</label>
-                            <input type="text" id="recipeResultName" class="parchment-input" placeholder="e.g. Dragon Potion">
-                            <label style="margin-top:.5rem; font-size:.8rem; color:#a89070;">— or pick from shop —</label>
-                            <select id="recipeResultItem" class="parchment-input"><option value="">Select existing item (optional)...</option></select>
+                            <input type="text" id="recipeResultName" class="parchment-input"
+                                placeholder="e.g. Dragon Potion">
+                            <label style="margin-top:.5rem; font-size:.8rem; color:#a89070;">— or pick from shop
+                                —</label>
+                            <select id="recipeResultItem" class="parchment-input">
+                                <option value="">Select existing item (optional)...</option>
+                            </select>
                             <div id="recipeImagePreview" style="text-align: center;"></div>
                         </div>
                         <div class="input-group">
@@ -322,10 +547,13 @@
                         </div>
                         <div id="ingredientInputs">
                             <div class="ingredient-row" style="display:flex; gap:0.5rem; align-items:center;">
-                                <select class="parchment-input ing-item" style="flex:1;"><option value="">Select item...</option></select>
-                                <img src="" class="ing-preview" style="width:32px;height:32px;object-fit:contain;display:none;">
-                                <input type="number" class="parchment-input ing-qty" placeholder="Qty" min="1"
-                                    value="1" style="width:70px;">
+                                <select class="parchment-input ing-item" style="flex:1;">
+                                    <option value="">Select item...</option>
+                                </select>
+                                <img src="" class="ing-preview"
+                                    style="width:32px;height:32px;object-fit:contain;display:none;">
+                                <input type="number" class="parchment-input ing-qty" placeholder="Qty" min="1" value="1"
+                                    style="width:70px;">
                                 <button class="delete-btn small" onclick="this.parentElement.remove()">×</button>
                             </div>
                         </div>
@@ -368,14 +596,17 @@
                     <label class="upload-label">Item Image</label>
                     <div style="display:flex;align-items:center;gap:.5rem;">
                         <input type="file" id="itemImageFile" accept="image/*" class="parchment-input" style="flex:1;">
-                        <button type="button" class="file-clear-btn" id="fileClearBtn" onclick="clearFileInput()" title="Remove file">✕</button>
+                        <button type="button" class="file-clear-btn" id="fileClearBtn" onclick="clearFileInput()"
+                            title="Remove file">✕</button>
                     </div>
                     <span class="upload-or">— or paste URL —</span>
                     <input type="text" name="image" id="itemImageUrl" placeholder="Image URL" class="parchment-input">
                     <div id="imagePreview" class="image-preview"></div>
                 </div>
                 <button type="submit" class="conjure-btn">✨ Conjure Item</button>
-                <button type="button" class="admin-btn" style="display:block;margin:.5rem auto 0;background:transparent;border:1px solid #554433;color:#a89070;" onclick="cancelAdminModal()">Cancel</button>
+                <button type="button" class="admin-btn"
+                    style="display:block;margin:.5rem auto 0;background:transparent;border:1px solid #554433;color:#a89070;"
+                    onclick="cancelAdminModal()">Cancel</button>
             </form>
         </div>
     </div>
@@ -417,9 +648,9 @@
     <!-- Send Gift Modal (Letter Style) -->
     <div id="sendGiftModal" class="modal">
         <div class="letter-modal-outer">
-            <button class="letter-close-btn" onclick="closeSendGiftModal()">✕</button>
             <div class="letter-parchment">
-                <h2 class="letter-school-title">Rachata School of Wizardry</h2>
+                <button class="letter-close-btn" onclick="closeSendGiftModal()">✕</button>
+                <!-- No text title — parchment image contains the calligraphic header -->
                 <div class="letter-item-row">
                     <img id="giftModalItemImg" src="" class="letter-item-img">
                     <div>
@@ -431,7 +662,8 @@
                 <div class="letter-fields-row">
                     <div class="letter-field">
                         <label class="letter-label">To. ชื่อผู้รับ (Recipient)</label>
-                        <input type="text" id="giftModalRecipient" class="letter-input" placeholder="Discord ID / Username">
+                        <input type="text" id="giftModalRecipient" class="letter-input"
+                            placeholder="Discord ID / Username">
                     </div>
                     <div class="letter-field">
                         <label class="letter-label">จำนวน (Quantity)</label>
@@ -440,13 +672,13 @@
                 </div>
                 <div class="letter-field letter-field-full">
                     <label class="letter-label">ข้อความ (Message)</label>
-                    <textarea id="giftModalMessage" class="letter-input letter-textarea" rows="4" placeholder="Write your message..."></textarea>
+                    <textarea id="giftModalMessage" class="letter-input letter-textarea" rows="4"
+                        placeholder="Write your message..."></textarea>
                 </div>
-                <button class="letter-send-btn" onclick="submitSendGift()">📨 Send via owl</button>
+                <button class="letter-send-btn" onclick="submitSendGift()">Send via owl</button>
             </div>
         </div>
     </div>
-
 
     <!-- Effects Overlay -->
     <div id="effectsOverlay" class="effects-overlay"></div>

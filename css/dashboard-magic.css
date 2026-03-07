@@ -1469,28 +1469,30 @@ select.parchment-input {
 }
 
 .letter-parchment {
-    background: url('../assets/images/LetterTemplate.png') center/cover no-repeat;
+    background: url('../assets/images/LetterTemplate.png') center/100% 100% no-repeat;
     border-radius: 6px;
-    padding: 2rem 3rem 2.5rem;
+    padding: 2.5rem 3.5rem 3.5rem;
     position: relative;
     box-shadow: 0 8px 40px rgba(0,0,0,0.8);
-    min-height: 480px;
+    min-height: 520px;
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 1.2rem;
+    box-sizing: border-box;
 }
 
 .letter-close-btn {
     position: absolute;
-    top: -14px;
-    right: -14px;
-    width: 34px;
-    height: 34px;
-    background: #1a0f28;
-    border: 2px solid #d4af37;
-    color: #d4af37;
+    top: 15px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 2px solid #a66a38;
+    color: #a66a38;
     border-radius: 50%;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
     cursor: pointer;
     z-index: 10;
     display: flex;
@@ -1498,40 +1500,38 @@ select.parchment-input {
     justify-content: center;
     transition: 0.2s;
 }
-.letter-close-btn:hover { background: #d4af37; color: #1a0f28; }
+.letter-close-btn:hover { background: rgba(166, 106, 56, 0.2); color: #7a4a2b; border-color: #7a4a2b; }
 
 .letter-school-title {
-    font-family: 'Cinzel Decorative', 'Cinzel', serif;
-    font-size: 1.3rem;
-    text-align: center;
-    color: #7a4f1a;
-    text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
-    margin: 0;
-    letter-spacing: 1px;
+    display: none; /* removed from HTML, hiding just in case */
 }
 
 .letter-item-row {
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: rgba(200,170,120,0.3);
-    border: 1px solid rgba(120,80,30,0.4);
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
+    background: rgba(185, 165, 135, 0.4);
+    border: 2px solid rgba(140, 100, 50, 0.4);
+    border-radius: 0;
+    padding: 0.5rem 1rem;
+    width: 65%;
+    margin: 1rem auto 0;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
 }
 
 .letter-item-img {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     object-fit: contain;
     border-radius: 4px;
-    background: rgba(0,0,0,0.1);
+    background: #000;
+    border: 1px solid #c8a060;
 }
 
 .letter-item-name {
-    font-size: 1rem;
-    color: #3e2723;
-    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: #5c3a21;
+    font-family: 'Cinzel', 'Playfair Display', serif;
     font-weight: bold;
 }
 
@@ -1558,36 +1558,37 @@ select.parchment-input {
 }
 
 .letter-label {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-family: 'Cinzel', serif;
     color: #4e342e;
     font-weight: bold;
+    text-shadow: 0 0 1px rgba(255,255,255,0.4);
 }
 
 .letter-input {
-    background: rgba(255,255,255,0.35);
-    border: 1px solid rgba(120,80,30,0.5);
+    background: rgba(210, 185, 145, 0.4);
+    border: 1px solid rgba(140, 100, 50, 0.5);
     border-radius: 4px;
-    padding: 0.55rem 0.75rem;
-    font-family: 'Playfair Display', serif;
-    font-size: 0.95rem;
+    padding: 0.65rem 0.75rem;
+    font-family: 'Sarabun', 'Playfair Display', serif;
+    font-size: 1rem;
     color: #3e2723;
-    transition: border-color 0.2s;
+    transition: background 0.2s, border-color 0.2s;
 }
-.letter-input::placeholder { color: #a08060; }
-.letter-input:focus { outline: none; border-color: #7a4f1a; background: rgba(255,255,255,0.5); }
+.letter-input::placeholder { color: #8a6b52; opacity: 0.7; }
+.letter-input:focus { outline: none; border-color: #5c3a21; background: rgba(210, 185, 145, 0.6); }
 
 .letter-textarea { resize: vertical; min-height: 90px; }
 
 .letter-send-btn {
     align-self: center;
-    margin-top: auto;
-    padding: 0.65rem 2.5rem;
-    background: linear-gradient(135deg, #8d5524, #6d4c41);
-    border: 2px solid #c8a060;
+    margin-top: 0.5rem;
+    padding: 0.75rem 3rem;
+    background: linear-gradient(135deg, #a66a38, #7a4a2b);
+    border: 3px solid rgba(180, 140, 80, 0.4);
     color: #fff8e8;
     font-family: 'Cinzel', serif;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     font-weight: bold;
     border-radius: 30px;
     cursor: pointer;
