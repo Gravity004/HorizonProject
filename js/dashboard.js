@@ -9,6 +9,30 @@ let currentRecipes = [];
 let allItems = []; // For admin dropdowns
 
 // ═══════════════════════════════════════════════
+// CUSTOM CONFIRM DIALOG
+// ═══════════════════════════════════════════════
+function showConfirm(title, message, onOk, onCancel) {
+    const overlay = document.getElementById('confirmOverlay');
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    overlay.classList.add('active');
+
+    const okBtn = document.getElementById('confirmOkBtn');
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+
+    function close() {
+        overlay.classList.remove('active');
+        okBtn.removeEventListener('click', handleOk);
+        cancelBtn.removeEventListener('click', handleCancel);
+    }
+    function handleOk() { close(); if (onOk) onOk(); }
+    function handleCancel() { close(); if (onCancel) onCancel(); }
+
+    okBtn.addEventListener('click', handleOk);
+    cancelBtn.addEventListener('click', handleCancel);
+}
+
+// ═══════════════════════════════════════════════
 // AUTHENTICATION
 // ═══════════════════════════════════════════════
 async function checkAuth() {
@@ -130,37 +154,55 @@ function renderShop(items) {
 }
 
 window.deleteItem = async function (itemId) {
-    if (!confirm('Permanently remove this item from the market?')) return;
-    try {
-        const r = await fetch(`/api/shop/${itemId}`, { method: 'DELETE', credentials: 'include' });
-        if (r.ok) { spawnEffect('✨', 'Item vanished!'); fetchShopItems(); }
-        else alert('Failed to remove item.');
-    } catch (err) { console.error(err); }
+    showConfirm('Remove Item', 'Permanently remove this item from the market?', async () => {
+        try {
+            const r = await fetch(`/api/shop/${itemId}`, { method: 'DELETE', credentials: 'include' });
+            if (r.ok) { spawnEffect('✨', 'Item vanished!'); fetchShopItems(); }
+            else alert('Failed to remove item.');
+        } catch (err) { console.error(err); }
+    });
 }
 
 window.buyItem = async function (itemId) {
     const item = currentItems.find(i => i._id === itemId);
-    if (!confirm(`Buy "${item?.name}" for ${item?.price}G?`)) return;
-    try {
-        const r = await fetch('/api/shop/buy', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ itemId, quantity: 1 }), credentials: 'include'
-        });
-        const data = await r.json();
-        if (r.ok) {
-            currentUser.balance = data.balance;
-            renderUserProfile();
-            fetchInventory();
-            spawnEffect('🛍️', `Acquired ${item?.name}!`);
-        } else alert(data.message);
-    } catch (err) { alert('Transaction failed'); }
+    showConfirm('Acquire Item', `Buy "${item?.name}" for ${item?.price}G?`, async () => {
+        try {
+            const r = await fetch('/api/shop/buy', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId, quantity: 1 }), credentials: 'include'
+            });
+            const data = await r.json();
+            if (r.ok) {
+                currentUser.balance = data.balance;
+                renderUserProfile();
+                fetchInventory();
+                spawnEffect('🛍️', `Acquired ${item?.name}!`);
+            } else spawnEffect('❌', data.message);
+        } catch (err) { spawnEffect('❌', 'Transaction failed'); }
+    });
 }
 
 // ═══════════════════════════════════════════════
 // ADMIN MODAL (Add Item)
 // ═══════════════════════════════════════════════
 window.openAdminModal = () => document.getElementById('adminModal').style.display = 'block';
+
 window.closeAdminModal = () => document.getElementById('adminModal').style.display = 'none';
+
+window.cancelAdminModal = function () {
+    // Clear all form fields
+    const form = document.getElementById('addItemForm');
+    if (form) form.reset();
+    clearFileInput();
+    document.getElementById('imagePreview').innerHTML = '';
+    closeAdminModal();
+};
+
+window.clearFileInput = function () {
+    const fileInput = document.getElementById('itemImageFile');
+    if (fileInput) fileInput.value = '';
+    document.getElementById('imagePreview').innerHTML = '';
+};
 
 window.handleAddItem = async function (e) {
     e.preventDefault();
@@ -182,12 +224,12 @@ window.handleAddItem = async function (e) {
                 imageUrl = result.imageUrl;
             } else {
                 const err = await uploadRes.json();
-                alert('Image upload failed: ' + err.message);
+                spawnEffect('❌', 'Upload failed: ' + err.message);
                 return;
             }
         } catch (err) {
             console.error('Upload error:', err);
-            alert('Image upload failed');
+            spawnEffect('❌', 'Image upload failed');
             return;
         }
     }
@@ -203,13 +245,11 @@ window.handleAddItem = async function (e) {
         });
         if (r.ok) {
             spawnEffect('📦', 'Item registered!');
-            closeAdminModal();
+            window.cancelAdminModal();
             fetchShopItems();
-            e.target.reset();
-            document.getElementById('imagePreview').innerHTML = '';
         } else {
             const data = await r.json();
-            alert('Failed: ' + data.message);
+            spawnEffect('❌', 'Failed: ' + data.message);
         }
     } catch (err) { console.error(err); }
 }
@@ -223,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.files.length > 0) {
                 const reader = new FileReader();
                 reader.onload = (ev) => {
-                    preview.innerHTML = `<img src="${ev.target.result}" alt="Preview">`;
+                    preview.innerHTML = `<img src="${ev.target.result}" alt="Preview" style="max-width:120px;border-radius:8px;margin-top:.5rem;">`;
                 };
                 reader.readAsDataURL(e.target.files[0]);
             } else {
@@ -244,6 +284,10 @@ async function fetchRecipes() {
     } catch (err) { console.error('Failed to fetch recipes', err); }
 }
 
+function getRecipeName(recipe) {
+    return recipe.resultItemId?.name || recipe.resultItemName || 'Unknown';
+}
+
 function renderRecipes(recipes) {
     const list = document.getElementById('recipeList');
     if (!list) return;
@@ -253,7 +297,7 @@ function renderRecipes(recipes) {
     }
     list.innerHTML = recipes.map(recipe => `
         <div class="scroll-item" onclick="selectRecipe('${recipe._id}')">
-            <h4>${recipe.resultItemId?.name || 'Unknown'}</h4>
+            <h4>${getRecipeName(recipe)}</h4>
             <small class="craft-type-tag">${recipe.craftingType}</small>
         </div>
     `).join('');
@@ -268,7 +312,7 @@ window.selectRecipe = function (recipeId) {
     event?.target?.closest('.scroll-item')?.classList.add('active');
 
     document.getElementById('craftingTitle').textContent =
-        `Brewing: ${selectedRecipe.resultItemId?.name || 'Unknown'}`;
+        `Brewing: ${getRecipeName(selectedRecipe)}`;
 
     const container = document.getElementById('craftingIngredients');
     const userInv = currentUser.inventory || [];
@@ -409,31 +453,31 @@ window.transferFunds = async function () {
     const recipient = document.getElementById('recipientId').value.trim();
     const amount = parseInt(document.getElementById('transferAmount').value);
     if (!recipient || !amount || amount <= 0) {
-        alert('Please enter a valid recipient and amount.'); return;
+        spawnEffect('❌', 'Please enter a valid recipient and amount.'); return;
     }
-    if (!confirm(`Transfer ${amount}G to "${recipient}"?`)) return;
+    showConfirm('Transfer Funds', `Transfer ${amount}G to "${recipient}"?`, async () => {
+        // Gold flying animation
+        spawnGoldTransfer();
 
-    // Gold flying animation
-    spawnGoldTransfer();
-
-    try {
-        const r = await fetch('/api/bank/transfer', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ recipientId: recipient, amount }), credentials: 'include'
-        });
-        const data = await r.json();
-        if (r.ok) {
-            currentUser.balance = data.newBalance;
-            renderUserProfile();
-            fetchTransactions();
-            document.getElementById('transferAmount').value = '';
-            document.getElementById('recipientId').value = '';
-            // Show receipt
-            showTransferReceipt(data.transaction);
-        } else {
-            alert(data.message);
-        }
-    } catch (err) { alert('The transfer owl got lost.'); }
+        try {
+            const r = await fetch('/api/bank/transfer', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipientId: recipient, amount }), credentials: 'include'
+            });
+            const data = await r.json();
+            if (r.ok) {
+                currentUser.balance = data.newBalance;
+                renderUserProfile();
+                fetchTransactions();
+                document.getElementById('transferAmount').value = '';
+                document.getElementById('recipientId').value = '';
+                // Show receipt
+                showTransferReceipt(data.transaction);
+            } else {
+                spawnEffect('❌', data.message);
+            }
+        } catch (err) { spawnEffect('❌', 'The transfer owl got lost.'); }
+    });
 }
 
 function spawnGoldTransfer() {
@@ -530,24 +574,24 @@ function renderInventory() {
 }
 
 window.useItem = async function (itemId, itemName) {
-    if (!confirm(`Use "${itemName}"? It will be consumed from your inventory.`)) return;
+    showConfirm('Use Item', `Use "${itemName}"? It will be consumed from your inventory.`, async () => {
+        // Sparkle effect
+        spawnEffect('✨', `Using ${itemName}...`);
 
-    // Sparkle effect
-    spawnEffect('✨', `Using ${itemName}...`);
-
-    try {
-        const r = await fetch('/api/shop/use', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ itemId }), credentials: 'include'
-        });
-        const data = await r.json();
-        if (r.ok) {
-            spawnEffect('🌟', data.message);
-            fetchInventory();
-        } else {
-            alert(data.message);
-        }
-    } catch (err) { alert('Failed to use item.'); }
+        try {
+            const r = await fetch('/api/shop/use', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId }), credentials: 'include'
+            });
+            const data = await r.json();
+            if (r.ok) {
+                spawnEffect('🌟', data.message);
+                fetchInventory();
+            } else {
+                spawnEffect('❌', data.message);
+            }
+        } catch (err) { spawnEffect('❌', 'Failed to use item.'); }
+    });
 }
 
 // ═══════════════════════════════════════════════
@@ -559,8 +603,10 @@ async function loadAdminData() {
     const selects = document.querySelectorAll('#recipeResultItem, .ing-item');
     selects.forEach(sel => {
         if (sel.options.length <= 1) {
-            sel.innerHTML = '<option value="">Select item...</option>' +
-                items.map(i => `<option value="${i._id}">${i.name} (${i.type})</option>`).join('');
+            const optionsHtml = items.map(i => `<option value="${i._id}">${i.name} (${i.type})</option>`).join('');
+            sel.innerHTML = sel.id === 'recipeResultItem'
+                ? '<option value="">Select existing item (optional)...</option>' + optionsHtml
+                : '<option value="">Select item...</option>' + optionsHtml;
         }
     });
     // Load current recipes for management
@@ -577,7 +623,7 @@ function renderAdminRecipes() {
     container.innerHTML = currentRecipes.map(r => `
         <div class="scroll-item admin-recipe-item">
             <div>
-                <strong>${r.resultItemId?.name || 'Unknown'}</strong>
+                <strong>${getRecipeName(r)}</strong>
                 <small>(${r.craftingType})</small>
                 <br><small>Ingredients: ${r.ingredients.map(i => i.itemId?.name || '?').join(', ')}</small>
             </div>
@@ -594,7 +640,7 @@ window.addIngredientRow = function () {
     row.innerHTML = `
         <select class="parchment-input ing-item">
             <option value="">Select item...</option>
-            ${items.map(i => `<option value="${i._id}">${i.name}</option>`).join('')}
+            ${items.map(i => `<option value="${i._id}">${i.name} (${i.type})</option>`).join('')}
         </select>
         <input type="number" class="parchment-input ing-qty" placeholder="Qty" min="1" value="1">
         <button class="delete-btn small" onclick="this.parentElement.remove()">×</button>
@@ -604,8 +650,12 @@ window.addIngredientRow = function () {
 
 window.adminAddRecipe = async function () {
     const resultItemId = document.getElementById('recipeResultItem').value;
+    const resultItemName = document.getElementById('recipeResultName').value.trim();
     const craftingType = document.getElementById('recipeCraftType').value;
-    if (!resultItemId) { alert('Select a result item.'); return; }
+
+    if (!resultItemId && !resultItemName) {
+        spawnEffect('❌', 'Enter a result item name or select one from the shop.'); return;
+    }
 
     const rows = document.querySelectorAll('.ingredient-row');
     const ingredients = [];
@@ -615,35 +665,50 @@ window.adminAddRecipe = async function () {
         if (itemId) ingredients.push({ itemId, quantity: qty });
     });
 
-    if (!ingredients.length) { alert('Add at least one ingredient.'); return; }
+    if (!ingredients.length) { spawnEffect('❌', 'Add at least one ingredient.'); return; }
+
+    const payload = { ingredients, craftingType };
+    if (resultItemId) payload.resultItemId = resultItemId;
+    if (resultItemName) payload.resultItemName = resultItemName;
 
     try {
         const r = await fetch('/api/craft/recipes/add', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ resultItemId, ingredients, craftingType }),
+            body: JSON.stringify(payload),
             credentials: 'include'
         });
         if (r.ok) {
             spawnEffect('📜', 'Recipe added!');
+            // Reset recipe form
+            document.getElementById('recipeResultName').value = '';
+            document.getElementById('recipeResultItem').value = '';
+            const firstRow = document.querySelector('#ingredientInputs .ingredient-row');
+            if (firstRow) {
+                firstRow.querySelector('.ing-item').value = '';
+                firstRow.querySelector('.ing-qty').value = '1';
+            }
+            // Remove extra rows
+            document.querySelectorAll('#ingredientInputs .ingredient-row:not(:first-child)').forEach(r => r.remove());
             fetchRecipes();
             setTimeout(renderAdminRecipes, 500);
         } else {
             const data = await r.json();
-            alert('Failed: ' + data.message);
+            spawnEffect('❌', 'Failed: ' + data.message);
         }
     } catch (err) { console.error(err); }
 }
 
 window.adminDeleteRecipe = async function (recipeId) {
-    if (!confirm('Delete this recipe?')) return;
-    try {
-        const r = await fetch(`/api/craft/recipes/${recipeId}`, { method: 'DELETE', credentials: 'include' });
-        if (r.ok) {
-            spawnEffect('🗑️', 'Recipe removed.');
-            fetchRecipes();
-            setTimeout(renderAdminRecipes, 500);
-        }
-    } catch (err) { console.error(err); }
+    showConfirm('Delete Recipe', 'Are you sure you want to delete this recipe?', async () => {
+        try {
+            const r = await fetch(`/api/craft/recipes/${recipeId}`, { method: 'DELETE', credentials: 'include' });
+            if (r.ok) {
+                spawnEffect('🗑️', 'Recipe removed.');
+                fetchRecipes();
+                setTimeout(renderAdminRecipes, 500);
+            }
+        } catch (err) { console.error(err); }
+    });
 }
 
 window.adminAdjustGold = async function () {
@@ -651,24 +716,71 @@ window.adminAdjustGold = async function () {
     const amount = parseInt(document.getElementById('adminGoldAmount').value);
     const reason = document.getElementById('adminGoldReason').value.trim();
 
-    if (!target || isNaN(amount)) { alert('Fill in target user and amount.'); return; }
-    if (!confirm(`Adjust ${target}'s balance by ${amount}G?`)) return;
+    if (!target || isNaN(amount)) { spawnEffect('❌', 'Fill in target user and amount.'); return; }
 
-    try {
-        const r = await fetch('/api/bank/admin/adjust', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ targetUserId: target, amount, reason }),
-            credentials: 'include'
-        });
-        const data = await r.json();
-        if (r.ok) {
-            spawnEffect('💰', data.message);
-            document.getElementById('adminTargetUser').value = '';
-            document.getElementById('adminGoldAmount').value = '';
-            document.getElementById('adminGoldReason').value = '';
-        } else alert(data.message);
-    } catch (err) { console.error(err); }
+    showConfirm('Adjust Gold', `Adjust ${target}'s balance by ${amount}G?`, async () => {
+        try {
+            const r = await fetch('/api/bank/admin/adjust', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ targetUserId: target, amount, reason }),
+                credentials: 'include'
+            });
+            const data = await r.json();
+            if (r.ok) {
+                spawnEffect('💰', data.message);
+                document.getElementById('adminTargetUser').value = '';
+                document.getElementById('adminGoldAmount').value = '';
+                document.getElementById('adminGoldReason').value = '';
+            } else spawnEffect('❌', data.message);
+        } catch (err) { console.error(err); }
+    });
 }
+
+// ═══════════════════════════════════════════════
+// LOG MODAL
+// ═══════════════════════════════════════════════
+window.openLogModal = async function () {
+    document.getElementById('logModal').style.display = 'block';
+    document.getElementById('logContainer').innerHTML = '<p class="empty-msg">Loading...</p>';
+    try {
+        const r = await fetch('/api/bank/admin/logs', { credentials: 'include' });
+        const logs = await r.json();
+        if (!logs.length) {
+            document.getElementById('logContainer').innerHTML = '<p class="empty-msg">No activity yet.</p>';
+            return;
+        }
+        const typeClass = (t) => {
+            if (t === 'transfer') return 'transfer';
+            if (t === 'purchase') return 'purchase';
+            if (t === 'craft') return 'craft';
+            return 'admin_adjust';
+        };
+        document.getElementById('logContainer').innerHTML = logs.map(log => `
+            <div class="log-row">
+                <span class="log-type ${typeClass(log.type)}">${log.type.replace('_', ' ')}</span>
+                <div>
+                    <div>${log.description || '-'}</div>
+                    <div style="font-size:.72rem;color:#8a7a5a">${log.senderName || '?'} → ${log.recipientName || '?'}</div>
+                    <div class="log-time">${new Date(log.timestamp).toLocaleString('th-TH')}</div>
+                </div>
+                <span class="log-amount ${log.amount >= 0 ? 'pos' : 'neg'}">${log.amount >= 0 ? '+' : ''}${log.amount}G</span>
+            </div>
+        `).join('');
+    } catch (err) {
+        document.getElementById('logContainer').innerHTML = '<p class="empty-msg">Failed to load logs.</p>';
+    }
+};
+
+window.closeLogModal = () => document.getElementById('logModal').style.display = 'none';
+
+// Close modals when clicking outside
+window.onclick = function (event) {
+    const modals = ['adminModal', 'receiptModal', 'logModal'];
+    modals.forEach(id => {
+        const modal = document.getElementById(id);
+        if (event.target === modal) modal.style.display = 'none';
+    });
+};
 
 // ═══════════════════════════════════════════════
 // EFFECTS / ANIMATIONS

@@ -10,10 +10,90 @@
         rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard-magic.css">
+    <style>
+        /* ── Home button – top-right corner ── */
+        .back-home-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1.5rem;
+            left: auto !important;
+            z-index: 9999;
+        }
+
+        /* ── Custom Confirm / Alert Dialog ── */
+        .confirm-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.65);
+            z-index: 20000;
+            align-items: center;
+            justify-content: center;
+        }
+        .confirm-overlay.active { display: flex; }
+        .confirm-box {
+            background: #1a1228;
+            border: 2px solid #8b6914;
+            border-radius: 12px;
+            padding: 2rem 2.5rem;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(139,105,20,.4);
+            font-family: 'Cinzel', serif;
+            color: #f0e6c8;
+        }
+        .confirm-box h3 { margin: 0 0 .75rem; font-size: 1.1rem; color: #d4af37; }
+        .confirm-box p  { margin: 0 0 1.5rem; font-size: .9rem; line-height: 1.5; }
+        .confirm-btns   { display: flex; gap: .75rem; justify-content: center; }
+        .confirm-ok  { background: #8b6914; color: #fff; border: none; padding: .5rem 1.5rem; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: .85rem; transition: background .2s; }
+        .confirm-ok:hover { background: #d4af37; }
+        .confirm-cancel { background: transparent; color: #a89070; border: 1px solid #554433; padding: .5rem 1.5rem; border-radius: 6px; cursor: pointer; font-family: 'Cinzel', serif; font-size: .85rem; transition: all .2s; }
+        .confirm-cancel:hover { border-color: #8b6914; color: #d4af37; }
+
+        /* ── Log Modal ── */
+        .log-modal-content { max-width: 760px; max-height: 80vh; overflow-y: auto; }
+        .log-row { display: grid; grid-template-columns: auto 1fr auto; gap: .5rem 1rem; align-items: center; padding: .55rem .75rem; border-bottom: 1px solid #2a2030; font-size: .8rem; }
+        .log-row:nth-child(even) { background: rgba(255,255,255,.03); }
+        .log-type  { font-weight: 700; padding: .15rem .4rem; border-radius: 4px; font-size: .7rem; text-transform: uppercase; }
+        .log-type.transfer   { background: #1a3a5c; color: #6ab0f5; }
+        .log-type.purchase   { background: #1a3d1a; color: #6af56a; }
+        .log-type.craft      { background: #3a1a3a; color: #c96af5; }
+        .log-type.admin_adjust { background: #3a2a00; color: #f5c86a; }
+        .log-time  { color: #6a5a3a; font-size: .72rem; }
+        .log-amount { font-weight: 700; white-space: nowrap; }
+        .log-amount.pos { color: #6af56a; }
+        .log-amount.neg { color: #f56a6a; }
+
+        /* ── Stock Item modal submit button ── */
+        .conjure-btn {
+            display: block;
+            margin: 1.25rem auto 0;
+            background: linear-gradient(135deg, #8b6914, #d4af37);
+            color: #1a1228;
+            border: none;
+            padding: .65rem 2rem;
+            border-radius: 8px;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: .9rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .conjure-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(212,175,55,.4); }
+
+        /* File clear button */
+        .file-clear-btn { background: #5c1a1a; color: #f56a6a; border: 1px solid #8b2a2a; padding: .25rem .6rem; border-radius: 4px; cursor: pointer; font-size: .75rem; margin-left: .4rem; vertical-align: middle; }
+        .file-clear-btn:hover { background: #8b2a2a; }
+
+        /* Recipe result name input */
+        #recipeResultName { margin-top: .5rem; }
+    </style>
 </head>
 
 <body>
     <div class="magic-background"></div>
+    <!-- Home button – right side -->
     <a href="/" class="back-home-btn" title="กลับหน้าหลัก">🏠 Home</a>
     <div class="dashboard-wrapper">
 
@@ -38,6 +118,7 @@
                 <button class="spell-btn" onclick="switchNav('inventory')">🎒 Inventory</button>
                 <button class="spell-btn admin-only hidden" id="adminTabBtn" onclick="switchNav('admin')">⚙️
                     Admin</button>
+                <button class="spell-btn admin-only hidden" onclick="openLogModal()">📋 Log</button>
             </nav>
         </header>
 
@@ -144,8 +225,10 @@
                     <div class="admin-card">
                         <h3>📜 Add Recipe</h3>
                         <div class="input-group">
-                            <label>Result Item (select)</label>
-                            <select id="recipeResultItem" class="parchment-input"></select>
+                            <label>Result Item Name (custom)</label>
+                            <input type="text" id="recipeResultName" class="parchment-input" placeholder="e.g. Dragon Potion">
+                            <label style="margin-top:.5rem; font-size:.8rem; color:#a89070;">— or pick from shop —</label>
+                            <select id="recipeResultItem" class="parchment-input"><option value="">Select existing item (optional)...</option></select>
                         </div>
                         <div class="input-group">
                             <label>Crafting Type</label>
@@ -157,9 +240,10 @@
                         </div>
                         <div id="ingredientInputs">
                             <div class="ingredient-row">
-                                <select class="parchment-input ing-item"></select>
+                                <select class="parchment-input ing-item"><option value="">Select item...</option></select>
                                 <input type="number" class="parchment-input ing-qty" placeholder="Qty" min="1"
                                     value="1">
+                                <button class="delete-btn small" onclick="this.parentElement.remove()">×</button>
                             </div>
                         </div>
                         <button onclick="addIngredientRow()" class="admin-btn small">+ Ingredient</button>
@@ -179,7 +263,7 @@
     <!-- Admin Item Modal -->
     <div id="adminModal" class="modal">
         <div class="modal-content parchment">
-            <span class="close-modal" onclick="closeAdminModal()">&times;</span>
+            <span class="close-modal" onclick="closeAdminModal()">×</span>
             <h2>Stock New Item</h2>
             <form id="addItemForm" onsubmit="handleAddItem(event)">
                 <input type="text" name="name" placeholder="Item Name" required class="parchment-input">
@@ -198,12 +282,16 @@
                 <input type="number" name="price" placeholder="Price (G)" required class="parchment-input">
                 <div class="upload-group">
                     <label class="upload-label">Item Image</label>
-                    <input type="file" id="itemImageFile" accept="image/*" class="parchment-input">
+                    <div style="display:flex;align-items:center;gap:.5rem;">
+                        <input type="file" id="itemImageFile" accept="image/*" class="parchment-input" style="flex:1;">
+                        <button type="button" class="file-clear-btn" id="fileClearBtn" onclick="clearFileInput()" title="Remove file">✕</button>
+                    </div>
                     <span class="upload-or">— or paste URL —</span>
                     <input type="text" name="image" id="itemImageUrl" placeholder="Image URL" class="parchment-input">
                     <div id="imagePreview" class="image-preview"></div>
                 </div>
-                <button type="submit" class="spell-btn">Conjure Item</button>
+                <button type="submit" class="conjure-btn">✨ Conjure Item</button>
+                <button type="button" class="admin-btn" style="display:block;margin:.5rem auto 0;background:transparent;border:1px solid #554433;color:#a89070;" onclick="cancelAdminModal()">Cancel</button>
             </form>
         </div>
     </div>
@@ -211,9 +299,30 @@
     <!-- Transfer Receipt Modal -->
     <div id="receiptModal" class="modal">
         <div class="modal-content parchment receipt-slip">
-            <span class="close-modal" onclick="closeReceiptModal()">&times;</span>
+            <span class="close-modal" onclick="closeReceiptModal()">×</span>
             <div id="receiptContent"></div>
             <button onclick="downloadReceipt()" class="admin-btn">📄 Download Receipt</button>
+        </div>
+    </div>
+
+    <!-- Log Modal (Admin) -->
+    <div id="logModal" class="modal">
+        <div class="modal-content parchment log-modal-content">
+            <span class="close-modal" onclick="closeLogModal()">×</span>
+            <h2>📋 Activity Log</h2>
+            <div id="logContainer" class="scroll-content"></div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Dialog -->
+    <div id="confirmOverlay" class="confirm-overlay">
+        <div class="confirm-box">
+            <h3 id="confirmTitle">Confirm</h3>
+            <p id="confirmMessage"></p>
+            <div class="confirm-btns">
+                <button class="confirm-cancel" id="confirmCancelBtn">ยกเลิก</button>
+                <button class="confirm-ok" id="confirmOkBtn">ยืนยัน</button>
+            </div>
         </div>
     </div>
 

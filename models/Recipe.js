@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const recipeSchema = new mongoose.Schema({
-    resultItemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', required: true },
+    resultItemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' }, // optional – use resultItemName instead if no shop item
+    resultItemName: { type: String }, // free-form name when no shop item exists
     ingredients: [{
         itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' },
         quantity: { type: Number, required: true }

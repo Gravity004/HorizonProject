@@ -17,17 +17,25 @@ router.get('/recipes', async (req, res) => {
 
 // Add new recipe (Admin only)
 router.post('/recipes/add', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
-    const { resultItemId, ingredients, craftingType, craftingTime, requiredLevel } = req.body;
+    const { resultItemId, resultItemName, ingredients, craftingType, craftingTime, requiredLevel } = req.body;
 
     try {
-        const recipe = new Recipe({
-            resultItemId,
+        const recipeData = {
             ingredients,
             craftingType: craftingType || 'cauldron',
             craftingTime: craftingTime || 0,
             requiredLevel: requiredLevel || 1
-        });
+        };
 
+        // Support both: existing item ID or a custom free-form name
+        if (resultItemId) {
+            recipeData.resultItemId = resultItemId;
+        }
+        if (resultItemName) {
+            recipeData.resultItemName = resultItemName;
+        }
+
+        const recipe = new Recipe(recipeData);
         const saved = await recipe.save();
         const populated = await Recipe.findById(saved._id).populate('resultItemId').populate('ingredients.itemId');
         res.json(populated);
@@ -51,7 +59,7 @@ router.post('/craft', isAuthenticated, async (req, res) => {
     const { recipeId } = req.body;
 
     try {
-        const recipe = await Recipe.findById(recipeId).populate('ingredients.itemId');
+        const recipe = await Recipe.findById(recipeId).populate('resultItemId').populate('ingredients.itemId');
         if (!recipe) return res.status(404).json({ message: 'Recipe not found' });
 
         const user = await User.findById(req.user.id);
@@ -74,21 +82,31 @@ router.post('/craft', isAuthenticated, async (req, res) => {
             }
         }
 
-        // Add result item
-        const resultId = recipe.resultItemId._id ? recipe.resultItemId._id.toString() : recipe.resultItemId.toString();
-        const resultItemIndex = user.inventory.findIndex(i => i.itemId.toString() === resultId);
-        if (resultItemIndex > -1) {
-            user.inventory[resultItemIndex].quantity += 1;
-        } else {
-            user.inventory.push({ itemId: resultId, quantity: 1 });
+        let resultItemDisplayName = recipe.resultItemName || 'Unknown';
+
+        // Add result item to inventory only if it's a real shop item
+        if (recipe.resultItemId) {
+            const resultId = recipe.resultItemId._id
+                ? recipe.resultItemId._id.toString()
+                : recipe.resultItemId.toString();
+
+            const resultItemIndex = user.inventory.findIndex(i => i.itemId.toString() === resultId);
+            if (resultItemIndex > -1) {
+                user.inventory[resultItemIndex].quantity += 1;
+            } else {
+                user.inventory.push({ itemId: resultId, quantity: 1 });
+            }
+
+            const resultItem = await Item.findById(resultId);
+            resultItemDisplayName = resultItem ? resultItem.name : resultItemDisplayName;
         }
+        // If no resultItemId, the item is a "story" or "custom" item – just deduct ingredients & log
 
         await user.save();
 
-        const resultItem = await Item.findById(resultId);
         res.json({
-            message: `Successfully crafted ${resultItem ? resultItem.name : 'item'}!`,
-            resultItemName: resultItem ? resultItem.name : 'Unknown',
+            message: `Successfully crafted ${resultItemDisplayName}!`,
+            resultItemName: resultItemDisplayName,
             inventory: user.inventory
         });
 

@@ -128,4 +128,16 @@ router.post('/admin/adjust', isAuthenticated, hasRole(['admin', 'professor']), a
     }
 });
 
+// Admin: Get ALL transactions (for log view)
+router.get('/admin/logs', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+    try {
+        const logs = await Transaction.find()
+            .sort({ timestamp: -1 })
+            .limit(200);
+        res.json(logs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
