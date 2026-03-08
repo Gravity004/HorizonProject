@@ -648,34 +648,37 @@
     <!-- Send Gift Modal (Letter Style) -->
     <div id="sendGiftModal" class="modal">
         <div class="letter-modal-outer">
-            <div class="letter-parchment">
+            <!-- <img src="assets/images/LetterTemplate.png" class="letter-bg-img" alt="Letter Background"> -->
+            <div class="letter-content-overlay">
                 <button class="letter-close-btn" onclick="closeSendGiftModal()">✕</button>
-                <!-- No text title — parchment image contains the calligraphic header -->
-                <div class="letter-item-row">
-                    <img id="giftModalItemImg" src="" class="letter-item-img">
-                    <div>
-                        <strong id="giftModalItemName" class="letter-item-name">Item Name</strong>
-                        <div class="letter-item-qty" id="giftModalItemQty">You have: 0</div>
+                <div class="letter-content-scroll">
+                    <!-- No text title — parchment image contains the calligraphic header -->
+                    <div class="letter-item-row">
+                        <img id="giftModalItemImg" src="" class="letter-item-img">
+                        <div>
+                            <strong id="giftModalItemName" class="letter-item-name">Item Name</strong>
+                            <div class="letter-item-qty" id="giftModalItemQty">You have: 0</div>
+                        </div>
                     </div>
-                </div>
-                <input type="hidden" id="giftModalItemId">
-                <div class="letter-fields-row">
-                    <div class="letter-field">
-                        <label class="letter-label">To. ชื่อผู้รับ (Recipient)</label>
-                        <input type="text" id="giftModalRecipient" class="letter-input"
-                            placeholder="Discord ID / Username">
+                    <input type="hidden" id="giftModalItemId">
+                    <div class="letter-fields-row">
+                        <div class="letter-field">
+                            <label class="letter-label">To. ชื่อผู้รับ (Recipient)</label>
+                            <input type="text" id="giftModalRecipient" class="letter-input"
+                                placeholder="Discord ID / Username">
+                        </div>
+                        <div class="letter-field">
+                            <label class="letter-label">จำนวน (Quantity)</label>
+                            <input type="number" id="giftModalQuantity" class="letter-input" min="1" value="1">
+                        </div>
                     </div>
-                    <div class="letter-field">
-                        <label class="letter-label">จำนวน (Quantity)</label>
-                        <input type="number" id="giftModalQuantity" class="letter-input" min="1" value="1">
+                    <div class="letter-field letter-field-full">
+                        <label class="letter-label">ข้อความ (Message)</label>
+                        <textarea id="giftModalMessage" class="letter-input letter-textarea" rows="4"
+                            placeholder="Write your message..."></textarea>
                     </div>
+                    <button class="letter-send-btn" onclick="submitSendGift()">Send via owl</button>
                 </div>
-                <div class="letter-field letter-field-full">
-                    <label class="letter-label">ข้อความ (Message)</label>
-                    <textarea id="giftModalMessage" class="letter-input letter-textarea" rows="4"
-                        placeholder="Write your message..."></textarea>
-                </div>
-                <button class="letter-send-btn" onclick="submitSendGift()">Send via owl</button>
             </div>
         </div>
     </div>
