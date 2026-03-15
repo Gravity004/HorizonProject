@@ -470,7 +470,9 @@
         <section id="history">
             <h2 class="section-title cinzel">History</h2>
             <div class="card glass">
-                <p>โรงเรียนพ่อมดแม่มดศาสตร์รชต (Rachata School of Wizardry) หรือ โรงเรียนรชต (ระ-ชะ-ตะ)
+                <p>“ผู้วิเศษทั้งหลายโปรดจงรู้เถิด ความรู้มากน้อยนั้นไม่ได้ทำให้ผู้ใดถูกเรียกว่าคนโง่”
+                    <br><br>
+                    โรงเรียนพ่อมดแม่มดศาสตร์รชต (Rachata School of Wizardry) หรือ โรงเรียนรชต (ระ-ชะ-ตะ)
                     โรงเรียนสอนเวทมนตร์ศาสตร์ของพ่อมดแม่มดแห่งประเทศไทย ก่อตั้งมานานนับสหัสวรรษตั้งแต่ปีพุทธศักราช 1500
                     ซึ่งเปิดการสอนนักเรียนอายุสิบหกปีถึงยี่สิบปี (16 - 20 ปี)
                     ถูกจัดอันดับโรงเรียนเวทมนตร์ที่ดีที่สุดอันดับ 5 โดยนิตยสารพ่อมดแม่มดรายสัปดาห์ ก่อตั้งโดย
@@ -556,29 +558,49 @@
         </section>
 
         <section id="ranking">
-            <h2 class="section-title cinzel">House Points</h2>
+            <h2 class="section-title cinzel">Top 3 Richest Students</h2>
             <table class="ranking-table">
                 <thead>
                     <tr>
                         <th>Rank</th>
                         <th>Student Name</th>
-                        <th>Points</th>
+                        <th>Balance (G)</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="rankingTableBody">
                     <tr>
-                        <td>1</td>
-                        <td>Warut S.</td>
-                        <td>450</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Pimchanok K.</td>
-                        <td>410</td>
+                        <td colspan="3" style="text-align: center;">กำลังโหลดข้อมูล...</td>
                     </tr>
                 </tbody>
             </table>
         </section>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                try {
+                    const response = await fetch('/api/users/top');
+                    if (response.ok) {
+                        const topUsers = await response.json();
+                        const tbody = document.getElementById('rankingTableBody');
+                        tbody.innerHTML = '';
+                        topUsers.forEach((user, index) => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${index + 1}</td>
+                                <td>${user.username}</td>
+                                <td><span style="color: var(--gold);">${user.balance} <small>Galleons</small></span></td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                        if (topUsers.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No data available</td></tr>';
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error fetching top users:', err);
+                }
+            });
+        </script>
 
         <section id="members">
             <h2 class="section-title cinzel">Faculty</h2>
@@ -906,6 +928,16 @@
                     <p class="chapter-preview">สายเลือดวินเชสเตอร์ผู้บูชาเทพีแห่งเวทมนตร์
                         การล่มสลายและการเกิดใหม่ภายใต้นาม "รชต" ในดินแดนเอเชีย...</p>
                 </div>
+                <div class="chapter-book">
+                    <div class="chapter-number">Chapter V</div>
+                    <h3 class="chapter-title">Magic Laws</h3>
+                    <p class="chapter-preview">ทำความรู้จักแก่นแท้ของกฎหมายเวทมนตร์ มาตรา 666 ว่าด้วยการห้ามยุ่งเกี่ยวกับอเวทย์...</p>
+                </div>
+                <div class="chapter-book">
+                    <div class="chapter-number">Chapter VI</div>
+                    <h3 class="chapter-title">Bloodlines</h3>
+                    <p class="chapter-preview">สายเลือดและกลุ่มคนในสังคมผู้วิเศษ ตั้งแต่เลือดบริสุทธิ์ เลือดผสม ไปจนถึงสควิบและอเวทย์...</p>
+                </div>
             </div>
         </section>
 
@@ -916,7 +948,37 @@
                 <h3 class="admission-title">เปิดรับสมัครนักเรียนใหม่</h3>
                 <p class="admission-subtitle">ประจำปีการศึกษา 2570</p>
                 <p style="color: var(--text-light); max-width: 600px; margin: 0 auto 2rem;">
-                    โรงเรียนรชตเปิดรับสมัครนักเรียนที่มีพลังเวทมนตร์ อายุ 16-20 ปี
+                    การรับเข้าศึกษา (Admission)
+                    <br><br>
+                    การรับเข้าศึกษาของรชตนั้น มีการร่ายเวทมนตร์เอาไว้บนแผ่นศิลาจารึกพิเศษของโรงเรียน
+                    เมื่อใดก็ตามที่เด็กที่มีเวทมนตร์ได้กำเนิดขึ้นมา
+                    พวกเขาจะมีรายชื่อปรากฎขึ้นบนจารึกแผ่นนั้นและจะถือว่าเป็นผู้ที่มีสิทธิ์ในการเข้าศึกษาโดยทันที
+                    เมื่อถึงเกณฑ์การเข้าศึกษา ศาสตราจารย์ใหญ่จะทำการส่ง﻿จดหมายเชิญถึงพ่อมดแม่มดน้อยผู้นั้น
+                    ในกรณีที่พ่อมดแม่มดผู้นั้นเกิดจากอเวทย์
+                    ทางโรงเรียนจะส่งศาสตราจารย์ไปชี้แจงเกี่ยวกับการมีอยู่และชุมชนของผู้วิเศษ
+                    จากนั้นจะช่วยอำนวยความสะดวกในการเตรียมตัวเข้าเรียน
+                    <br><br>
+                    นักเรียนทุกคนจะมีรายการสิ่งของจำเป็นที่ต้องซื้อมาพร้อมกับจดหมายและรายละเอียดต่าง ๆ
+                    รวมถึงสถานที่ซื้อของชิ้นนั้น ๆ โดยนักเรียนสามารถซื้อของเหล่านั้นได้จากตรอกสุขุมวิทที่ 66/66
+                    ซึ่งมีทางเข้าอยู่ที่ด้านหลังของประตูหลังร้านเก้าอี้หักเป็นร้านอาหารกึ่งผับบาร์ของพ่อมดแม่มด
+                    <br><br>
+                    นักเรียนแต่ละคนจะได้รับอนุญาตให้นำคางคก หนู แมวหรือนกเค้าแมวติดตัวมาด้วย
+                    นักเรียนปีหนึ่งจะได้รับรายการอุปกรณ์ที่จำเป็น ซึ่งรวมถึงไม้กายสิทธิ์ หนังสือแต่ละวิชา
+                    เครื่องปรุงยาพื้นฐาน (สำหรับวิชาปรุงยา) เครื่องแบบรชตประกอบด้วย เสื้อคลุมปฏิบัติการเรียบสีดำ
+                    หมวกเรียบสีดำ ถุงมือป้องกัน เสื้อคลุมฤดูหนาวสีดำกับตะขอสีเงิน เครื่องแบบทั้งหมดจะต้องติดป้ายชื่อ
+                    นักเรียนปีหนึ่งยังไม่ได้รับอนุญาตให้มีไม้กวาดเป็นของตน
+
+
+                    <br><br>
+                    การคัดสรรบ้านนั้น เมื่อนักเรียนใหม่ (ปี 1) เดินทางมาถึงโรงเรียนแล้ว
+                    จะมีพิธีปฐมนิเทศและสันทนาการจากศาสตราจารย์และสภานักเรียนรชต
+                    ในช่วงท้ายของงานจะทำการเริ่มพิธีคัดสรรบ้าน โดยศาสตราจารย์จะขานชื่อของนักเรียนทีละคน
+                    นักเรียนที่ได้รับขานชื่อจะต้องออกมาเขียนชื่อของตนเองบนแผ่นศิลาจารึก
+                    แผ่นศิลาจารึกนี้ถูกร่ายเวทมนตร์พิเศษจากศาสตราจารย์ใหญ่คนแรกของรชต เพื่อนำมาใช้ในพิธีคัดสรรบ้าน
+                    หลังจากเขียนชื่อตนเองลงไปแล้ว แผ่นศิลาจารึกจะพิจารณานักเรียนคนนั้นไปอยู่บ้านที่เหมาะสม
+                    บางครั้งจะเกิดเหตุการณ์ที่นักเรียนถูกคัดสรรไปอยู่บ้านที่ไม่เหมาะสมกับนิสัยของตนเองและบ้าน
+                    แต่ทั้งหมดคือเจตนาของแผ่นศิลาจารึก
+                    <br><br>
                     คลิกเพื่อดูรายละเอียดและสมัครออนไลน์
                 </p>
                 <button class="admission-cta">ดูรายละเอียด</button>
@@ -934,6 +996,15 @@
             </div>
         </section>
 
+        <!-- Himmapan Forest Section -->
+        <section id="himmapan-explore" style="text-align: center; margin: 4rem 0;">
+            <h2 class="section-title cinzel" style="justify-content: center;">🌲 ป่าหิมพานต์</h2>
+            <p style="color: var(--gold); margin-bottom: 2rem;">พื้นที่ลี้ลับที่เปิดออกเฉพาะช่วงเวลาพิเศษ ผู้กล้าสามารถเข้าไปสำรวจเพื่อค้นหาไอเทมหายากได้วันละ 1 ครั้ง</p>
+            <button onclick="exploreHimmapan()" class="conjure-btn" style="padding: 1rem 3rem; font-size: 1.2rem; display: inline-block;">
+                ✨ สำรวจป่าหิมพานต์ ✨
+            </button>
+            <div id="himmapanResult" style="margin-top: 2rem; color: #fff;"></div>
+        </section>
 
     </div>
 
@@ -978,8 +1049,8 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Name</th>
-                                <th>Year</th>
+                                <th>NAME</th>
+                                <th>YEAR</th>
                             </tr>
                         </thead>
                         <tbody id="studentTableBody">
@@ -1043,6 +1114,29 @@
         document.querySelectorAll('section').forEach(section => {
             observer.observe(section);
         });
+    </script>
+    <script>
+        async function exploreHimmapan() {
+            const resultDiv = document.getElementById('himmapanResult');
+            resultDiv.innerHTML = '<span style="color:var(--gold)">กำลังเดินทางเข้าสู่ป่าหิมพานต์...</span>';
+            try {
+                const res = await fetch('/api/forest/gather', { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    resultDiv.innerHTML = `
+                        <div style="background: rgba(42, 61, 42, 0.8); padding: 1.5rem; border: 1px solid #3d5c3d; border-radius: 8px; display: inline-block;">
+                            <h3 style="color: #6af56a; margin-top: 0;">${data.message}</h3>
+                            <p style="margin: 0;">พบไอเทมระดับ: <strong style="text-transform: capitalize; color: #d4af37;">${data.rarity}</strong></p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<span style="color: #f56a6a;">${data.message}</span>`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<span style="color: #f56a6a;">เกิดข้อผิดพลาดในการสำรวจป่า</span>`;
+                console.error(err);
+            }
+        }
     </script>
     <script src="js/school-content.js"></script>
     <script src="js/house-roster.js"></script>

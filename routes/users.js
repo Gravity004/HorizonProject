@@ -22,6 +22,19 @@ router.get('/house/:houseName', async (req, res) => {
     }
 });
 
+// Get top 3 users by balance (excluding admins)
+router.get('/top', async (req, res) => {
+    try {
+        const topUsers = await User.find({ roles: { $ne: 'admin' } })
+            .select('-_id username balance roles house avatar')
+            .sort({ balance: -1 })
+            .limit(3);
+        res.json(topUsers);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Get all users (admin only)
 const { isAuthenticated, hasRole } = require('../middleware/auth');
 

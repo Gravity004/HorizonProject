@@ -58,7 +58,8 @@ router.post('/daily', isAuthenticated, async (req, res) => {
         const utcThreshold = new Date(threshold.getTime() - (7 * 60 * 60 * 1000));
 
         // Check if user has already claimed since the threshold
-        if (user.lastDailyReward && new Date(user.lastDailyReward) >= utcThreshold) {
+        const isAdmin = user.roles && (user.roles.includes('admin') || user.roles.includes('professor'));
+        if (!isAdmin && user.lastDailyReward && new Date(user.lastDailyReward) >= utcThreshold) {
             return res.status(400).json({ 
                 message: 'You have already claimed your daily magic today! The stars will realign tomorrow at 8:00 AM.' 
             });
