@@ -90,6 +90,14 @@ app.get('/winchester.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'winchester.html'));
 });
 
+app.get('/student_council.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'student_council.html'));
+});
+
+app.get('/world_guide.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'world_guide.html'));
+});
+
 // Routes
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
@@ -100,12 +108,14 @@ const craftRoutes = require('./routes/craft');
 const bankRoutes = require('./routes/bank');
 const usersRoutes = require('./routes/users');
 const giftRoutes = require('./routes/gift');
+const forestRoutes = require('./routes/forest');
 
 app.use('/api/shop', shopRoutes);
 app.use('/api/craft', craftRoutes);
 app.use('/api/bank', bankRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/gift', giftRoutes);
+app.use('/api/forest', forestRoutes);
 
 const { checkGuildMembership } = require('./middleware/auth');
 
