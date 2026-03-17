@@ -41,16 +41,16 @@ router.post('/daily', isAuthenticated, async (req, res) => {
         // Shift time to UTC+7 (Thailand)
         const thTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
         
-        // Define the threshold: Today at 08:00:00 TH time
-        const threshold = new Date(
+        // Define the threshold: Today at 08:00:00 TH time (in UTC Date object)
+        const threshold = new Date(Date.UTC(
             thTime.getUTCFullYear(),
             thTime.getUTCMonth(),
             thTime.getUTCDate(),
             8, 0, 0, 0
-        );
+        ));
 
         // If current TH time is before 8 AM, the threshold belongs to *yesterday* 8 AM
-        if (thTime < threshold) {
+        if (thTime.getUTCHours() < 8) {
             threshold.setUTCDate(threshold.getUTCDate() - 1);
         }
 
@@ -65,8 +65,8 @@ router.post('/daily', isAuthenticated, async (req, res) => {
             });
         }
 
-        // Calculate reward (1 to 10 Galleons)
-        const reward = Math.floor(Math.random() * 10) + 1;
+        // Calculate reward (0 to 100 Galleons)
+        const reward = Math.floor(Math.random() * 101);
 
         user.balance += reward;
         user.lastDailyReward = now;

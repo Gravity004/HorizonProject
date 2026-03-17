@@ -683,6 +683,64 @@
         </div>
     </div>
 
+    <!-- Read Letter Modal -->
+    <div id="readLetterModal" class="modal">
+        <div class="letter-modal-outer">
+            <div class="letter-content-overlay">
+                <button class="letter-close-btn" onclick="closeReadLetterModal()">✕</button>
+                <div class="letter-content-scroll">
+                    <div style="font-family:'Cinzel',serif; font-size:1.1rem; color:#4e342e; font-weight:bold; margin-bottom:1rem; border-bottom:1px solid rgba(139,105,20,0.3); padding-bottom:0.5rem;" id="readLetterSender">
+                        From: Unknown
+                    </div>
+                    <div class="letter-item-row" style="margin-bottom: 1rem;">
+                        <img id="readLetterItemImg" src="" class="letter-item-img">
+                        <div>
+                            <strong id="readLetterItemName" class="letter-item-name">Item Name</strong>
+                            <div class="letter-item-qty" id="readLetterItemQty">Qty: 1</div>
+                        </div>
+                    </div>
+                    <div class="letter-field letter-field-full">
+                        <div id="readLetterMessage" class="letter-msg-display" style="min-height: 80px; padding: 1rem; font-style: italic; color: #5d3a1a; background: rgba(200,170,120,0.1); border-radius: 6px; white-space: pre-wrap;"></div>
+                    </div>
+                    <input type="hidden" id="readLetterGiftId">
+                    <button class="letter-send-btn" onclick="submitClaimGift()">📦 Claim Gift</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal (Admin) -->
+    <div id="editItemModal" class="modal">
+        <div class="modal-content parchment">
+            <span class="close-modal" onclick="closeEditItemModal()">×</span>
+            <h2>Edit Shop Item</h2>
+            <form id="editItemForm" onsubmit="handleEditItem(event)">
+                <input type="hidden" id="editItemId" name="id">
+                <input type="text" id="editItemName" name="name" placeholder="Item Name" required class="parchment-input">
+                <input type="text" id="editItemDescription" name="description" placeholder="Description" class="parchment-input">
+                <select id="editItemType" name="type" required class="parchment-input">
+                    <option value="material">Material</option>
+                    <option value="potion">Potion</option>
+                    <option value="food">Food</option>
+                    <option value="equipment">Equipment</option>
+                </select>
+                <select id="editItemRarity" name="rarity" class="parchment-input">
+                    <option value="common">Common</option>
+                    <option value="rare">Rare</option>
+                    <option value="epic">Epic</option>
+                    <option value="legendary">Legendary</option>
+                </select>
+                <input type="number" id="editItemPrice" name="price" placeholder="Price (G)" required class="parchment-input">
+                <div class="upload-group">
+                    <label class="upload-label">Item Image URL (Upload not supported in edit yet)</label>
+                    <input type="text" id="editItemImage" name="image" placeholder="Image URL" class="parchment-input">
+                </div>
+                <button type="submit" class="conjure-btn">✨ Update Item</button>
+                <button type="button" class="admin-btn" style="display:block;margin:.5rem auto 0;background:transparent;border:1px solid #554433;color:#a89070;" onclick="closeEditItemModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Effects Overlay -->
     <div id="effectsOverlay" class="effects-overlay"></div>
 

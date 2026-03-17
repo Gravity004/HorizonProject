@@ -4,7 +4,7 @@ const studentData = {
         {
             "id": "RS-319",
             "name": "บารอนเนส เอส คิทเท่น (Baroness S. Kitten)",
-            "year": 4,
+            "year": 5,
             "house": "garuda",
             "photo": "assets/students/319.png",
             "hometown": "ประเทศไทย",
@@ -12,17 +12,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-516",
             "name": "จรัสลักษณ์ ศรีวิทโยธา (Jaraslux Siriwitthyotha)",
-            "year": 2,
+            "year": 3,
             "house": "garuda",
             "photo": "assets/students/516.png",
             "hometown": "ประเทศไทย",
@@ -30,17 +26,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-521",
             "name": "วิเวียน ดุจอัปสร เจนเซน (Vivienne Duj-apsorn Jensen)",
-            "year": 2,
+            "year": 3,
             "house": "garuda",
             "photo": "assets/students/521.png",
             "hometown": "ประเทศไทย",
@@ -48,17 +40,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-524",
             "name": "ริคกี้ ฮันโนเฟอร์ แคมพ์เบลล์ (Ricky Hannover Campbell)",
-            "year": 2,
+            "year": 3,
             "house": "garuda",
             "photo": "assets/students/524.png",
             "hometown": "ประเทศไทย",
@@ -66,17 +54,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-601",
             "name": "จักรภพ พงศ์พิไล (Jakkapob Pongpilai)",
-            "year": 1,
+            "year": 2,
             "house": "garuda",
             "photo": "assets/students/601.png",
             "hometown": "ประเทศไทย",
@@ -84,17 +68,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-606",
             "name": "เอลิออน ดริฟเมียร์ (Elion Driftmere)",
-            "year": 1,
+            "year": 2,
             "house": "garuda",
             "photo": "assets/students/606.png",
             "hometown": "ประเทศไทย",
@@ -102,22 +82,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 5 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-607",
             "name": "วรัญญา ดราเวนฮาร์ต (Waranya Dravenhart)",
-            "year": 1,
+            "year": 2,
             "house": "garuda",
             "photo": "assets/students/607.png",
             "hometown": "ประเทศไทย",
@@ -125,22 +96,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 15 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-611",
             "name": "เทนคาวะ ฮารุกิ (Tenkawa Haruki)",
-            "year": 1,
+            "year": 2,
             "house": "garuda",
             "photo": "assets/students/611.png",
             "hometown": "ประเทศไทย",
@@ -148,17 +110,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-613",
             "name": "อันอัน เถียนเหมิง (Anan Tianmeng)",
-            "year": 1,
+            "year": 2,
             "house": "garuda",
             "photo": "assets/students/613.png",
             "hometown": "ประเทศไทย",
@@ -166,11 +124,7 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         }
     ],
@@ -178,7 +132,7 @@ const studentData = {
         {
             "id": "RS-309",
             "name": "เคลเซีย คาทาลิสท์ ควอนเทรลล์ (Qelsia Katalyzt Quantrelle)",
-            "year": 4,
+            "year": 5,
             "house": "erawan",
             "photo": "assets/students/309.png",
             "hometown": "ประเทศไทย",
@@ -186,17 +140,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-420",
             "name": "เซน เมธาอัครโยธิน (Zane Metha Akharayothin)",
-            "year": 3,
+            "year": 4,
             "house": "erawan",
             "photo": "assets/students/420.png",
             "hometown": "ประเทศไทย",
@@ -204,22 +154,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 7 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-423",
             "name": "ฟรองซัวร์ ลีแอนเดอร์ รุสโซ (François Leander Rousseau)",
-            "year": 3,
+            "year": 4,
             "house": "erawan",
             "photo": "assets/students/423.png",
             "hometown": "ประเทศไทย",
@@ -227,22 +168,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 10 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-509",
             "name": "เซเรน่า เดอ อัลวาร์ (Serena De Alvar)",
-            "year": 2,
+            "year": 3,
             "house": "erawan",
             "photo": "assets/students/509.png",
             "hometown": "ประเทศไทย",
@@ -250,17 +182,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-603",
             "name": "หิรัญพจน์ จิรเมธา ณ อยุธยา (Hiranphot Chirametha Na Ayutthaya)",
-            "year": 1,
+            "year": 2,
             "house": "erawan",
             "photo": "assets/students/603.png",
             "hometown": "ประเทศไทย",
@@ -268,22 +196,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 35 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-605",
             "name": "เซนาเรียส เซอร์ราโน (Zenarius Serrano)",
-            "year": 1,
+            "year": 2,
             "house": "erawan",
             "photo": "assets/students/605.png",
             "hometown": "ประเทศไทย",
@@ -291,17 +210,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-616",
             "name": "วิเวียน เซ็นวารี (Vivien Senwaree)",
-            "year": 1,
+            "year": 2,
             "house": "erawan",
             "photo": "assets/students/616.png",
             "hometown": "ประเทศไทย",
@@ -309,22 +224,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 10 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-617",
             "name": "อิสรินทร์  เปรมวรากุล (Issarin Premwarakul)",
-            "year": 1,
+            "year": 2,
             "house": "erawan",
             "photo": "assets/students/617.png",
             "hometown": "ประเทศไทย",
@@ -332,16 +238,7 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 20 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         }
     ],
@@ -349,7 +246,7 @@ const studentData = {
         {
             "id": "RS-209",
             "name": "บงกช บุณยวีร์ (Bongkotch Boonyawee)",
-            "year": 5,
+            "year": 6,
             "house": "qilin",
             "photo": "assets/students/209.png",
             "hometown": "ประเทศไทย",
@@ -357,17 +254,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-307",
             "name": "โยษิตา คาร์เนต (Yosita Carnate)",
-            "year": 4,
+            "year": 5,
             "house": "qilin",
             "photo": "assets/students/307.png",
             "hometown": "ประเทศไทย",
@@ -375,17 +268,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-313",
             "name": "จัสซามีน ลิเลียน ไซแอนน์ (Jessamine Liliane Cheyenne)",
-            "year": 4,
+            "year": 5,
             "house": "qilin",
             "photo": "assets/students/313.png",
             "hometown": "ประเทศไทย",
@@ -393,17 +282,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-407",
             "name": "จิงจัง รอดคงรวย (Jingjung Rodkongruay)",
-            "year": 3,
+            "year": 4,
             "house": "qilin",
             "photo": "assets/students/407.png",
             "hometown": "ประเทศไทย",
@@ -411,17 +296,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-411",
             "name": "ฟุยุซาเมะ อากิ (Fuyusame Aki)",
-            "year": 3,
+            "year": 4,
             "house": "qilin",
             "photo": "assets/students/411.png",
             "hometown": "ประเทศไทย",
@@ -429,22 +310,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 35 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-426",
             "name": "ทิวลิป ธีรยา ธารธาราวรโชติ (Tulip Theeraya Tarntaraworachot)",
-            "year": 3,
+            "year": 4,
             "house": "qilin",
             "photo": "assets/students/426.png",
             "hometown": "ประเทศไทย",
@@ -452,17 +324,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-520",
             "name": "ใจภักดี จารุวลัยกานต์ (Jaiphakdee Charuwalaikan)",
-            "year": 2,
+            "year": 3,
             "house": "qilin",
             "photo": "assets/students/520.png",
             "hometown": "ประเทศไทย",
@@ -470,17 +338,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-608",
             "name": "วิเวียนน่า วาโรนิก้า  (Viviana Varonica)",
-            "year": 1,
+            "year": 2,
             "house": "qilin",
             "photo": "assets/students/608.png",
             "hometown": "ประเทศไทย",
@@ -488,17 +352,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-610",
             "name": "ธารา อีลินดรา วาเลเมียร์ (Thara Elyndra Valemir)",
-            "year": 1,
+            "year": 2,
             "house": "qilin",
             "photo": "assets/students/610.png",
             "hometown": "ประเทศไทย",
@@ -506,22 +366,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 10 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-612",
             "name": "ราฟาเอล ซัลลิแวน (Rafael Sullivan)",
-            "year": 1,
+            "year": 2,
             "house": "qilin",
             "photo": "assets/students/612.png",
             "hometown": "ประเทศไทย",
@@ -529,22 +380,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 15 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-614",
             "name": "ชลิตา สกุลวงศ์ (Chalita Sakolwong)",
-            "year": 1,
+            "year": 2,
             "house": "qilin",
             "photo": "assets/students/614.png",
             "hometown": "ประเทศไทย",
@@ -552,16 +394,7 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 15 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         }
     ],
@@ -569,7 +402,7 @@ const studentData = {
         {
             "id": "RS-301",
             "name": "ไซโครนอส ฮาเดส เดอ เลมอส (Zychronos Hades Dè Remos)",
-            "year": 4,
+            "year": 5,
             "house": "naga",
             "photo": "assets/students/301.png",
             "hometown": "ประเทศไทย",
@@ -577,17 +410,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-312",
             "name": "วชิร อัศวภัชรกุล (Vajira Assawapatcharakul)",
-            "year": 4,
+            "year": 5,
             "house": "naga",
             "photo": "assets/students/312.png",
             "hometown": "ประเทศไทย",
@@ -595,17 +424,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-318",
             "name": "พรัมพีช พิรารักษ์ (Prumpeach Piraruk)",
-            "year": 4,
+            "year": 5,
             "house": "naga",
             "photo": "assets/students/318.png",
             "hometown": "ประเทศไทย",
@@ -613,17 +438,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-402",
             "name": "ปพิชญ์ชฎาพร ชนาภัทรวรโช (Papichchadaporn Chanaphatworacho)",
-            "year": 3,
+            "year": 4,
             "house": "naga",
             "photo": "assets/students/402.png",
             "hometown": "ประเทศไทย",
@@ -631,22 +452,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 25 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-419",
             "name": "เคมีคอล ซานเชส (Chemical Sanchez)",
-            "year": 3,
+            "year": 4,
             "house": "naga",
             "photo": "assets/students/419.png",
             "hometown": "ประเทศไทย",
@@ -654,17 +466,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-506",
             "name": "กฤษยชญ์ เกียรติพงศดาธ์ (Kritya Kiatpongsada)",
-            "year": 2,
+            "year": 3,
             "house": "naga",
             "photo": "assets/students/506.png",
             "hometown": "ประเทศไทย",
@@ -672,17 +480,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-517",
             "name": "ติณณวัตร์ นาโช่ (Tinnawat Naso)",
-            "year": 2,
+            "year": 3,
             "house": "naga",
             "photo": "assets/students/517.png",
             "hometown": "ประเทศไทย",
@@ -690,17 +494,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-602",
             "name": "คิม นานา (Kim Nana)",
-            "year": 1,
+            "year": 2,
             "house": "naga",
             "photo": "assets/students/602.png",
             "hometown": "ประเทศไทย",
@@ -708,22 +508,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 25 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-609",
             "name": "ไอซาวะ ฮารูกะ (Aizawa Haruka)",
-            "year": 1,
+            "year": 2,
             "house": "naga",
             "photo": "assets/students/609.png",
             "hometown": "ประเทศไทย",
@@ -731,22 +522,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 37 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-615",
             "name": "ทานากะ เคนตะ มาซาฮิโตะ (Tanaka Kenta Masahito)",
-            "year": 1,
+            "year": 2,
             "house": "naga",
             "photo": "assets/students/615.png",
             "hometown": "ประเทศไทย",
@@ -754,17 +536,13 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         },
         {
             "id": "RS-618",
             "name": "ลูเซนนาร์ด ดีเเดน เดรวาเร็ธ (Lucenard DDAN Drevareth)",
-            "year": 1,
+            "year": 2,
             "house": "naga",
             "photo": "assets/students/618.png",
             "hometown": "ประเทศไทย",
@@ -772,16 +550,7 @@ const studentData = {
                 "ไม่มี"
             ],
             "inventory": [
-                {
-                    "name": "ไม้กายสิทธิ์",
-                    "icon": "🪄",
-                    "file": "#"
-                },
-                {
-                    "name": "เหรียญทอง 25 แกลเลียน",
-                    "icon": "💰",
-                    "file": "#"
-                }
+                "ไม้กายสิทธิ์"
             ]
         }
     ]
@@ -830,10 +599,10 @@ function getHouseName(houseType) {
 
 function getHouseIcon(houseType) {
     const icons = {
-        garuda: 'assets/images/Garuda.png',
-        erawan: 'assets/images/Erawan.png',
-        qilin: 'assets/images/Qilin.png',
-        naga: 'assets/images/King of Nagas.png'
+        garuda: 'assets/images/Garuda1.png',
+        erawan: 'assets/images/Erawan1.png',
+        qilin: 'assets/images/Qilin1.png',
+        naga: 'assets/images/King of Nagas1.png'
     };
     return icons[houseType];
 }
@@ -981,14 +750,11 @@ function showStudentDetail(studentId) {
     const inventoryList = document.getElementById('inventoryList');
     inventoryList.innerHTML = '';
     student.inventory.forEach(item => {
-        const itemEl = document.createElement('a');
-        itemEl.href = item.file;
+        const itemEl = document.createElement('div');
         itemEl.className = 'inventory-item';
-        itemEl.target = '_blank';
         itemEl.innerHTML = `
-            <span class="item-icon">${item.icon}</span>
-            <span class="item-name">${item.name}</span>
-            <span class="item-link-icon">→</span>
+            <span class="item-icon">🪄</span>
+            <span class="item-name">${item}</span>
         `;
         inventoryList.appendChild(itemEl);
     });

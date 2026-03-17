@@ -172,7 +172,7 @@ function renderShop(items) {
 
     container.innerHTML = items.map(item => `
         <div class="magic-card item-rarity-${item.rarity || 'common'}">
-            ${isAdmin ? `<button class="delete-btn" title="Remove Item" onclick="deleteItem('${item._id}')">×</button>` : ''}
+            ${isAdmin ? `<button class="delete-btn" style="right:2.7rem;background:#2a3d2a;color:#6af56a;border-color:#3d5c3d;" title="Edit Item" onclick="openEditItemModal('${item._id}')">✎</button><button class="delete-btn" title="Remove Item" onclick="deleteItem('${item._id}')">×</button>` : ''}
             <div class="card-image">
                 <img src="${item.image || 'assets/images/placeholder_item.png'}" alt="${item.name}">
             </div>
@@ -288,6 +288,53 @@ window.handleAddItem = async function (e) {
         if (r.ok) {
             spawnEffect('📦', 'Item registered!');
             window.cancelAdminModal();
+            fetchShopItems();
+        } else {
+            const data = await r.json();
+            spawnEffect('❌', 'Failed: ' + data.message);
+        }
+    } catch (err) { console.error(err); }
+}
+
+// ═══════════════════════════════════════════════
+// ADMIN MODAL (Edit Item)
+// ═══════════════════════════════════════════════
+window.openEditItemModal = function(itemId) {
+    const item = currentItems.find(i => i._id === itemId);
+    if (!item) return;
+    document.getElementById('editItemId').value = item._id;
+    document.getElementById('editItemName').value = item.name || '';
+    document.getElementById('editItemDescription').value = item.description || '';
+    document.getElementById('editItemType').value = item.type || 'material';
+    document.getElementById('editItemRarity').value = item.rarity || 'common';
+    document.getElementById('editItemPrice').value = item.price || 0;
+    document.getElementById('editItemImage').value = item.image || '';
+    document.getElementById('editItemModal').style.display = 'block';
+}
+
+window.closeEditItemModal = function() {
+    document.getElementById('editItemModal').style.display = 'none';
+}
+
+window.handleEditItem = async function(e) {
+    e.preventDefault();
+    const itemId = document.getElementById('editItemId').value;
+    const itemData = {
+        name: document.getElementById('editItemName').value,
+        description: document.getElementById('editItemDescription').value,
+        type: document.getElementById('editItemType').value,
+        rarity: document.getElementById('editItemRarity').value,
+        price: parseInt(document.getElementById('editItemPrice').value),
+        image: document.getElementById('editItemImage').value
+    };
+    try {
+        const r = await fetch('/api/shop/' + itemId, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(itemData), credentials: 'include'
+        });
+        if (r.ok) {
+            spawnEffect('✨', 'Item updated!');
+            closeEditItemModal();
             fetchShopItems();
         } else {
             const data = await r.json();
@@ -724,7 +771,9 @@ window.castDailyMagic = async function () {
         isDailyMagicCasting = false;
 
         if (response.ok) {
-            if (btn) btn.classList.add('claimed');
+            // Only lock button for non-admins
+            const isAdmin = currentUser && (currentUser.roles.includes('admin') || currentUser.roles.includes('professor'));
+            if (!isAdmin && btn) btn.classList.add('claimed');
             currentUser.balance = data.newBalance;
             renderUserProfile();
             fetchTransactions();
@@ -732,7 +781,7 @@ window.castDailyMagic = async function () {
             showChestReward(data.rewardAmount || 0);
         } else {
             spawnEffect('❌', data.message);
-            if (response.status === 400 && data.message && data.message.includes('tomorrow')) {
+            if (!currentUser.roles.includes('admin') && response.status === 400 && data.message && data.message.includes('tomorrow')) {
                 if (btn) btn.classList.add('claimed');
             }
         }
@@ -752,6 +801,7 @@ async function fetchMailbox() {
     try {
         const r = await fetch('/api/gift/inbox', { credentials: 'include' });
         const gifts = await r.json();
+        _mailboxGiftsCache = gifts;
         renderMailbox(gifts);
         
         // Update notification badge
@@ -795,7 +845,7 @@ function renderMailbox(gifts) {
                         <small style="color:#6d4c41;">Qty: ${gift.quantity}</small>
                     </div>
                 </div>
-                <button class="letter-send-btn" style="width:100%;margin-top:0.5rem;padding:0.5rem;" onclick="claimGift('${gift._id}')">📦 Claim Gift</button>
+                <button class="letter-send-btn" style="width:100%;margin-top:0.5rem;padding:0.5rem;" onclick="openReadLetterModal('${gift._id}')">📖 Open Letter</button>
             </div>
         `;
     }).join('');
@@ -818,6 +868,34 @@ window.claimGift = async function(giftId) {
     } catch (err) {
         spawnEffect('❌', 'Failed to claim gift.');
     }
+}
+
+// ═══════════════════════════════════════════════
+// READ LETTER MODAL
+// ═══════════════════════════════════════════════
+let _mailboxGiftsCache = [];
+
+window.openReadLetterModal = function(giftId) {
+    const gift = _mailboxGiftsCache.find(g => g._id === giftId);
+    if (!gift) return;
+    const itemName = gift.itemId?.name || 'Unknown Artifact';
+    const itemImg = gift.itemId?.image || 'assets/images/placeholder_item.png';
+    document.getElementById('readLetterSender').textContent = 'From: ' + gift.senderName;
+    document.getElementById('readLetterItemName').textContent = itemName;
+    document.getElementById('readLetterItemImg').src = itemImg;
+    document.getElementById('readLetterItemQty').textContent = 'Qty: ' + gift.quantity;
+    document.getElementById('readLetterMessage').textContent = gift.message || '(No message included)';
+    document.getElementById('readLetterGiftId').value = giftId;
+    document.getElementById('readLetterModal').style.display = 'block';
+}
+
+window.closeReadLetterModal = function() {
+    document.getElementById('readLetterModal').style.display = 'none';
+}
+
+window.submitClaimGift = function() {
+    const giftId = document.getElementById('readLetterGiftId').value;
+    if (giftId) { closeReadLetterModal(); claimGift(giftId); }
 }
 
 // Send Gift Modal
