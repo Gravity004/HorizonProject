@@ -369,6 +369,19 @@ async function fetchRecipes() {
     try {
         const r = await fetch('/api/craft/recipes', { credentials: 'include' });
         currentRecipes = await r.json();
+
+        // Inject Love Potion Recipe dynamically
+        const lovePotionRecipe = {
+            _id: 'love_potion',
+            resultItemName: 'น้ำยาลุ่มหลง',
+            craftingType: 'cauldron',
+            ingredients: [
+                { itemId: { name: 'วัตถุดิบ Legendary ขนิดใดก็ได้ (Any Legendary Item)' }, quantity: 2 },
+                { itemId: { name: 'วัตถุดิบ Rare ชนิดใดก็ได้ (Any Rare Item)' }, quantity: 2 }
+            ]
+        };
+        currentRecipes.push(lovePotionRecipe);
+
         renderRecipes(currentRecipes);
     } catch (err) { console.error('Failed to fetch recipes', err); }
 }
@@ -406,6 +419,31 @@ window.selectRecipe = function (recipeId) {
     const container = document.getElementById('craftingIngredients');
     const userInv = currentUser.inventory || [];
 
+    if (recipeId === 'love_potion') {
+        const legendaryItems = userInv.filter(i => i.itemId?.rarity === 'legendary');
+        const rareItems = userInv.filter(i => i.itemId?.rarity === 'rare');
+        
+        const legCount = legendaryItems.reduce((s, i) => s + i.quantity, 0);
+        const rareCount = rareItems.reduce((s, i) => s + i.quantity, 0);
+
+        container.innerHTML = `
+            <div class="ingredient-check ${legCount >= 2 ? 'ok' : 'missing'}">
+                <span>Any Legendary Item</span>
+                <span>${legCount}/2 ${legCount >= 2 ? '✅' : '❌'}</span>
+            </div>
+            <div class="ingredient-check ${rareCount >= 2 ? 'ok' : 'missing'}">
+                <span>Any Rare Item</span>
+                <span>${rareCount}/2 ${rareCount >= 2 ? '✅' : '❌'}</span>
+            </div>
+        `;
+        
+        const canCraft = legCount >= 2 && rareCount >= 2;
+        const btn = document.getElementById('craftBtn');
+        btn.disabled = !canCraft;
+        btn.onclick = () => craftItem(recipeId);
+        return;
+    }
+
     container.innerHTML = selectedRecipe.ingredients.map(ing => {
         const ingId = ing.itemId?._id || ing.itemId;
         const userHas = userInv.find(i => (i.itemId?._id || i.itemId) === ingId)?.quantity || 0;
@@ -428,6 +466,7 @@ window.selectRecipe = function (recipeId) {
     btn.disabled = !canCraft;
     btn.onclick = () => craftItem(recipeId);
 }
+
 
 async function craftItem(recipeId) {
     const cauldron = document.querySelector('.cauldron-visual');
@@ -504,12 +543,37 @@ function updateGoldStacks(balance) {
     container.innerHTML = html;
 }
 
-async function fetchTransactions() {
+let userTransactions = [];
+let userTransactionsSkip = 0;
+const USER_TX_LIMIT = 20;
+
+async function fetchTransactions(loadMore = false) {
+    if (!loadMore) {
+        userTransactions = [];
+        userTransactionsSkip = 0;
+        const container = document.getElementById('transactionList');
+        if (container) container.innerHTML = '<p class="empty-msg">Fetching ledger...</p>';
+    }
+
     try {
-        const r = await fetch('/api/bank/transactions', { credentials: 'include' });
+        const r = await fetch(`/api/bank/transactions?skip=${userTransactionsSkip}&limit=${USER_TX_LIMIT}`, { credentials: 'include' });
         const txs = await r.json();
-        renderTransactions(txs);
+        
+        if (txs.length > 0) {
+            userTransactions = userTransactions.concat(txs);
+            userTransactionsSkip += USER_TX_LIMIT;
+        }
+
+        renderTransactions(userTransactions);
+
+        const btn = document.getElementById('loadMoreTxBtn');
+        if (btn) btn.style.display = txs.length === USER_TX_LIMIT ? 'block' : 'none';
+        
     } catch (err) { console.error(err); }
+}
+
+window.loadMoreTransactions = function() {
+    fetchTransactions(true);
 }
 
 function renderTransactions(txs) {
@@ -521,12 +585,16 @@ function renderTransactions(txs) {
     }
     container.innerHTML = txs.map(tx => {
         const isSender = tx.senderName === currentUser.username;
-        const icon = tx.type === 'admin_adjust' ? '⚡' : (isSender ? '📤' : '📥');
+        let logLabel = '';
+        if (tx.type === 'admin_adjust') logLabel = `<span class="tx-tag adj">ADJ</span>`;
+        else if (isSender) logLabel = `<span class="tx-tag out">OUT</span>`;
+        else logLabel = `<span class="tx-tag in">IN</span>`;
+
         const color = isSender ? 'tx-out' : 'tx-in';
         const sign = isSender ? '-' : '+';
         return `
             <div class="tx-row ${color}">
-                <span class="tx-icon">${icon}</span>
+                <div class="tx-icon-wrap">${logLabel}</div>
                 <div class="tx-details">
                     <strong>${tx.description || tx.type}</strong>
                     <small>${new Date(tx.timestamp).toLocaleString('th-TH')}</small>

@@ -59,6 +59,70 @@ router.post('/craft', isAuthenticated, async (req, res) => {
     const { recipeId } = req.body;
 
     try {
+        if (recipeId === 'love_potion') {
+            const user = await User.findById(req.user.id).populate({ path: 'inventory.itemId', model: 'Item' });
+            if (!user) return res.status(404).json({ message: 'User not found' });
+
+            const legendaryItems = user.inventory.filter(i => i.itemId && i.itemId.rarity === 'legendary');
+            const rareItems = user.inventory.filter(i => i.itemId && i.itemId.rarity === 'rare');
+
+            const totalLegendaryQty = legendaryItems.reduce((sum, item) => sum + item.quantity, 0);
+            const totalRareQty = rareItems.reduce((sum, item) => sum + item.quantity, 0);
+
+            if (totalLegendaryQty < 2 || totalRareQty < 2) {
+                return res.status(400).json({ message: 'Missing ingredients: Need 2 Legendary and 2 Rare items.' });
+            }
+
+            let legNeeded = 2;
+            for (const leg of legendaryItems) {
+                if (legNeeded <= 0) break;
+                const deduct = Math.min(leg.quantity, legNeeded);
+                leg.quantity -= deduct;
+                legNeeded -= deduct;
+            }
+
+            let rareNeeded = 2;
+            for (const rare of rareItems) {
+                if (rareNeeded <= 0) break;
+                const deduct = Math.min(rare.quantity, rareNeeded);
+                rare.quantity -= deduct;
+                rareNeeded -= deduct;
+            }
+
+            user.inventory = user.inventory.filter(i => i.quantity > 0);
+
+            let potion = await Item.findOne({ name: 'น้ำยาลุ่มหลง' });
+            if (!potion) {
+                potion = new Item({
+                    name: 'น้ำยาลุ่มหลง',
+                    description: 'A powerful potion that causes the target to transfer their next gifts/gold to you.',
+                    type: 'potion',
+                    rarity: 'epic',
+                    price: 0,
+                    image: 'assets/images/potion.png'
+                });
+                await potion.save();
+            }
+
+            const existingIdx = user.inventory.findIndex(i => i.itemId._id.toString() === potion._id.toString());
+            if (existingIdx > -1) {
+                user.inventory[existingIdx].quantity += 1;
+            } else {
+                user.inventory.push({ itemId: potion._id, quantity: 1 });
+            }
+
+            user.inventory = user.inventory.map(i => ({ itemId: i.itemId._id || i.itemId, quantity: i.quantity }));
+
+            user.markModified('inventory');
+            await user.save();
+
+            return res.json({
+                message: `Successfully crafted น้ำยาลุ่มหลง!`,
+                resultItemName: 'น้ำยาลุ่มหลง',
+                inventory: user.inventory
+            });
+        }
+
         const recipe = await Recipe.findById(recipeId).populate('resultItemId').populate('ingredients.itemId');
         if (!recipe) return res.status(404).json({ message: 'Recipe not found' });
 

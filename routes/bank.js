@@ -22,9 +22,11 @@ router.get('/balance', isAuthenticated, async (req, res) => {
 // Get Transaction History
 router.get('/transactions', isAuthenticated, async (req, res) => {
     try {
+        const skip = parseInt(req.query.skip) || 0;
+        const limit = parseInt(req.query.limit) || 20;
         const transactions = await Transaction.find({
             $or: [{ senderId: req.user.id }, { recipientId: req.user.id }]
-        }).select('-_id -senderId -recipientId -__v').sort({ timestamp: -1 }).limit(50);
+        }).select('-_id -senderId -recipientId -__v').sort({ timestamp: -1 }).skip(skip).limit(limit);
         res.json(transactions);
     } catch (err) {
         res.status(500).json({ message: err.message });

@@ -771,10 +771,34 @@ function openAdmissionModal() {
     });
 
     content += `
-        <div class="google-form-embed">
-            <a href="${admissionInfo.formUrl}" target="_blank" class="google-form-button">
-                📝 กรอกใบสมัครออนไลน์
-            </a>
+        <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(212, 175, 55, 0.05); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px;">
+            <h3 style="color: var(--gold); border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 0.5rem; margin-bottom: 1rem; font-size: 1.1rem;">
+                ⓘ กติกาการสมัคร (How to Apply) 🔍
+            </h3>
+            <ol style="margin-left: 1.5rem; line-height: 1.8; margin-bottom: 1.5rem; color: #e0d0b0;">
+                <li>ตรวจสอบและทำความเข้าใจกฎระเบียบของโรงเรียน</li>
+                <li>แท็กเพื่อน 2-3 คน ภายในคอมเมนท์โพสต์รับสมัครนี้</li>
+                <li>แชร์โพสต์นี้ลงสตอรี่พร้อมแท็กแอคเคาท์ @rachataxserver</li>
+                <li>หลังจากนั้นทักแอคเคาท์ @rachataxserver ด้วยการพิมพ์คำว่า 'Rachata Admission'</li>
+                <li>ผู้สมัครควรกรอกข้อมูลด้วยตนเอง หากพบเจอการกรอกข้อมูลแทนกันจะตัดสิทธิ์ทันที</li>
+                <li>ผู้สมัครควรสมัครด้วยความยินยอม</li>
+                <li>ขอความร่วมมือทำตามกติกาทุกข้อด้วยนะครับ</li>
+            </ol>
+            <div style="color: #ffaaaa; line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                ⚠️ รบกวนผู้สมัครกดติดตามแอคเคาท์ @rachataxserver เพื่อรับข่าวสารต่าง ๆ (หากไม่ผ่าน สามารถยกเลิกติดตามได้)<br>
+                ⚠️ ขอความร่วมมือไม่เปลี่ยนชื่อแอคเคาท์ระหว่างการสมัครและคัดเลือก หากมีความจำเป็นเปลี่ยนชื่อ ขณะส่งใบสมัครแล้ว ให้ดำเนินการแจ้งชื่อแอคเคาท์ใหม่เพื่อประโยชน์ของท่าน<br>
+                ⚠️ อนึ่ง หากไม่พบชื่อแอคเคาท์ตามใบสมัครจะตัดสิทธิ์ทันที
+            </div>
+            <div style="color: #aaddff; line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                ⏳ ระยะเวลา : วันนี้ - วันที่ 26 มีนาคม เวลา 23.59 นาฬิกา พุทธศักราชเวทย์ 2569<br>
+                🛎️ ประกาศรายชื่อผู้มีสิทธิ์สอบข้อเขียน : วันที่ 27 มีนาคม พุทธศักราชเวทย์ 2569<br>
+                🛎️ สอบข้อเขียน : วันที่ 28 มีนาคม พุทธศักราชเวทย์ 2569<br>
+                🛎️ ประกาศผลรายชื่อนักเรียนใหม่ : วันที่ 29 มีนาคม พุทธศักราชเวทย์ 2569<br>
+                🚪 พิธีปฐมนิเทศและคัดสรรบ้าน : วันที่ 4 เมษายน
+            </div>
+            <div style="font-weight: bold; color: var(--gold); text-align: center; font-size: 0.95rem;">
+                ** ขอความร่วมมือผู้สมัครอ่านอย่างละเอียดและปฏิบัติตามทุกขั้นตอน
+            </div>
         </div>
     `;
 
