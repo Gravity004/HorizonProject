@@ -181,6 +181,17 @@
             color: #f5c86a;
         }
 
+        .log-type.daily_reward {
+            background: #3a3800;
+            color: #f5e46a;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
         .log-time {
             color: #6a5a3a;
             font-size: .72rem;
@@ -625,7 +636,9 @@
         <div class="modal-content parchment log-modal-content">
             <span class="close-modal" onclick="closeLogModal()">×</span>
             <h2>📋 Activity Log</h2>
+            <input type="text" id="logSearch" class="parchment-input" placeholder="Search by type, user, or amount..." style="margin-bottom: 1rem;" oninput="filterLogs()">
             <div id="logContainer" class="scroll-content"></div>
+            <button id="loadMoreLogsBtn" class="admin-btn" style="width: 100%; margin-top: 1rem; display: none;" onclick="loadMoreLogs()">Load More</button>
         </div>
     </div>
 

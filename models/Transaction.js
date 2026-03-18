@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
     transactionId: { type: String, required: true, unique: true },
-    type: { type: String, enum: ['transfer', 'purchase', 'craft', 'admin_adjust'], required: true },
+    type: { type: String, enum: ['transfer', 'purchase', 'craft', 'admin_adjust', 'daily_reward'], required: true },
     senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     senderName: { type: String },
     recipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

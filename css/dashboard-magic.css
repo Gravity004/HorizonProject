@@ -687,12 +687,20 @@ body {
     border-radius: 16px;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
     position: relative;
-    max-width: 700px;
+    max-width: 1000px;
     margin: 0 auto;
     min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 768px) {
+    .Thanaraksh-vault {
+        grid-template-columns: 1fr;
+        padding: 1.5rem;
+    }
 }
 
 .vault-gold-pile {
@@ -757,12 +765,12 @@ select.parchment-input {
 
 .goblin-teller {
     width: 100%;
-    margin: 1.5rem 0;
     padding: 1.5rem;
     background: rgba(10, 5, 0, 0.85);
     border-radius: 10px;
     border: 1px solid rgba(212, 175, 55, 0.2);
     backdrop-filter: blur(8px);
+    text-align: left;
 }
 
 .input-group {

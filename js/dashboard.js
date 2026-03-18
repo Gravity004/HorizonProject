@@ -666,6 +666,29 @@ function renderInventory() {
 }
 
 window.useItem = async function (itemId, itemName) {
+    if (itemName === 'น้ำยาลุ่มหลง') {
+        const targetUsername = prompt('Enter the username of your target (Who will fall for you?):');
+        if (!targetUsername) return; 
+
+        showConfirm('Use Love Potion', `Cast the Love Potion on "${targetUsername}"?`, async () => {
+             spawnEffect('✨', `Casting Love Potion on ${targetUsername}...`);
+             try {
+                 const r = await fetch('/api/shop/use', {
+                     method: 'POST', headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({ itemId, targetUsername }), credentials: 'include'
+                 });
+                 const data = await r.json();
+                 if (r.ok) {
+                     spawnEffect('💖', data.message);
+                     fetchInventory();
+                 } else {
+                     spawnEffect('❌', data.message);
+                 }
+             } catch (err) { spawnEffect('❌', 'Failed to use potion.'); }
+        });
+        return; 
+    }
+
     showConfirm('Use Item', `Use "${itemName}"? It will be consumed from your inventory.`, async () => {
         // Sparkle effect
         spawnEffect('✨', `Using ${itemName}...`);
@@ -1174,37 +1197,79 @@ window.adminAdjustHealth = async function () {
 // ═══════════════════════════════════════════════
 // LOG MODAL
 // ═══════════════════════════════════════════════
+let adminLogs = [];
+let adminLogsSkip = 0;
+const ADMIN_LOGS_LIMIT = 50;
+
 window.openLogModal = async function () {
     document.getElementById('logModal').style.display = 'block';
     document.getElementById('logContainer').innerHTML = '<p class="empty-msg">Loading...</p>';
+    adminLogs = [];
+    adminLogsSkip = 0;
+    const btn = document.getElementById('loadMoreLogsBtn');
+    if (btn) btn.style.display = 'none';
+    
+    await fetchAndRenderLogs();
+};
+
+async function fetchAndRenderLogs() {
     try {
-        const r = await fetch('/api/bank/admin/logs', { credentials: 'include' });
+        const r = await fetch(`/api/bank/admin/logs?skip=${adminLogsSkip}&limit=${ADMIN_LOGS_LIMIT}`, { credentials: 'include' });
         const logs = await r.json();
-        if (!logs.length) {
-            document.getElementById('logContainer').innerHTML = '<p class="empty-msg">No activity yet.</p>';
-            return;
+        
+        if (logs.length > 0) {
+            adminLogs = adminLogs.concat(logs);
+            adminLogsSkip += ADMIN_LOGS_LIMIT;
+            const btn = document.getElementById('loadMoreLogsBtn');
+            if (btn) btn.style.display = logs.length === ADMIN_LOGS_LIMIT ? 'block' : 'none';
         }
-        const typeClass = (t) => {
-            if (t === 'transfer') return 'transfer';
-            if (t === 'purchase') return 'purchase';
-            if (t === 'craft') return 'craft';
-            return 'admin_adjust';
-        };
-        document.getElementById('logContainer').innerHTML = logs.map(log => `
-            <div class="log-row">
-                <span class="log-type ${typeClass(log.type)}">${log.type.replace('_', ' ')}</span>
-                <div>
-                    <div>${log.description || '-'}</div>
-                    <div style="font-size:.72rem;color:#8a7a5a">${log.senderName || '?'} → ${log.recipientName || '?'}</div>
-                    <div class="log-time">${new Date(log.timestamp).toLocaleString('th-TH')}</div>
-                </div>
-                <span class="log-amount ${log.amount >= 0 ? 'pos' : 'neg'}">${log.amount >= 0 ? '+' : ''}${log.amount}G</span>
-            </div>
-        `).join('');
+
+        renderLogContainer();
     } catch (err) {
         document.getElementById('logContainer').innerHTML = '<p class="empty-msg">Failed to load logs.</p>';
     }
-};
+}
+
+window.loadMoreLogs = async function() {
+    await fetchAndRenderLogs();
+}
+
+window.filterLogs = function() {
+    renderLogContainer();
+}
+
+function renderLogContainer() {
+    const query = (document.getElementById('logSearch')?.value || '').toLowerCase();
+    
+    const filtered = adminLogs.filter(log => {
+        if (!query) return true;
+        const searchStr = `${log.type} ${log.description} ${log.senderName} ${log.recipientName} ${log.amount}`.toLowerCase();
+        return searchStr.includes(query);
+    });
+
+    if (!filtered.length) {
+        document.getElementById('logContainer').innerHTML = '<p class="empty-msg">No activity yet.</p>';
+        return;
+    }
+    const typeClass = (t) => {
+        if (t === 'transfer') return 'transfer';
+        if (t === 'purchase') return 'purchase';
+        if (t === 'craft') return 'craft';
+        if (t === 'daily_reward') return 'daily_reward';
+        return 'admin_adjust';
+    };
+    document.getElementById('logContainer').innerHTML = filtered.map(log => `
+        <div class="log-row">
+            <span class="log-type ${typeClass(log.type)}">${log.type.replace('_', ' ')}</span>
+            <div>
+                <div>${log.description || '-'}</div>
+                <div style="font-size:.72rem;color:#8a7a5a">${log.senderName || '?'} → ${log.recipientName || '?'}</div>
+                <div class="log-time">${new Date(log.timestamp).toLocaleString('th-TH')}</div>
+            </div>
+            <span class="log-amount ${log.amount >= 0 ? 'pos' : 'neg'}">${log.amount >= 0 ? '+' : ''}${log.amount}G</span>
+        </div>
+    `).join('');
+}
 
 window.closeLogModal = () => document.getElementById('logModal').style.display = 'none';
 

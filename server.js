@@ -12,6 +12,16 @@ require('./config/passport');
 const app = express();
 const PORT = process.env.PORT || 12500;
 
+// Rate Limiter to prevent spam/freezing
+const rateLimit = require('express-rate-limit');
+const limiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 500, // limit each IP to 500 requests per windowMs
+    message: { message: "Too many requests from this IP, please try again later." }
+});
+app.use('/api/', limiter);
+app.use('/auth/', limiter);
+
 if (!process.env.MONGODB_URI) {
     console.error('CRITICAL: MONGODB_URI is not defined in environment variables!');
 }

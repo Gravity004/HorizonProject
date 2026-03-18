@@ -18,9 +18,20 @@ router.post('/send', isAuthenticated, async (req, res) => {
 
     try {
         const sender = await User.findById(req.user.id);
-        const recipient = await User.findOne({
+        let recipient = await User.findOne({
             $or: [{ discordId: recipientId }, { username: recipientId }]
         });
+
+        // LOVE POTION EFFECT CHECK
+        if (sender.activeEffects && sender.activeEffects.length > 0) {
+            const lovePotion = sender.activeEffects.find(e => e.effectId === 'love_potion');
+            if (lovePotion && new Date(lovePotion.expiresAt) > new Date()) {
+                const caster = await User.findById(lovePotion.casterId);
+                if (caster && caster.id !== sender.id) {
+                    recipient = caster;
+                }
+            }
+        }
 
         if (!recipient) return res.status(404).json({ message: 'Recipient wizard not found.' });
         if (recipient.id === sender.id) return res.status(400).json({ message: 'You cannot send a gift to yourself.' });

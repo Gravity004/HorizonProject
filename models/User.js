@@ -16,6 +16,12 @@ const userSchema = new mongoose.Schema({
         itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' },
         quantity: { type: Number, default: 1 }
     }],
+    activeEffects: [{
+        effectId: { type: String, enum: ['love_potion'] },
+        casterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        casterName: { type: String },
+        expiresAt: { type: Date }
+    }],
     createdAt: { type: Date, default: Date.now }
 }, {
     toJSON: { versionKey: false }
