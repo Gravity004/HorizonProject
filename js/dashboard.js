@@ -370,10 +370,10 @@ async function fetchRecipes() {
         const r = await fetch('/api/craft/recipes', { credentials: 'include' });
         currentRecipes = await r.json();
 
-        // Inject Love Potion Recipe dynamically
+        // Inject Amortentia Potion Recipe dynamically
         const lovePotionRecipe = {
             _id: 'love_potion',
-            resultItemName: 'น้ำยาลุ่มหลง',
+            resultItemName: 'Amortentia Potion',
             craftingType: 'cauldron',
             ingredients: [
                 { itemId: { name: 'วัตถุดิบ Legendary ขนิดใดก็ได้ (Any Legendary Item)' }, quantity: 2 },
@@ -734,27 +734,10 @@ function renderInventory() {
 }
 
 window.useItem = async function (itemId, itemName) {
-    if (itemName === 'น้ำยาลุ่มหลง') {
-        const targetUsername = prompt('Enter the username of your target (Who will fall for you?):');
-        if (!targetUsername) return; 
-
-        showConfirm('Use Love Potion', `Cast the Love Potion on "${targetUsername}"?`, async () => {
-             spawnEffect('✨', `Casting Love Potion on ${targetUsername}...`);
-             try {
-                 const r = await fetch('/api/shop/use', {
-                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ itemId, targetUsername }), credentials: 'include'
-                 });
-                 const data = await r.json();
-                 if (r.ok) {
-                     spawnEffect('💖', data.message);
-                     fetchInventory();
-                 } else {
-                     spawnEffect('❌', data.message);
-                 }
-             } catch (err) { spawnEffect('❌', 'Failed to use potion.'); }
-        });
-        return; 
+    if (itemName === 'Amortentia Potion') {
+        // Open custom modal for target username
+        openAmortenteiaModal(itemId, itemName);
+        return;
     }
 
     showConfirm('Use Item', `Use "${itemName}"? It will be consumed from your inventory.`, async () => {
@@ -1352,6 +1335,48 @@ window.onclick = function (event) {
         }
     });
 };
+
+// ═══════════════════════════════════════════════
+// AMORTENTIA POTION - Custom Target Modal
+// ═══════════════════════════════════════════════
+function openAmortenteiaModal(itemId, itemName) {
+    const modal = document.getElementById('amortenteiaModal');
+    if (!modal) return;
+    document.getElementById('amortenteiaItemId').value = itemId;
+    document.getElementById('amortenteiaTargetInput').value = '';
+    modal.classList.add('active');
+}
+
+window.closeAmortenteiaModal = function() {
+    const modal = document.getElementById('amortenteiaModal');
+    if (modal) modal.classList.remove('active');
+}
+
+window.submitAmortenteia = async function() {
+    const itemId = document.getElementById('amortenteiaItemId').value;
+    const targetUsername = document.getElementById('amortenteiaTargetInput').value.trim();
+    if (!targetUsername) {
+        spawnEffect('❌', 'Please enter a target username.');
+        return;
+    }
+    closeAmortenteiaModal();
+    showConfirm('Amortentia Potion', `Cast Amortentia on "${targetUsername}"?`, async () => {
+        spawnEffect('✨', `Casting Amortentia on ${targetUsername}...`);
+        try {
+            const r = await fetch('/api/shop/use', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId, targetUsername }), credentials: 'include'
+            });
+            const data = await r.json();
+            if (r.ok) {
+                spawnEffect('💖', data.message);
+                fetchInventory();
+            } else {
+                spawnEffect('❌', data.message);
+            }
+        } catch (err) { spawnEffect('❌', 'Failed to cast potion.'); }
+    });
+}
 
 // ═══════════════════════════════════════════════
 // EFFECTS / ANIMATIONS

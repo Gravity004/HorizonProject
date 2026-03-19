@@ -85,7 +85,7 @@ router.post('/use', isAuthenticated, async (req, res) => {
         let healthMsg = '';
         
         if (item) {
-            if (item.name === 'น้ำยาลุ่มหลง') {
+            if (item.name === 'Amortentia Potion') {
                 if (!targetUsername) return res.status(400).json({ message: 'Target username is required for Love Potion!' });
                 
                 const target = await User.findOne({ username: targetUsername });
@@ -122,7 +122,7 @@ router.post('/use', isAuthenticated, async (req, res) => {
                         recipientName: target.username,
                         itemId: item._id, 
                         quantity: 0,
-                        message: `คุณติดสถานะ "ลุ่มหลง" เป็นเวลา 1 ชั่วโมง! การกระทำถัดไปของคุณอาจถูกครอบงำ... (You are under the Love Potion effect!)`,
+                        message: `คุณถูกใช้คาถา Amortentia Potion (น้ำยาลุ่มหลง) เป็นเวลา 1 ชั่วโมง! การกระทำถัดไปในธนาคารหรือการส่งของของคุณอาจถูกครอบงำ...`,
                         isClaimed: false 
                     });
                     await gift.save();

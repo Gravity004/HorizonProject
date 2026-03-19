@@ -89,13 +89,13 @@ router.post('/craft', isAuthenticated, async (req, res) => {
                 rareNeeded -= deduct;
             }
 
-            user.inventory = user.inventory.filter(i => i.quantity > 0);
+            user.inventory = user.inventory.filter(i => i.quantity > 0 && i.itemId != null);
 
-            let potion = await Item.findOne({ name: 'น้ำยาลุ่มหลง' });
+            let potion = await Item.findOne({ name: 'Amortentia Potion' });
             if (!potion) {
                 potion = new Item({
-                    name: 'น้ำยาลุ่มหลง',
-                    description: 'A powerful potion that causes the target to transfer their next gifts/gold to you.',
+                    name: 'Amortentia Potion',
+                    description: 'A powerful enchantment potion that binds the target\u2019s gold and gifts to you for 1 hour.',
                     type: 'potion',
                     rarity: 'epic',
                     price: 0,
@@ -104,21 +104,28 @@ router.post('/craft', isAuthenticated, async (req, res) => {
                 await potion.save();
             }
 
-            const existingIdx = user.inventory.findIndex(i => i.itemId._id.toString() === potion._id.toString());
+            const potionIdStr = potion._id.toString();
+            const existingIdx = user.inventory.findIndex(i => {
+                if (!i.itemId) return false;
+                const id = i.itemId._id ? i.itemId._id.toString() : i.itemId.toString();
+                return id === potionIdStr;
+            });
             if (existingIdx > -1) {
                 user.inventory[existingIdx].quantity += 1;
             } else {
                 user.inventory.push({ itemId: potion._id, quantity: 1 });
             }
 
-            user.inventory = user.inventory.map(i => ({ itemId: i.itemId._id || i.itemId, quantity: i.quantity }));
+            user.inventory = user.inventory
+                .filter(i => i.itemId != null)
+                .map(i => ({ itemId: i.itemId._id || i.itemId, quantity: i.quantity }));
 
             user.markModified('inventory');
             await user.save();
 
             return res.json({
-                message: `Successfully crafted น้ำยาลุ่มหลง!`,
-                resultItemName: 'น้ำยาลุ่มหลง',
+                message: `Successfully crafted Amortentia Potion!`,
+                resultItemName: 'Amortentia Potion',
                 inventory: user.inventory
             });
         }

@@ -718,9 +718,9 @@ function renderStudentTable() {
         const row = document.createElement('tr');
         row.className = 'student-row';
         row.innerHTML = `
-            <td style="text-align: center; width: 25%;">${student.id}</td>
-            <td style="text-align: left; width: 50%;">${student.name}</td>
-            <td style="text-align: center; width: 25%;">ปีที่ ${student.year}</td>
+            <td style="text-align: center; width: 20%; white-space: nowrap;">${student.id}</td>
+            <td style="text-align: left; width: 60%; word-break: break-word;">${student.name}</td>
+            <td style="text-align: center; width: 20%; white-space: nowrap;">ปีที่ ${student.year}</td>
         `;
         row.addEventListener('click', () => showStudentDetail(student.id));
         tbody.appendChild(row);

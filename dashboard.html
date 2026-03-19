@@ -365,6 +365,266 @@
             background: #2a5c8f;
             color: #fff;
         }
+        /* ── Bank Redesign: Thai-Magical Style ── */
+        .bank-temple {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .bank-temple { grid-template-columns: 1fr; }
+        }
+
+        .bank-panel {
+            background: linear-gradient(145deg, rgba(20, 10, 40, 0.95), rgba(10, 5, 20, 0.98));
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: 14px;
+            padding: 1.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bank-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+        }
+
+        .bank-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .bank-panel-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: #d4af37;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 0.4rem;
+            text-align: center;
+        }
+
+        .bank-thai-divider {
+            text-align: center;
+            color: rgba(212, 175, 55, 0.45);
+            font-size: 0.7rem;
+            letter-spacing: 0.6rem;
+            margin-bottom: 1.4rem;
+        }
+
+        .bank-label {
+            display: block;
+            font-family: 'Cinzel', serif;
+            font-size: 0.72rem;
+            color: #a89070;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.4rem;
+        }
+
+        .bank-input {
+            width: 100%;
+            padding: 0.6rem 0.9rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 6px;
+            color: #f0e6c8;
+            font-family: 'Cinzel', serif;
+            font-size: 0.88rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .bank-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+        }
+
+        .bank-send-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #3a2200, #8b6914);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 8px;
+            color: #f5e6c0;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(139, 105, 20, 0.3);
+        }
+
+        .bank-send-btn:hover {
+            background: linear-gradient(135deg, #8b6914, #d4af37);
+            color: #1a0f28;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(212, 175, 55, 0.5);
+        }
+
+        .tx-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 0.5rem 0.8rem;
+            align-items: center;
+            padding: 0.65rem 0.8rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.08);
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+
+        .tx-row:hover { background: rgba(212, 175, 55, 0.04); }
+
+        .tx-row .tx-id {
+            grid-column: 1 / -1;
+            font-size: 0.65rem;
+            color: #6a5a3a;
+            font-family: monospace;
+        }
+
+        .bank-load-more {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 0.55rem;
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 6px;
+            color: #a89070;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: none;
+        }
+
+        .bank-load-more:hover {
+            border-color: #d4af37;
+            color: #d4af37;
+        }
+
+        /* ── Amortentia Modal ── */
+        .amortentia-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 22000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .amortentia-overlay.active { display: flex; }
+
+        .amortentia-box {
+            background: linear-gradient(145deg, #1a0828, #2d0e4a);
+            border: 2px solid rgba(220, 120, 200, 0.6);
+            border-radius: 16px;
+            padding: 2.5rem 2.5rem;
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(200, 80, 180, 0.4), inset 0 0 30px rgba(100, 0, 80, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .amortentia-box::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(220, 120, 200, 0.1) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .amortentia-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            color: #e8a0d0;
+            margin-bottom: 0.4rem;
+            text-shadow: 0 0 20px rgba(220, 120, 200, 0.7);
+            letter-spacing: 2px;
+        }
+
+        .amortentia-subtitle {
+            font-size: 0.8rem;
+            color: rgba(220, 180, 210, 0.6);
+            letter-spacing: 3px;
+            margin-bottom: 1.8rem;
+        }
+
+        .amortentia-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(220, 120, 200, 0.4);
+            border-radius: 8px;
+            color: #f0e0f8;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .amortentia-input:focus {
+            outline: none;
+            border-color: #e8a0d0;
+            box-shadow: 0 0 20px rgba(220, 120, 200, 0.35);
+        }
+
+        .amortentia-btns { display: flex; gap: 0.75rem; }
+
+        .amortentia-cast {
+            flex: 1;
+            padding: 0.65rem;
+            background: linear-gradient(135deg, #7a1060, #c83498);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .amortentia-cast:hover {
+            background: linear-gradient(135deg, #c83498, #e850b0);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(200, 52, 152, 0.5);
+        }
+
+        .amortentia-cancel {
+            flex: 1;
+            padding: 0.65rem;
+            background: transparent;
+            border: 1px solid rgba(220, 120, 200, 0.3);
+            border-radius: 8px;
+            color: rgba(220, 180, 210, 0.7);
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .amortentia-cancel:hover {
+            border-color: #e8a0d0;
+            color: #e8a0d0;
+        }
     </style>
 </head>
 
@@ -456,26 +716,27 @@
 
             <!-- BANK SECTION -->
             <section id="bank" class="magic-section">
-                <div class="Thanaraksh-vault">
-                    <div class="vault-door">
-                        <!-- Vault elements removed per request to clean background -->
+                <div style="text-align:center; margin-bottom: 2rem;">
+                    <h2 style="font-family:'Cinzel',serif; color:#d4af37; font-size:1.6rem; letter-spacing:4px; margin-bottom:0.3rem;">THANARAKSH WIZARDING BANK</h2>
+                    <div style="color:rgba(212,175,55,0.4); font-size:0.7rem; letter-spacing:0.7rem;">&#10022; &#10022; &#10022; &#10022; &#10022;</div>
+                </div>
+                <div class="bank-temple">
+                    <!-- Transfer Panel -->
+                    <div class="bank-panel">
+                        <div class="bank-panel-title">Vault Transfer</div>
+                        <div class="bank-thai-divider">&#10022; &#10022; &#10022;</div>
+                        <label class="bank-label">Recipient (Discord Username)</label>
+                        <input type="text" id="recipientId" class="bank-input" placeholder="e.g. nxvxn_">
+                        <label class="bank-label">Amount (Galleons)</label>
+                        <input type="number" id="transferAmount" class="bank-input" placeholder="0" min="1">
+                        <button onclick="transferFunds()" class="bank-send-btn">Transfer via Owl Post</button>
                     </div>
-
-                    <div class="goblin-teller">
-                        <h3>💸 Transfer Funds</h3>
-                        <div class="input-group">
-                            <label>Recipient (Discord username)</label>
-                            <input type="text" id="recipientId" class="parchment-input" placeholder="e.g. nxvxn_">
-                        </div>
-                        <div class="input-group">
-                            <label>Amount</label>
-                            <input type="number" id="transferAmount" class="parchment-input" placeholder="0" min="1">
-                        </div>
-                        <button onclick="transferFunds()" class="goblin-btn">Send via Owl 🦉</button>
-                    </div>
-                    <div class="transaction-history">
-                        <h3>📋 Transaction History</h3>
+                    <!-- Transaction History Panel -->
+                    <div class="bank-panel">
+                        <div class="bank-panel-title">Transaction Ledger</div>
+                        <div class="bank-thai-divider">&#10022; &#10022; &#10022;</div>
                         <div id="transactionList" class="scroll-content"></div>
+                        <button id="loadMoreTxBtn" class="bank-load-more" onclick="loadMoreTransactions()">Load More Records</button>
                     </div>
                 </div>
             </section>
@@ -718,6 +979,24 @@
                     <input type="hidden" id="readLetterGiftId">
                     <button class="letter-send-btn" onclick="submitClaimGift()">📦 Claim Gift</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Amortentia Potion Modal -->
+    <div id="amortenteiaModal" class="amortentia-overlay">
+        <div class="amortentia-box">
+            <div class="amortentia-title">Amortentia Potion</div>
+            <div class="amortentia-subtitle">&#10022; Cast the Enchantment &#10022;</div>
+            <p style="color:rgba(220,180,210,0.8); font-size:0.85rem; margin-bottom:1.5rem; line-height:1.6;">
+                Enter the Discord username of your target.<br>
+                Their next gold transfer or gift shall be redirected to you for 1 hour.
+            </p>
+            <input type="hidden" id="amortenteiaItemId">
+            <input type="text" id="amortenteiaTargetInput" class="amortentia-input" placeholder="Target username...">
+            <div class="amortentia-btns">
+                <button class="amortentia-cancel" onclick="closeAmortenteiaModal()">Cancel</button>
+                <button class="amortentia-cast" onclick="submitAmortenteia()">Cast Amortentia</button>
             </div>
         </div>
     </div>

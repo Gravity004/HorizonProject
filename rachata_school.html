@@ -575,6 +575,66 @@
             </table>
         </section>
 
+        <!-- TOP 3 Server Boosters Section -->
+        <section id="boosters">
+            <h2 class="section-title cinzel">TOP 3 Server Boosters</h2>
+            <p style="text-align: center; color: var(--text-light); margin-bottom: 2.5rem; font-size: 0.9rem;">
+                ผู้พิทักษ์อันทรงพลังที่สุดแห่งเซิร์ฟเวอร์ รชต
+            </p>
+            <!-- 
+                ADMIN: แก้ไขชื่อและจำนวนการบูสได้ที่ boostersConfig ด้านล่าง
+                Admin: Edit name and boost count in boostersConfig below
+            -->
+            <script>
+            // ====== ADMIN EDITABLE - Booster Configuration ======
+            const boostersConfig = [
+                { rank: 1,  title: 'Arcane Sovereign',    name: '- ระบุชื่อ -',   boosts: 0 },
+                { rank: 2,  title: 'Mystic Conqueror',    name: '- ระบุชื่อ -',   boosts: 0 },
+                { rank: 3,  title: 'Enchanted Vanguard',  name: '- ระบุชื่อ -',   boosts: 0 }
+            ];
+            // ====== END ADMIN EDITABLE ======
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const rankColors = [
+                    { border: '#d4af37', glow: 'rgba(212,175,55,0.45)', crown: '#d4af37', bg: 'rgba(212,175,55,0.06)' },
+                    { border: '#b0c4de', glow: 'rgba(176,196,222,0.35)', crown: '#b0c4de', bg: 'rgba(176,196,222,0.05)' },
+                    { border: '#cd7f32', glow: 'rgba(205,127,50,0.35)', crown: '#cd7f32', bg: 'rgba(205,127,50,0.05)' }
+                ];
+                const rankSymbols = ['I', 'II', 'III'];
+
+                const grid = document.getElementById('boostersGrid');
+                boostersConfig.forEach((b, idx) => {
+                    const c = rankColors[idx];
+                    const card = document.createElement('div');
+                    card.style.cssText = `
+                        background: linear-gradient(160deg, rgba(20,10,40,0.95) 0%, rgba(8,4,20,0.98) 100%);
+                        border: 1px solid ${c.border};
+                        border-radius: 16px;
+                        padding: 2.2rem 1.5rem;
+                        text-align: center;
+                        position: relative;
+                        overflow: hidden;
+                        box-shadow: 0 0 30px ${c.glow}, inset 0 0 20px rgba(0,0,0,0.4);
+                        transition: transform 0.3s, box-shadow 0.3s;
+                        ${c.bg ? 'background-color:' + c.bg + ';' : ''}
+                    `;
+                    card.onmouseenter = () => { card.style.transform = 'translateY(-8px)'; card.style.boxShadow = `0 14px 50px ${c.glow}`; };
+                    card.onmouseleave = () => { card.style.transform = ''; card.style.boxShadow = `0 0 30px ${c.glow}, inset 0 0 20px rgba(0,0,0,0.4)`; };
+
+                    card.innerHTML = `
+                        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,${c.border},transparent);"></div>
+                        <div style="font-family:'Cinzel',serif;font-size:2rem;color:${c.crown};text-shadow:0 0 20px ${c.glow};margin-bottom:0.5rem;letter-spacing:4px;">${rankSymbols[idx]}</div>
+                        <div style="font-family:'Cinzel',serif;font-size:0.7rem;text-transform:uppercase;letter-spacing:3px;color:${c.border};opacity:0.7;margin-bottom:1rem;">${b.title}</div>
+                        <div style="font-size:1.1rem;color:#f0e6c8;font-weight:bold;margin-bottom:0.5rem;font-family:'Cinzel',serif;">${b.name}</div>
+                        <div style="font-family:'Cinzel',serif;font-size:0.75rem;color:${c.border};letter-spacing:1px;">${b.boosts} Boosts</div>
+                    `;
+                    grid.appendChild(card);
+                });
+            });
+            </script>
+            <div id="boostersGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;max-width:900px;margin:0 auto;"></div>
+        </section>
+
         <script>
             document.addEventListener('DOMContentLoaded', async () => {
                 try {
@@ -1049,9 +1109,9 @@
                     <table class="student-table">
                         <thead>
                             <tr>
-                                <th style="text-align: center; width: 25%;">ID</th>
-                                <th style="text-align: left; width: 50%;">NAME</th>
-                                <th style="text-align: center; width: 25%;">YEAR</th>
+                                <th style="text-align: center; width: 20%;">ID</th>
+                                <th style="text-align: left; width: 60%;">NAME</th>
+                                <th style="text-align: center; width: 20%;">YEAR</th>
                             </tr>
                         </thead>
                         <tbody id="studentTableBody">
