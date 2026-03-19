@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Config = require('../models/Config');
 
 // Get all users by house (for house roster)
 router.get('/house/:houseName', async (req, res) => {
@@ -68,6 +69,52 @@ router.post('/admin/health', isAuthenticated, hasRole(['admin', 'professor']), a
             message: `Adjusted ${target.username}'s health to ${target.health}/${target.maxHealth}`,
             newHealth: target.health
         });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get Server Boosters
+router.get('/boosters', async (req, res) => {
+    try {
+        let boosterConfig = await Config.findOne({ key: 'server_boosters' });
+        if (!boosterConfig) {
+            boosterConfig = new Config({
+                key: 'server_boosters',
+                value: [
+                    { rank: 1, title: 'Arcane Sovereign', name: '- ระบุชื่อ -', boosts: 0 },
+                    { rank: 2, title: 'Mystic Conqueror', name: '- ระบุชื่อ -', boosts: 0 },
+                    { rank: 3, title: 'Enchanted Vanguard', name: '- ระบุชื่อ -', boosts: 0 }
+                ]
+            });
+            await boosterConfig.save();
+        }
+        res.json(boosterConfig.value);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update Server Boosters (Admin only)
+router.post('/boosters', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+    try {
+        const { boosters } = req.body;
+        if (!Array.isArray(boosters) || boosters.length !== 3) {
+            return res.status(400).json({ message: 'Invalid boosters data layout.' });
+        }
+        
+        let config = await Config.findOne({ key: 'server_boosters' });
+        if (!config) {
+            config = new Config({ key: 'server_boosters', value: boosters });
+        } else {
+            config.value = boosters;
+        }
+        
+        // Use markModified because value is Mixed type
+        config.markModified('value');
+        await config.save();
+        
+        res.json({ message: 'Boosters configuration updated successfully.', boosters: config.value });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

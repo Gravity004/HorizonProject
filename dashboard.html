@@ -726,7 +726,7 @@
                         <div class="bank-panel-title">Vault Transfer</div>
                         <div class="bank-thai-divider">&#10022; &#10022; &#10022;</div>
                         <label class="bank-label">Recipient (Discord Username)</label>
-                        <input type="text" id="recipientId" class="bank-input" placeholder="e.g. nxvxn_">
+                        <input type="text" id="recipientId" class="bank-input" placeholder="discord username">
                         <label class="bank-label">Amount (Galleons)</label>
                         <input type="number" id="transferAmount" class="bank-input" placeholder="0" min="1">
                         <button onclick="transferFunds()" class="bank-send-btn">Transfer via Owl Post</button>
@@ -764,7 +764,7 @@
                         <h3>💰 Manage Gold</h3>
                         <div class="input-group">
                             <label>Target (Discord username)</label>
-                            <input type="text" id="adminTargetUser" class="parchment-input" placeholder="e.g. nxvxn_">
+                            <input type="text" id="adminTargetUser" class="parchment-input" placeholder="discord username">
                         </div>
                         <div class="input-group">
                             <label>Amount (+add / -subtract)</label>
@@ -779,12 +779,39 @@
                         <button onclick="adminAdjustGold()" class="admin-btn">Apply</button>
                     </div>
 
+                    <!-- Admin: Server Boosters -->
+                    <div class="admin-card" style="grid-column: 1 / -1;">
+                        <h3>✨ Edit Server Boosters</h3>
+                        <p style="font-size:0.8rem; color:var(--text-light); margin-bottom:1rem;">Rank I: Arcane Sovereign | Rank II: Mystic Conqueror | Rank III: Enchanted Vanguard</p>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <!-- Rank 1 -->
+                            <div style="background: rgba(0,0,0,0.3); padding:1rem; border-radius:8px; border-left: 3px solid #d4af37;">
+                                <h4 style="color:#d4af37; margin:0 0 0.5rem 0; font-family:'Cinzel',serif;">Rank 1</h4>
+                                <input type="text" id="booster1Name" class="parchment-input" placeholder="Name" style="margin-bottom:0.5rem">
+                                <input type="number" id="booster1Count" class="parchment-input" placeholder="Boosts" min="0">
+                            </div>
+                            <!-- Rank 2 -->
+                            <div style="background: rgba(0,0,0,0.3); padding:1rem; border-radius:8px; border-left: 3px solid #b0c4de;">
+                                <h4 style="color:#b0c4de; margin:0 0 0.5rem 0; font-family:'Cinzel',serif;">Rank 2</h4>
+                                <input type="text" id="booster2Name" class="parchment-input" placeholder="Name" style="margin-bottom:0.5rem">
+                                <input type="number" id="booster2Count" class="parchment-input" placeholder="Boosts" min="0">
+                            </div>
+                            <!-- Rank 3 -->
+                            <div style="background: rgba(0,0,0,0.3); padding:1rem; border-radius:8px; border-left: 3px solid #cd7f32;">
+                                <h4 style="color:#cd7f32; margin:0 0 0.5rem 0; font-family:'Cinzel',serif;">Rank 3</h4>
+                                <input type="text" id="booster3Name" class="parchment-input" placeholder="Name" style="margin-bottom:0.5rem">
+                                <input type="number" id="booster3Count" class="parchment-input" placeholder="Boosts" min="0">
+                            </div>
+                        </div>
+                        <button onclick="adminUpdateBoosters()" class="admin-btn" style="margin-top:1rem; background: linear-gradient(135deg, #1f4037, #99f2c8); color:#000;">Save Boosters</button>
+                    </div>
+
                     <!-- Admin: Manage Health -->
                     <div class="admin-card">
                         <h3>❤️ Manage Health</h3>
                         <div class="input-group">
                             <label>Target (Discord username)</label>
-                            <input type="text" id="adminTargetHpUser" class="parchment-input" placeholder="e.g. nxvxn_">
+                            <input type="text" id="adminTargetHpUser" class="parchment-input" placeholder="discord username">
                         </div>
                         <div class="input-group">
                             <label>Set HP To (0-100)</label>

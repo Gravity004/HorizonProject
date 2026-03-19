@@ -1760,11 +1760,12 @@ select.parchment-input {
 
 /* Received letter view inside mailbox */
 .gift-card.letter-style {
-    background: url('../assets/images/LetterTemplate.png') center/cover no-repeat;
-    border: 1px solid rgba(120, 80, 30, 0.4);
-    border-radius: 6px;
+    background: linear-gradient(135deg, #fdfad5 0%, #e8d0a9 100%);
+    border: 2px solid #8c6432;
+    border-radius: 8px;
     padding: 1.5rem;
     color: #3e2723;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 0 10px rgba(139, 105, 20, 0.1);
 }
 
 .gift-card.letter-style .gift-sender {

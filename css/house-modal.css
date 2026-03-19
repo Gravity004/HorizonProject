@@ -155,20 +155,19 @@
 
 .student-table th:nth-child(1), 
 .student-table td:nth-child(1) {
-    width: 25%;
+    width: 20%;
     text-align: center;
 }
 
 .student-table th:nth-child(2), 
 .student-table td:nth-child(2) {
-    width: 50%;
+    width: 60%;
     text-align: left;
-    padding-left: 1.5rem;
 }
 
 .student-table th:nth-child(3), 
 .student-table td:nth-child(3) {
-    width: 25%;
+    width: 20%;
     text-align: center;
 }
 

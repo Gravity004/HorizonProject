@@ -200,20 +200,6 @@ const studentData = {
             ]
         },
         {
-            "id": "RS-605",
-            "name": "เซนาเรียส เซอร์ราโน (Zenarius Serrano)",
-            "year": 2,
-            "house": "erawan",
-            "photo": "assets/students/605.png",
-            "hometown": "ประเทศไทย",
-            "allergies": [
-                "ไม่มี"
-            ],
-            "inventory": [
-                "ไม้กายสิทธิ์"
-            ]
-        },
-        {
             "id": "RS-616",
             "name": "วิเวียน เซ็นวารี (Vivien Senwaree)",
             "year": 2,

@@ -144,7 +144,7 @@ window.switchNav = function (tabId) {
 
     // Load data when switching to specific tabs
     if (tabId === 'bank') fetchTransactions();
-    if (tabId === 'admin') loadAdminData();
+    if (tabId === 'admin') loadAdminBoosters();
     if (tabId === 'mailbox') fetchMailbox();
 }
 
@@ -1377,6 +1377,52 @@ window.submitAmortenteia = async function() {
         } catch (err) { spawnEffect('❌', 'Failed to cast potion.'); }
     });
 }
+// ═══════════════════════════════════════════════
+// SERVER BOOSTERS ADMIN
+// ═══════════════════════════════════════════════
+window.loadAdminBoosters = async function() {
+    try {
+        const r = await fetch('/api/users/boosters');
+        if(r.ok) {
+            const data = await r.json();
+            data.forEach((b, i) => {
+                const idx = i + 1;
+                const nameInp = document.getElementById(`booster${idx}Name`);
+                const countInp = document.getElementById(`booster${idx}Count`);
+                if(nameInp) nameInp.value = b.name || '';
+                if(countInp) countInp.value = b.boosts || 0;
+            });
+        }
+    } catch(e) { console.error('Failed to load server boosters for admin', e); }
+}
+
+window.adminUpdateBoosters = async function() {
+    const boosters = [];
+    for(let i = 1; i <= 3; i++) {
+        boosters.push({
+            rank: i,
+            title: i === 1 ? 'Arcane Sovereign' : (i === 2 ? 'Mystic Conqueror' : 'Enchanted Vanguard'),
+            name: document.getElementById(`booster${i}Name`).value.trim() || '- ระบุชื่อ -',
+            boosts: parseInt(document.getElementById(`booster${i}Count`).value) || 0
+        });
+    }
+
+    try {
+        const r = await fetch('/api/users/boosters', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ boosters }),
+            credentials: 'include'
+        });
+        const data = await r.json();
+        if(r.ok) {
+            spawnEffect('✨', 'Server Boosters updated successfully!');
+        } else {
+            spawnEffect('❌', 'Error updating boosters');
+        }
+    } catch(e) { spawnEffect('❌', 'Failed to update boosters'); }
+}
+
 
 // ═══════════════════════════════════════════════
 // EFFECTS / ANIMATIONS
