@@ -700,13 +700,21 @@ function renderStudentTable() {
         return;
     }
 
-    filteredStudents.forEach((student, idx) => {
+    filteredStudents.forEach(student => {
         const row = document.createElement('tr');
         row.className = 'student-row';
+        const rawId = student.id.replace('RS-', '');
         row.innerHTML = `
-            <td class="col-id">${student.id}</td>
-            <td class="col-name">${student.name}</td>
-            <td class="col-year"><span class="year-badge">ปีที่ ${student.year}</span></td>
+            <td style="text-align:center; width:12%;">
+                <img src="${student.photo}" alt="${student.name}"
+                    style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); box-shadow:0 0 8px rgba(212,175,55,0.5);"
+                    onerror="this.src='assets/images/blank_profile.png'">
+            </td>
+            <td style="text-align:center; width:18%; white-space:nowrap; color:var(--gold); font-size:0.85rem;">${student.id}</td>
+            <td style="text-align:left; width:52%; word-break:break-word; font-size:0.9rem;">${student.name}</td>
+            <td style="text-align:center; width:18%;">
+                <span style="background:rgba(212,175,55,0.15); border:1px solid rgba(212,175,55,0.4); border-radius:20px; padding:3px 10px; font-size:0.78rem; color:var(--gold); white-space:nowrap;">ปีที่ ${student.year}</span>
+            </td>
         `;
         row.addEventListener('click', () => showStudentDetail(student.id));
         tbody.appendChild(row);
