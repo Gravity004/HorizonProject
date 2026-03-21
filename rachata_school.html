@@ -649,6 +649,121 @@
                         });
                     }
                 } catch (e) { console.error('Error fetching server boosters:', e); }
+
+                // 3) Fetch Faculty
+                let facultyData = [];
+                const availImages = [
+                    'assets/images/ProfRichard.png',
+                    'assets/images/King Zadkiel Winchester.png',
+                    'assets/images/Tulphat Narintrapakdee.JPG',
+                    'assets/images/Sofia McQueen.JPG',
+                    'assets/images/ScarDKillz.jpg',
+                    'assets/images/Ngong Ngaeng.JPG',
+                    'assets/images/blank_profile.png'
+                ];
+
+                async function loadFaculty() {
+                    try {
+                        const r = await fetch('/api/users/faculty');
+                        if (r.ok) {
+                            facultyData = await r.json();
+                            renderFacultyCards();
+                        }
+                    } catch (e) { console.error(e); }
+                }
+
+                function renderFacultyCards() {
+                    const grid = document.getElementById('facultyGrid');
+                    grid.innerHTML = '';
+                    facultyData.forEach(f => {
+                        grid.innerHTML += `
+                            <div class="card">
+                                <img src="${f.image}" alt="Prof" onerror="this.src='assets/images/blank_profile.png'">
+                                <h3>${f.name}</h3>
+                                <p>${f.subject}</p>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Check Admin to show Edit Button
+                try {
+                    const meRes = await fetch('/auth/me');
+                    if (meRes.ok) {
+                        const usr = await meRes.json();
+                        if (usr.roles && (usr.roles.includes('admin') || usr.roles.includes('professor'))) {
+                            document.getElementById('facultyAdminControls').innerHTML = `
+                                <button onclick="openFacultyEditor()" class="purchase-btn" style="padding:0.5rem 1.5rem; font-size:0.9rem;">⚙️ Edit Faculty</button>
+                            `;
+                        }
+                    }
+                } catch (e) { }
+
+                window.openFacultyEditor = function() {
+                    const list = document.getElementById('facultyEditList');
+                    list.innerHTML = '';
+                    facultyData.forEach((f, idx) => {
+                        let currentImgIndex = availImages.indexOf(f.image);
+                        if(currentImgIndex === -1) { availImages.push(f.image); currentImgIndex = availImages.length - 1; }
+                        
+                        list.innerHTML += `
+                            <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; display:grid; grid-template-columns: 120px 1fr; gap:1rem; align-items:center;">
+                                <div style="text-align:center;">
+                                    <img id="facImg_${idx}" src="${f.image}" style="width:80px; height:80px; object-fit:cover; border-radius:50%; border:2px solid var(--gold); margin-bottom:0.5rem;" onerror="this.src='assets/images/blank_profile.png'">
+                                    <div style="display:flex; justify-content:center; gap:0.5rem;">
+                                        <button onclick="changeFacImg(${idx}, -1)" style="background:var(--gold); border:none; border-radius:4px; cursor:pointer;">&#9664;</button>
+                                        <button onclick="changeFacImg(${idx}, 1)" style="background:var(--gold); border:none; border-radius:4px; cursor:pointer;">&#9654;</button>
+                                    </div>
+                                    <input type="hidden" id="facImgVal_${idx}" value="${f.image}">
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                                    <input type="text" id="facName_${idx}" class="parchment-input" value="${f.name}" placeholder="Name">
+                                    <input type="text" id="facSubj_${idx}" class="parchment-input" value="${f.subject}" placeholder="Subject">
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('facultyEditModal').style.display = 'flex';
+                };
+
+                window.changeFacImg = function(idx, dir) {
+                    const input = document.getElementById('facImgVal_'+idx);
+                    let currIdx = availImages.indexOf(input.value);
+                    if(currIdx === -1) currIdx = 0;
+                    currIdx += dir;
+                    if(currIdx < 0) currIdx = availImages.length - 1;
+                    if(currIdx >= availImages.length) currIdx = 0;
+                    
+                    const newImg = availImages[currIdx];
+                    input.value = newImg;
+                    document.getElementById('facImg_'+idx).src = newImg;
+                };
+
+                window.saveFaculty = async function() {
+                    const newFacData = [];
+                    for(let i=0; i<facultyData.length; i++) {
+                        newFacData.push({
+                            name: document.getElementById('facName_'+i).value,
+                            subject: document.getElementById('facSubj_'+i).value,
+                            image: document.getElementById('facImgVal_'+i).value
+                        });
+                    }
+                    try {
+                        const r = await fetch('/api/users/faculty', {
+                            method:'POST', headers:{'Content-Type':'application/json'},
+                            body:JSON.stringify({ faculty: newFacData })
+                        });
+                        if (r.ok) {
+                            alert('Faculty updated successfully!');
+                            document.getElementById('facultyEditModal').style.display = 'none';
+                            facultyData = newFacData;
+                            renderFacultyCards();
+                        } else alert('Failed to save.');
+                    } catch(e) { console.error(e); }
+                };
+
+                loadFaculty();
+
             });
         </script>
 
@@ -665,51 +780,24 @@
                     display: block;
                 }
             </style>
-            <div class="item-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                <div class="card">
-                    <img src="assets/images/ProfRichard.png" alt="Prof">
-                    <h3>Prof. Richard Moore</h3>
-                    <p>Subject: Ancient Charms</p>
-                </div>
-                <div class="card">
-                    <img src="assets/images/ProfRichard.png" alt="Prof">
-                    <h3>Prof. Mathal</h3>
-                    <p>Subject: Charms</p>
-                </div>
-                <div class="card">
-                    <img src="assets/images/King Zadkiel Winchester.png" alt="Prof"
-                        onerror="this.src='assets/images/ProfRichard.png'">
-                    <h3>Prof. King Zadkiel Winchester</h3>
-                    <p>Faculty Member</p>
-                </div>
-                <div class="card">
-                    <img src="assets/images/ProfRichard.png" alt="Prof">
-                    <h3>Prof. Navin White Rosier</h3>
-                    <p>Subject: Astronomy</p>
-                </div>
-                <div class="card">
-                    <img src="assets/images/Tulphat Narintrapakdee.JPG" alt="Prof"
-                        onerror="this.src='assets/images/ProfRichard.png'">
-                    <h3>Prof. Tulphat Narintrapakdee</h3>
-                    <p>Faculty Member</p>
-                </div>
-                <div class="card">
-                    <img src="assets/images/Sofia McQueen.JPG" alt="Prof"
-                        onerror="this.src='assets/images/ProfRichard.png'">
-                    <h3>Prof. Sofia McQueen</h3>
-                    <p>Faculty Member</p>
-                </div>
-                <div class="card">
-                    <img src="assets/images/ScarDKillz.jpg" alt="Prof"
-                        onerror="this.src='assets/images/ProfRichard.png'">
-                    <h3>Prof. ScarDKillz</h3>
-                    <p>Faculty Member</p>
-                </div>
-                <div class="card">
-                    <img src="assets/images/Ngong Ngaeng.JPG" alt="Prof"
-                        onerror="this.src='assets/images/ProfRichard.png'">
-                    <h3>Sir. Ngong Ngaeng</h3>
-                    <p>Faculty Member</p>
+            <div id="facultyAdminControls" style="text-align: center; margin-bottom: 1rem;"></div>
+            <div class="item-grid" id="facultyGrid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <!-- Faculty cards loaded dynamically -->
+            </div>
+            
+            <!-- Edit Faculty Modal -->
+            <div id="facultyEditModal" class="modal-overlay" style="display:none; z-index:2000;">
+                <div class="modal-container" style="max-height:80vh; overflow-y:auto; width:90%; max-width:800px; padding:2rem; background:#11091a; border:2px solid var(--gold); border-radius:12px;">
+                    <div class="modal-header" style="border-bottom:1px solid rgba(212,175,55,0.3); margin-bottom:1rem; padding-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
+                        <h2 style="color:var(--gold); font-family:'Cinzel',serif; margin:0;">Edit Faculty</h2>
+                        <button onclick="document.getElementById('facultyEditModal').style.display='none'" style="background:none; border:none; color:var(--text-light); font-size:1.5rem; cursor:pointer;">&times;</button>
+                    </div>
+                    <div id="facultyEditList" style="display:flex; flex-direction:column; gap:1.5rem;">
+                        <!-- Edit slots generated here -->
+                    </div>
+                    <div style="margin-top:2rem; text-align:right;">
+                        <button onclick="saveFaculty()" class="purchase-btn" style="background:#2a3d2a; color:#6af56a; border-color:#3d5c3d;">Save Changes</button>
+                    </div>
                 </div>
             </div>
         </section>
