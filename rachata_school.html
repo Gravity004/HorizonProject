@@ -698,17 +698,16 @@
 
                 // Check Admin to show Edit Button
                 try {
-                    const meRes = await fetch('/auth/me', { credentials: 'include' });
+                    const meRes = await fetch('/auth/me');
                     if (meRes.ok) {
-                        const data = await meRes.json();
-                        const usr = data.user || {};
+                        const usr = await meRes.json();
                         if (usr.roles && (usr.roles.includes('admin') || usr.roles.includes('professor'))) {
                             document.getElementById('facultyAdminControls').innerHTML = `
-                                <button onclick="openFacultyEditor()" style="padding:1rem 2.5rem; font-size:1.1rem; background:linear-gradient(135deg, var(--gold), #b8860b); color:#000; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 0 25px var(--gold); margin: 1.5rem 0; font-family:'Cinzel',serif;">✨ Edit Faculty ✨</button>
+                                <button onclick="openFacultyEditor()" style="padding:1rem 2.5rem; font-size:1.2rem; background:linear-gradient(135deg, var(--gold), #b8860b); color:#000; border:2px solid #fff; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 0 25px var(--gold); margin: 2rem 0; font-family:'Cinzel',serif; transition: transform 0.2s;">✨ Edit Faculty ✨</button>
                             `;
                         }
                     }
-                } catch (e) { console.warn('Auth check failed:', e); }
+                } catch (e) { }
 
                 window.openFacultyEditor = function() {
                     if (!facultyData.length) return;
@@ -1277,16 +1276,18 @@
                             placeholder="🔍 ค้นหาด้วย ID, ชื่อ, หรือปีการศึกษา...">
                     </div>
 
-                    <!-- Column header -->
-                    <div style="display:flex; align-items:center; padding: 0.6rem 1.25rem; border-bottom: 2px solid rgba(212,175,55,0.35); margin-bottom: 4px; position: sticky; top: 0; background: rgba(8,4,20,0.98); z-index:2;">
-                        <div style="width:18%; min-width:90px; font-family:'Cinzel',serif; font-size:0.8rem; color:var(--gold); text-transform:uppercase; letter-spacing:1px; flex-shrink:0;">รหัส</div>
-                        <div style="flex:1; font-family:'Cinzel',serif; font-size:0.8rem; color:var(--gold); text-transform:uppercase; letter-spacing:1px; padding: 0 0.5rem;">ชื่อ-นามสกุล</div>
-                        <div style="width:90px; text-align:right; flex-shrink:0; font-family:'Cinzel',serif; font-size:0.8rem; color:var(--gold); text-transform:uppercase; letter-spacing:1px;">ชั้นปี</div>
-                    </div>
-                    <!-- Student rows container -->
-                    <div id="studentTableBody">
-                        <!-- rows populated by JS -->
-                    </div>
+                    <table class="student-table">
+                        <thead>
+                            <tr>
+                                <th class="col-id">รหัส</th>
+                                <th class="col-name">ชื่อ-นามสกุล</th>
+                                <th class="col-year">ชั้นปี</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                            <!-- Student rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
 
                 <!-- Student Detail View -->
