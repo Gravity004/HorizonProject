@@ -144,7 +144,10 @@ window.switchNav = function (tabId) {
 
     // Load data when switching to specific tabs
     if (tabId === 'bank') fetchTransactions();
-    if (tabId === 'admin') loadAdminBoosters();
+    if (tabId === 'admin') {
+        loadAdminBoosters();
+        loadAdminData();
+    }
     if (tabId === 'mailbox') fetchMailbox();
 }
 
@@ -739,6 +742,10 @@ window.useItem = async function (itemId, itemName) {
         openAmortenteiaModal(itemId, itemName);
         return;
     }
+    if (itemName === 'Name Change Card' || itemName === 'บัตรเปลี่ยนชื่อ') {
+        openNameChangeModal(itemId, itemName);
+        return;
+    }
 
     showConfirm('Use Item', `Use "${itemName}"? It will be consumed from your inventory.`, async () => {
         // Sparkle effect
@@ -761,6 +768,27 @@ window.useItem = async function (itemId, itemName) {
                 spawnEffect('❌', data.message);
             }
         } catch (err) { spawnEffect('❌', 'Failed to use item.'); }
+    });
+}
+
+function openNameChangeModal(itemId, itemName) {
+    const newName = prompt('Enter your new display name:');
+    if (!newName || !newName.trim()) return;
+
+    showConfirm('Confirm Name Change', `Are you sure you want to change your display name to "${newName.trim()}"?`, async () => {
+        try {
+            const r = await fetch('/api/users/changeName', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId, newName: newName.trim() }), credentials: 'include'
+            });
+            const data = await r.json();
+            if (r.ok) {
+                spawnEffect('✨', 'Name changed successfully!');
+                currentUser.username = data.username;
+                renderUserProfile();
+                fetchInventory();
+            } else spawnEffect('❌', data.message);
+        } catch (err) { spawnEffect('❌', 'Failed to change name.'); }
     });
 }
 
@@ -1187,6 +1215,22 @@ window.adminDeleteRecipe = async function (recipeId) {
     });
 }
 
+window.adminCheckWealth = async function () {
+    const target = document.getElementById('adminCheckMoneyUser').value.trim();
+    if (!target) { spawnEffect('❌', 'Enter a target username.'); return; }
+
+    try {
+        const r = await fetch(`/api/bank/admin/balance/${encodeURIComponent(target)}`, { credentials: 'include' });
+        const data = await r.json();
+        if (r.ok) {
+            spawnEffect('💰', `${data.username} has ${data.balance} Galleons`);
+            // You can also show it in an alert or custom UI if needed
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) { console.error(err); spawnEffect('❌', 'Failed to check wealth.'); }
+}
+
 window.adminAdjustGold = async function () {
     const target = document.getElementById('adminTargetUser').value.trim();
     const amount = parseInt(document.getElementById('adminGoldAmount').value);
@@ -1214,6 +1258,7 @@ window.adminAdjustGold = async function () {
 
 window.adminAdjustHealth = async function () {
     const targetUserId = document.getElementById('adminTargetHpUser').value.trim();
+    const action = document.getElementById('adminHpAction').value;
     const healthAmount = document.getElementById('adminHpAmount').value;
 
     if (!targetUserId || !healthAmount) {
@@ -1224,7 +1269,7 @@ window.adminAdjustHealth = async function () {
     try {
         const r = await fetch('/api/users/admin/health', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ targetUserId, healthAmount }),
+            body: JSON.stringify({ targetUserId, action, healthAmount }),
             credentials: 'include'
         });
         const data = await r.json();

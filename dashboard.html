@@ -759,6 +759,16 @@
             <section id="admin" class="magic-section">
                 <h2>⚙️ Professor's Control Panel</h2>
                 <div class="admin-grid">
+                    <!-- Admin: Check Wealth -->
+                    <div class="admin-card">
+                        <h3>🔍 Check Wealth</h3>
+                        <div class="input-group">
+                            <label>Target (Discord username)</label>
+                            <input type="text" id="adminCheckMoneyUser" class="parchment-input" placeholder="discord username">
+                        </div>
+                        <button onclick="adminCheckWealth()" class="admin-btn" style="background:#2a3d2a;color:#6af56a;border-color:#3d5c3d;">Check Galleons</button>
+                    </div>
+
                     <!-- Admin: Manage Gold -->
                     <div class="admin-card">
                         <h3>💰 Manage Gold</h3>
@@ -777,6 +787,29 @@
                                 placeholder="Reward / Penalty">
                         </div>
                         <button onclick="adminAdjustGold()" class="admin-btn">Apply</button>
+                    </div>
+
+                    <!-- Admin: Manage Health -->
+                    <div class="admin-card">
+                        <h3>❤️ Manage Health</h3>
+                        <div class="input-group">
+                            <label>Target (Discord username)</label>
+                            <input type="text" id="adminTargetHpUser" class="parchment-input"
+                                placeholder="discord username">
+                        </div>
+                        <div class="input-group">
+                            <label>Action</label>
+                            <select id="adminHpAction" class="parchment-input">
+                                <option value="set">Set To</option>
+                                <option value="add">Add (+)</option>
+                                <option value="sub">Subtract (-)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Amount</label>
+                            <input type="number" id="adminHpAmount" class="parchment-input" placeholder="100" min="0" max="100">
+                        </div>
+                        <button onclick="adminAdjustHealth()" class="admin-btn" style="background:#5c2a2a;color:#ff9999;border-color:#8a3d3d;">Adjust Health</button>
                     </div>
 
                     <!-- Admin: Server Boosters -->

@@ -208,6 +208,19 @@ router.post('/admin/adjust', isAuthenticated, hasRole(['admin', 'professor']), a
     }
 });
 
+// Admin: Check user balance
+router.get('/admin/balance/:username', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+    try {
+        const target = await User.findOne({
+            $or: [{ discordId: req.params.username }, { username: req.params.username }]
+        });
+        if (!target) return res.status(404).json({ message: 'User not found' });
+        res.json({ balance: target.balance, username: target.username });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Admin: Get ALL transactions (for log view)
 router.get('/admin/logs', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
     try {

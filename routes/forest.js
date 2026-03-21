@@ -24,15 +24,51 @@ function getDailyForestWindow() {
     return { startHour, endHour: (startHour + 1) % 24 }; // Open for 1 hour
 }
 
+const Config = require('../models/Config');
+const Gift = require('../models/Gift');
+
 router.get('/status', isAuthenticated, async (req, res) => {
     const window = getDailyForestWindow();
     const now = new Date();
-    const thHour = new Date(now.getTime() + (7 * 60 * 60 * 1000)).getUTCHours();
+    const thTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    const thHour = thTime.getUTCHours();
+    const dateStr = `${thTime.getUTCFullYear()}-${thTime.getUTCMonth()}-${thTime.getUTCDate()}`;
     
     const user = await User.findById(req.user.id);
     const isAdmin = user.roles && (user.roles.includes('admin') || user.roles.includes('professor'));
     
-    const isOpen = isAdmin || (thHour === window.startHour || thHour === window.endHour);
+    const isActuallyOpen = (thHour === window.startHour || thHour === window.endHour);
+    const isOpen = isAdmin || isActuallyOpen;
+    
+    // Auto-announce if currently open and hasn't been announced today
+    if (isActuallyOpen) {
+        try {
+            let config = await Config.findOne({ key: 'forest_announcement_date' });
+            if (!config || config.value !== dateStr) {
+                // We need to announce!
+                if (!config) config = new Config({ key: 'forest_announcement_date', value: dateStr });
+                else config.value = dateStr;
+                await config.save();
+
+                // Send mail to all users asynchronously
+                User.find().select('_id username').then(allUsers => {
+                    const gifts = allUsers.map(u => ({
+                        senderId: user._id, // Set system or current user as sender? Let's use generic System logic but schema requires ObjectId. Use a placeholder or bypass.
+                        senderName: 'SYSTEM',
+                        recipientId: u._id,
+                        recipientName: u.username,
+                        itemId: null, // Note: Schema might require itemId. We'll find a generic item or make it optional.
+                        quantity: 0,
+                        message: '🌿 The Himmapan Forest is now open! It will only remain open for 1 hour. Hurry and explore!',
+                        isClaimed: false
+                    }));
+                    Gift.insertMany(gifts).catch(console.error);
+                }).catch(console.error);
+            }
+        } catch (e) {
+            console.error('Failed to auto-announce forest:', e);
+        }
+    }
     
     res.json({
         isOpen,

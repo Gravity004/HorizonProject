@@ -99,11 +99,11 @@ router.post('/craft', isAuthenticated, async (req, res) => {
                     type: 'potion',
                     rarity: 'epic',
                     price: 0,
-                    image: 'assets/images/Potion1.png'
+                    image: 'assets/images/Amortentia.png'
                 });
                 await potion.save();
             } else if (potion.image === 'assets/images/potion.png' || potion.image === 'assets/images/Potion.png') {
-                potion.image = 'assets/images/Potion1.png';
+                potion.image = 'assets/images/Amortentia.png';
                 await potion.save();
             }
 

@@ -48,12 +48,38 @@ router.get('/all', isAuthenticated, hasRole(['admin', 'professor']), async (req,
     }
 });
 
+// User: Change display name via item
+router.post('/changeName', isAuthenticated, async (req, res) => {
+    const { itemId, newName } = req.body;
+    if (!newName || newName.length < 2 || newName.length > 50) return res.status(400).json({ message: 'Invalid name length.' });
+
+    try {
+        const user = await User.findById(req.user.id);
+        const itemIdx = user.inventory.findIndex(i => i.itemId.toString() === itemId);
+        
+        if (itemIdx === -1 || user.inventory[itemIdx].quantity < 1) {
+            return res.status(400).json({ message: 'You do not have a Name Change Card.' });
+        }
+        
+        // Deduct 1 item
+        user.inventory[itemIdx].quantity -= 1;
+        if (user.inventory[itemIdx].quantity <= 0) {
+            user.inventory.splice(itemIdx, 1);
+        }
+        user.markModified('inventory');
+        user.username = newName;
+        
+        await user.save();
+        res.json({ message: 'Name changed successfully', username: user.username });
+    } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 // Admin: Adjust user health
 router.post('/admin/health', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
-    const { targetUserId, healthAmount } = req.body;
-    const newHealth = parseInt(healthAmount);
+    const { targetUserId, action, healthAmount } = req.body;
+    const amount = parseInt(healthAmount);
 
-    if (isNaN(newHealth) || newHealth < 0) return res.status(400).json({ message: 'Invalid health amount' });
+    if (isNaN(amount) || amount < 0) return res.status(400).json({ message: 'Invalid health amount' });
 
     try {
         const target = await User.findOne({
@@ -62,7 +88,14 @@ router.post('/admin/health', isAuthenticated, hasRole(['admin', 'professor']), a
 
         if (!target) return res.status(404).json({ message: 'User not found' });
 
-        target.health = Math.min(newHealth, target.maxHealth);
+        if (action === 'add') {
+            target.health = Math.min(target.health + amount, target.maxHealth);
+        } else if (action === 'sub') {
+            target.health = Math.max(0, target.health - amount);
+        } else {
+            target.health = Math.min(amount, target.maxHealth);
+        }
+        
         await target.save();
 
         res.json({

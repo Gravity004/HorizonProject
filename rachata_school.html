@@ -559,7 +559,8 @@
 
         <section id="ranking">
             <h2 class="section-title cinzel">Top 3 Richest Students</h2>
-            <div id="rankingGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;max-width:900px;margin:0 auto;">
+            <div id="rankingGrid"
+                style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;max-width:900px;margin:0 auto;">
                 <div style="text-align: center; color: var(--text-light); grid-column: 1 / -1;">กำลังโหลดข้อมูล...</div>
             </div>
         </section>
@@ -567,7 +568,8 @@
         <!-- TOP 3 Server Boosters Section -->
         <section id="boosters">
             <h2 class="section-title cinzel">TOP 3 Server Boosters</h2>
-            <div id="boostersGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;max-width:900px;margin:0 auto;">
+            <div id="boostersGrid"
+                style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;max-width:900px;margin:0 auto;">
                 <div style="text-align: center; color: var(--text-light); grid-column: 1 / -1;">กำลังโหลดข้อมูล...</div>
             </div>
         </section>
@@ -593,7 +595,7 @@
                             gridRank.innerHTML = '<div style="text-align: center; color: var(--text-light); grid-column: 1 / -1;">No data available</div>';
                         } else {
                             topUsers.forEach((u, idx) => {
-                                if(idx >= 3) return;
+                                if (idx >= 3) return;
                                 const c = rankColors[idx];
                                 const card = document.createElement('div');
                                 card.style.cssText = `
@@ -615,7 +617,7 @@
                             });
                         }
                     }
-                } catch(e) { console.error('Error fetching top users:', e); }
+                } catch (e) { console.error('Error fetching top users:', e); }
 
                 // 2) Fetch Top Server Boosters
                 try {
@@ -625,7 +627,7 @@
                         const boostersData = await resBoost.json();
                         gridBoost.innerHTML = '';
                         boostersData.forEach((b, idx) => {
-                            if(idx >= 3) return;
+                            if (idx >= 3) return;
                             const c = rankColors[idx];
                             const card = document.createElement('div');
                             card.style.cssText = `
@@ -646,13 +648,24 @@
                             gridBoost.appendChild(card);
                         });
                     }
-                } catch(e) { console.error('Error fetching server boosters:', e); }
+                } catch (e) { console.error('Error fetching server boosters:', e); }
             });
         </script>
 
         <section id="members">
             <h2 class="section-title cinzel">Faculty</h2>
-            <div class="item-grid">
+            <style>
+                #members .card img {
+                    width: 130px;
+                    height: 130px;
+                    object-fit: cover;
+                    border-radius: 50%;
+                    border: 2px solid var(--gold);
+                    margin: 0 auto 1rem auto;
+                    display: block;
+                }
+            </style>
+            <div class="item-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                 <div class="card">
                     <img src="assets/images/ProfRichard.png" alt="Prof">
                     <h3>Prof. Richard Moore</h3>
@@ -660,18 +673,43 @@
                 </div>
                 <div class="card">
                     <img src="assets/images/ProfRichard.png" alt="Prof">
-                    <h3>Prof. Siri</h3>
-                    <p>Subject: Astral Botany</p>
+                    <h3>Prof. Mathal</h3>
+                    <p>Subject: Charms</p>
+                </div>
+                <div class="card">
+                    <img src="assets/images/King Zadkiel Winchester.png" alt="Prof"
+                        onerror="this.src='assets/images/ProfRichard.png'">
+                    <h3>Prof. King Zadkiel Winchester</h3>
+                    <p>Faculty Member</p>
                 </div>
                 <div class="card">
                     <img src="assets/images/ProfRichard.png" alt="Prof">
-                    <h3>Prof. Siri</h3>
-                    <p>Subject: Astral Botany</p>
+                    <h3>Prof. Navin White Rosier</h3>
+                    <p>Subject: Astronomy</p>
                 </div>
                 <div class="card">
-                    <img src="assets/images/ProfRichard.png" alt="Prof">
-                    <h3>Prof. Siri</h3>
-                    <p>Subject: Astral Botany</p>
+                    <img src="assets/images/Tulphat Narintrapakdee.JPG" alt="Prof"
+                        onerror="this.src='assets/images/ProfRichard.png'">
+                    <h3>Prof. Tulphat Narintrapakdee</h3>
+                    <p>Faculty Member</p>
+                </div>
+                <div class="card">
+                    <img src="assets/images/Sofia McQueen.JPG" alt="Prof"
+                        onerror="this.src='assets/images/ProfRichard.png'">
+                    <h3>Prof. Sofia McQueen</h3>
+                    <p>Faculty Member</p>
+                </div>
+                <div class="card">
+                    <img src="assets/images/ScarDKillz.jpg" alt="Prof"
+                        onerror="this.src='assets/images/ProfRichard.png'">
+                    <h3>Prof. ScarDKillz</h3>
+                    <p>Faculty Member</p>
+                </div>
+                <div class="card">
+                    <img src="assets/images/Ngong Ngaeng.JPG" alt="Prof"
+                        onerror="this.src='assets/images/ProfRichard.png'">
+                    <h3>Sir. Ngong Ngaeng</h3>
+                    <p>Faculty Member</p>
                 </div>
             </div>
         </section>
