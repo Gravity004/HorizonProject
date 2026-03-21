@@ -10,7 +10,35 @@ if (!fs.existsSync(filepath)) {
 
 const workbook = xlsx.readFile(filepath);
 const sheetName = workbook.SheetNames[0];
-const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+const rawRows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: "" });
+
+let headerRowIndex = -1;
+let headers = [];
+
+for (let i = 0; i < Math.min(20, rawRows.length); i++) {
+    const rowStr = rawRows[i].join(' ').toLowerCase();
+    if (rowStr.match(/id|เลข|ประจำตัว|รหัส/) && rowStr.match(/name|ชื่อ|สกุล/)) {
+        headerRowIndex = i;
+        headers = rawRows[i];
+        break;
+    }
+}
+
+if (headerRowIndex === -1) {
+    console.error('Could not find header row. Sample data:', rawRows.slice(0, 5));
+    process.exit(1);
+}
+
+const data = [];
+for (let i = headerRowIndex + 1; i < rawRows.length; i++) {
+    // Skip empty rows
+    if (rawRows[i].join('').trim() === '') continue;
+    let obj = {};
+    for (let j = 0; j < headers.length; j++) {
+        if (headers[j]) obj[String(headers[j]).trim()] = rawRows[i][j];
+    }
+    data.push(obj);
+}
 
 const studentData = {
     garuda: [],
@@ -18,13 +46,6 @@ const studentData = {
     qilin: [],
     naga: []
 };
-
-if (data.length === 0) {
-    console.error('No data found in the Excel sheet.');
-    process.exit(1);
-}
-
-const keys = Object.keys(data[0]);
 // Smart column detection
 const idKey = keys.find(k => /id|เลข|ประจำตัว/i.test(k));
 const nameKey = keys.find(k => /name|ชื่อ|สกุล/i.test(k));

@@ -153,4 +153,54 @@ router.post('/boosters', isAuthenticated, hasRole(['admin', 'professor']), async
     }
 });
 
+// Get Faculty Members
+router.get('/faculty', async (req, res) => {
+    try {
+        let facultyConfig = await Config.findOne({ key: 'faculty_members' });
+        if (!facultyConfig) {
+            facultyConfig = new Config({
+                key: 'faculty_members',
+                value: [
+                    { name: 'Prof. Richard Moore', subject: 'Ancient Charms', image: 'assets/images/ProfRichard.png' },
+                    { name: 'Prof. Mathal', subject: 'Charms', image: 'assets/images/ProfRichard.png' },
+                    { name: 'Prof. King Zadkiel Winchester', subject: 'Faculty Member', image: 'assets/images/King Zadkiel Winchester.png' },
+                    { name: 'Prof. Navin White Rosier', subject: 'Astronomy', image: 'assets/images/ProfRichard.png' },
+                    { name: 'Prof. Tulphat Narintrapakdee', subject: 'Faculty Member', image: 'assets/images/Tulphat Narintrapakdee.JPG' },
+                    { name: 'Prof. Sofia McQueen', subject: 'Faculty Member', image: 'assets/images/Sofia McQueen.JPG' },
+                    { name: 'Prof. ScarDKillz', subject: 'Faculty Member', image: 'assets/images/ScarDKillz.jpg' },
+                    { name: 'Sir. Ngong Ngaeng', subject: 'Faculty Member', image: 'assets/images/Ngong Ngaeng.JPG' }
+                ]
+            });
+            await facultyConfig.save();
+        }
+        res.json(facultyConfig.value);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update Faculty Members (Admin only)
+router.post('/faculty', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+    try {
+        const { faculty } = req.body;
+        if (!Array.isArray(faculty)) {
+            return res.status(400).json({ message: 'Invalid faculty data layout.' });
+        }
+        
+        let config = await Config.findOne({ key: 'faculty_members' });
+        if (!config) {
+            config = new Config({ key: 'faculty_members', value: faculty });
+        } else {
+            config.value = faculty;
+        }
+        
+        config.markModified('value');
+        await config.save();
+        
+        res.json({ message: 'Faculty configuration updated successfully.', faculty: config.value });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
