@@ -24,11 +24,11 @@ app.use(helmet({
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
-    max: 500, // limit each IP to 500 requests per windowMs
+    max: 1000, // increased to 1000 to be safer
     message: { message: "Too many requests from this IP, please try again later." }
 });
-app.use('/api/', limiter);
-app.use('/auth/', limiter);
+app.use('/api', limiter); // removed trailing slash for better matching
+app.use('/auth', limiter);
 
 if (!process.env.MONGODB_URI) {
     console.error('CRITICAL: MONGODB_URI is not defined in environment variables!');
@@ -40,11 +40,13 @@ app.set('trust proxy', 1);
 // Middleware
 const allowedOrigins = [
     process.env.FRONTEND_URL,
+    'https://horizon-project-nine.vercel.app',
     'http://localhost:5500',
     'http://localhost:5501',
     'http://127.0.0.1:5500',
     'http://127.0.0.1:5501',
     'http://localhost:12500',
+    'http://localhost:3000',
 ].filter(Boolean);
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -150,8 +152,15 @@ app.get(/^\/dashboard/, checkGuildMembership, (req, res) => {
 // Serve Vue SPA (only in production)
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, 'frontend/dist')));
-    app.get('/{*path}', (req, res) => {
-        res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
+    // Fix: Express 5 standard catch-all for SPA is '*' or a named param like ':path*'
+    // '{*path}' is not standard Express syntax and might cause issues in some versions.
+    app.get('*', (req, res) => {
+        // Only redirect to index.html for non-API routes
+        if (!req.path.startsWith('/api/') && !req.path.startsWith('/auth/')) {
+            res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
+        } else {
+            res.status(404).json({ message: 'API Route Not Found' });
+        }
     });
 }
 

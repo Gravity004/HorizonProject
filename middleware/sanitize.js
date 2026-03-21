@@ -16,12 +16,12 @@ function sanitizeValue(val) {
         return val.replace(HTML_TAG_RE, '').trim();
     }
     if (Array.isArray(val)) {
-        return val.map(sanitizeValue);
+        return val.map(v => sanitizeValue(v));
     }
     if (val !== null && typeof val === 'object') {
         const cleaned = {};
-        for (const key of Object.keys(val)) {
-            cleaned[key] = sanitizeValue(val[key]);
+        for (const [key, v] of Object.entries(val)) {
+            cleaned[key] = sanitizeValue(v);
         }
         return cleaned;
     }
