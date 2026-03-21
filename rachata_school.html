@@ -659,6 +659,11 @@
                     'assets/images/Sofia McQueen.JPG',
                     'assets/images/ScarDKillz.jpg',
                     'assets/images/Ngong Ngaeng.JPG',
+                    'assets/images/singha.png',
+                    'assets/images/swan.png',
+                    'assets/images/RCT.png',
+                    'assets/images/RCT1.png',
+                    'assets/images/RCT2.png',
                     'assets/images/blank_profile.png'
                 ];
 
@@ -751,15 +756,19 @@
                     try {
                         const r = await fetch('/api/users/faculty', {
                             method:'POST', headers:{'Content-Type':'application/json'},
-                            body:JSON.stringify({ faculty: newFacData })
+                            body:JSON.stringify({ faculty: newFacData }),
+                            credentials: 'include'
                         });
                         if (r.ok) {
-                            alert('Faculty updated successfully!');
+                            alert('✅ Faculty updated successfully!');
                             document.getElementById('facultyEditModal').style.display = 'none';
                             facultyData = newFacData;
                             renderFacultyCards();
-                        } else alert('Failed to save.');
-                    } catch(e) { console.error(e); }
+                        } else {
+                            const d = await r.json();
+                            alert('❌ ' + (d.message || 'Failed to save.'));
+                        }
+                    } catch(e) { console.error(e); alert('❌ Connection error.'); }
                 };
 
                 loadFaculty();
@@ -1222,11 +1231,10 @@
 
                     <table class="student-table">
                         <thead>
-                            <tr style="background:linear-gradient(90deg, transparent, rgba(212,175,55,0.15), transparent);">
-                                <th style="text-align: center; width: 12%;">รูป</th>
-                                <th style="text-align: center; width: 18%;">รหัส</th>
-                                <th style="text-align: left; width: 52%;">ชื่อ-นามสกุล</th>
-                                <th style="text-align: center; width: 18%;">ชั้นปี</th>
+                            <tr>
+                                <th class="col-id">รหัส</th>
+                                <th class="col-name">ชื่อ-นามสกุล</th>
+                                <th class="col-year">ชั้นปี</th>
                             </tr>
                         </thead>
                         <tbody id="studentTableBody">
