@@ -174,7 +174,7 @@ const studentData = {
         {
             "id": "RS-509",
             "name": "เซเรน่า เดอ อัลวาร์ (Serena De Alvar)",
-            "year": 3,
+            "year": 2,
             "house": "erawan",
             "photo": "assets/students/509.png",
             "hometown": "ประเทศไทย",
@@ -232,7 +232,7 @@ const studentData = {
         {
             "id": "RS-209",
             "name": "บงกช บุณยวีร์ (Bongkotch Boonyawee)",
-            "year": 6,
+            "year": 5,
             "house": "qilin",
             "photo": "assets/students/209.png",
             "hometown": "ประเทศไทย",
@@ -416,7 +416,7 @@ const studentData = {
         {
             "id": "RS-318",
             "name": "พรัมพีช พิรารักษ์ (Prumpeach Piraruk)",
-            "year": 5,
+            "year": 4,
             "house": "naga",
             "photo": "assets/students/318.png",
             "hometown": "ประเทศไทย",
@@ -703,10 +703,18 @@ function renderStudentTable() {
     filteredStudents.forEach(student => {
         const row = document.createElement('tr');
         row.className = 'student-row';
+        const rawId = student.id.replace('RS-', '');
         row.innerHTML = `
-            <td style="text-align: center; width: 20%; white-space: nowrap;">${student.id}</td>
-            <td style="text-align: left; width: 60%; word-break: break-word;">${student.name}</td>
-            <td style="text-align: center; width: 20%; white-space: nowrap;">ปีที่ ${student.year}</td>
+            <td style="text-align:center; width:12%;">
+                <img src="${student.photo}" alt="${student.name}"
+                    style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--gold); box-shadow:0 0 8px rgba(212,175,55,0.5);"
+                    onerror="this.src='assets/images/blank_profile.png'">
+            </td>
+            <td style="text-align:center; width:18%; white-space:nowrap; color:var(--gold); font-size:0.85rem;">${student.id}</td>
+            <td style="text-align:left; width:52%; word-break:break-word; font-size:0.9rem;">${student.name}</td>
+            <td style="text-align:center; width:18%;">
+                <span style="background:rgba(212,175,55,0.15); border:1px solid rgba(212,175,55,0.4); border-radius:20px; padding:3px 10px; font-size:0.78rem; color:var(--gold); white-space:nowrap;">ปีที่ ${student.year}</span>
+            </td>
         `;
         row.addEventListener('click', () => showStudentDetail(student.id));
         tbody.appendChild(row);
