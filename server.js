@@ -5,12 +5,20 @@ const session = require('express-session');
 const passport = require('passport');
 const path = require('path');
 const cors = require('cors');
+const helmet = require('helmet');
 
 // Import Config
 require('./config/passport');
 
 const app = express();
 const PORT = process.env.PORT || 12500;
+
+// ── Security: Helmet (safe config — allows existing inline scripts/styles) ──
+app.use(helmet({
+    contentSecurityPolicy: false,  // Inline scripts exist; enable CSP later after refactor
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'same-site' }
+}));
 
 // Rate Limiter to prevent spam/freezing
 const rateLimit = require('express-rate-limit');
@@ -39,10 +47,14 @@ const allowedOrigins = [
     'http://localhost:12500',
 ].filter(Boolean);
 
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(cors({
     origin: (origin, callback) => {
+        // Allow same-origin (no origin) and known origins
         if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-        callback(null, true); // ให้ผ่านทั้งหมดในกรณี dev
+        // In production: block unknown origins. In dev: allow all
+        if (isProduction) return callback(new Error(`CORS blocked: ${origin}`), false);
+        callback(null, true);
     },
     credentials: true
 }));
@@ -62,9 +74,10 @@ app.use(session({
         ttl: 14 * 24 * 60 * 60 // 14 days
     }) : undefined,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // True on Vercel
+        httpOnly: true,                          // JS cannot read the cookie
+        secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
+        maxAge: 14 * 24 * 60 * 60 * 1000        // 14 days
     }
 }));
 

@@ -165,42 +165,22 @@
     letter-spacing: 1px;
 }
 
-/* Column classes */
-.col-id {
-    width: 18%;
+.student-table th:nth-child(1), 
+.student-table td:nth-child(1) {
+    width: 20%;
     text-align: center;
-    white-space: nowrap;
-    color: var(--gold);
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
 }
 
-.col-name {
+.student-table th:nth-child(2), 
+.student-table td:nth-child(2) {
     width: 60%;
     text-align: left;
-    font-size: 0.9rem;
-    color: var(--text-light);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 0; /* forces ellipsis in table */
 }
 
-.col-year {
-    width: 22%;
+.student-table th:nth-child(3), 
+.student-table td:nth-child(3) {
+    width: 20%;
     text-align: center;
-    white-space: nowrap;
-}
-
-.year-badge {
-    display: inline-block;
-    background: rgba(212, 175, 55, 0.12);
-    border: 1px solid rgba(212, 175, 55, 0.45);
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.78rem;
-    color: var(--gold);
-    letter-spacing: 0.5px;
 }
 
 .student-table td {

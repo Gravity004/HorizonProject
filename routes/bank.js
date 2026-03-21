@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const { isAuthenticated, hasRole } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/sanitize');
 const crypto = require('crypto');
 
 function generateTxId() {
@@ -34,7 +35,7 @@ router.get('/transactions', isAuthenticated, async (req, res) => {
 });
 
 // Daily Reward
-router.post('/daily', isAuthenticated, async (req, res) => {
+router.post('/daily', isAuthenticated, sanitizeBody, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'User not found' });
@@ -100,7 +101,7 @@ router.post('/daily', isAuthenticated, async (req, res) => {
 });
 
 // Transfer Funds
-router.post('/transfer', isAuthenticated, async (req, res) => {
+router.post('/transfer', isAuthenticated, sanitizeBody, async (req, res) => {
     const { recipientId, amount } = req.body;
     const transferAmount = parseInt(amount);
 
@@ -167,7 +168,7 @@ router.post('/transfer', isAuthenticated, async (req, res) => {
 });
 
 // Admin: Adjust user balance (add/subtract gold)
-router.post('/admin/adjust', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+router.post('/admin/adjust', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
     const { targetUserId, amount, reason } = req.body;
     const adjustAmount = parseInt(amount);
 

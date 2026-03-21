@@ -5,6 +5,7 @@ const path = require('path');
 const Item = require('../models/Item');
 const User = require('../models/User');
 const { isAuthenticated, hasRole } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/sanitize');
 
 // Multer config for image uploads
 // Multer config for image uploads (Memory Storage for Base64)
@@ -32,7 +33,7 @@ router.get('/items', async (req, res) => {
 });
 
 // Buy item
-router.post('/buy', isAuthenticated, async (req, res) => {
+router.post('/buy', isAuthenticated, sanitizeBody, async (req, res) => {
     const { itemId, quantity } = req.body;
 
     try {
@@ -64,7 +65,7 @@ router.post('/buy', isAuthenticated, async (req, res) => {
 });
 
 // Use/Consume item from inventory
-router.post('/use', isAuthenticated, async (req, res) => {
+router.post('/use', isAuthenticated, sanitizeBody, async (req, res) => {
     const { itemId, targetUsername } = req.body;
 
     try {
@@ -175,7 +176,7 @@ router.post('/upload', isAuthenticated, hasRole(['admin', 'professor']), upload.
 });
 
 // Add item (Admin only)
-router.post('/add', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+router.post('/add', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
     const { name, type, price, image, rarity, effects, description } = req.body;
 
     // Check for existing item with the same name
@@ -203,7 +204,7 @@ router.post('/add', isAuthenticated, hasRole(['admin', 'professor']), async (req
 });
 
 // Edit item (Admin only)
-router.put('/:id', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+router.put('/:id', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
     try {
         const updated = await Item.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updated) return res.status(404).json({ message: 'Item not found' });

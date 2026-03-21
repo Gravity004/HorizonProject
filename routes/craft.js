@@ -4,6 +4,7 @@ const Recipe = require('../models/Recipe');
 const User = require('../models/User');
 const Item = require('../models/Item');
 const { isAuthenticated, hasRole } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/sanitize');
 
 // Get all recipes (populated with item details)
 router.get('/recipes', async (req, res) => {
@@ -16,7 +17,7 @@ router.get('/recipes', async (req, res) => {
 });
 
 // Add new recipe (Admin only)
-router.post('/recipes/add', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+router.post('/recipes/add', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
     const { resultItemId, resultItemName, ingredients, craftingType, craftingTime, requiredLevel } = req.body;
 
     try {
@@ -55,7 +56,7 @@ router.delete('/recipes/:id', isAuthenticated, hasRole(['admin', 'professor']), 
 });
 
 // Craft Item
-router.post('/craft', isAuthenticated, async (req, res) => {
+router.post('/craft', isAuthenticated, sanitizeBody, async (req, res) => {
     const { recipeId } = req.body;
 
     try {
