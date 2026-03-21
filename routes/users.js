@@ -38,6 +38,7 @@ router.get('/top', async (req, res) => {
 
 // Get all users (admin only)
 const { isAuthenticated, hasRole } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/sanitize');
 
 router.get('/all', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
     try {
@@ -49,7 +50,7 @@ router.get('/all', isAuthenticated, hasRole(['admin', 'professor']), async (req,
 });
 
 // User: Change display name via item
-router.post('/changeName', isAuthenticated, async (req, res) => {
+router.post('/changeName', isAuthenticated, sanitizeBody, async (req, res) => {
     const { itemId, newName } = req.body;
     if (!newName || newName.length < 2 || newName.length > 50) return res.status(400).json({ message: 'Invalid name length.' });
 
@@ -75,7 +76,7 @@ router.post('/changeName', isAuthenticated, async (req, res) => {
 });
 
 // Admin: Adjust user health
-router.post('/admin/health', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+router.post('/admin/health', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
     const { targetUserId, action, healthAmount } = req.body;
     const amount = parseInt(healthAmount);
 
@@ -129,7 +130,7 @@ router.get('/boosters', async (req, res) => {
 });
 
 // Update Server Boosters (Admin only)
-router.post('/boosters', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+router.post('/boosters', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
     try {
         const { boosters } = req.body;
         if (!Array.isArray(boosters) || boosters.length !== 3) {
@@ -180,7 +181,7 @@ router.get('/faculty', async (req, res) => {
 });
 
 // Update Faculty Members (Admin only)
-router.post('/faculty', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
+router.post('/faculty', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
     try {
         const { faculty } = req.body;
         if (!Array.isArray(faculty)) {

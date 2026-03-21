@@ -4,6 +4,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Item = require('../models/Item');
 const { isAuthenticated } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/sanitize');
 
 // Seed to randomize forest opening times daily
 // We will generate a daily seed based on the current date, ensuring it changes every day
@@ -76,7 +77,7 @@ router.get('/status', isAuthenticated, async (req, res) => {
     });
 });
 
-router.post('/gather', isAuthenticated, async (req, res) => {
+router.post('/gather', isAuthenticated, sanitizeBody, async (req, res) => {
     try {
         const window = getDailyForestWindow();
         const now = new Date();

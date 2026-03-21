@@ -659,117 +659,153 @@
                     'assets/images/Sofia McQueen.JPG',
                     'assets/images/ScarDKillz.jpg',
                     'assets/images/Ngong Ngaeng.JPG',
-                    'assets/images/singha.png',
-                    'assets/images/swan.png',
-                    'assets/images/RCT.png',
-                    'assets/images/RCT1.png',
-                    'assets/images/RCT2.png',
                     'assets/images/blank_profile.png'
                 ];
+                // Inline SVG used as fallback (no external request = no loop)
+                const FALLBACK_IMG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23120a24' stroke='%23d4af37' stroke-width='3'/%3E%3Ctext x='50' y='62' text-anchor='middle' font-size='40' fill='%23d4af37'%3E%3F%3C/text%3E%3C/svg%3E`;
 
                 async function loadFaculty() {
                     try {
-                        const r = await fetch('/api/users/faculty');
+                        const r = await fetch('/api/users/faculty', { credentials: 'include' });
                         if (r.ok) {
                             facultyData = await r.json();
                             renderFacultyCards();
                         }
-                    } catch (e) { console.error(e); }
+                    } catch (e) { console.error('Faculty load failed:', e); }
                 }
 
                 function renderFacultyCards() {
                     const grid = document.getElementById('facultyGrid');
                     grid.innerHTML = '';
                     facultyData.forEach(f => {
-                        grid.innerHTML += `
-                            <div class="card">
-                                <img src="${f.image}" alt="Prof" onerror="this.src='assets/images/blank_profile.png'">
-                                <h3>${f.name}</h3>
-                                <p>${f.subject}</p>
-                            </div>
-                        `;
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        const img = document.createElement('img');
+                        img.src = f.image;
+                        img.alt = f.name;
+                        img.onerror = function () { this.onerror = null; this.src = FALLBACK_IMG; };
+                        card.appendChild(img);
+                        card.innerHTML += `<h3>${f.name}</h3><p>${f.subject}</p>`;
+                        grid.appendChild(card);
                     });
                 }
 
                 // Check Admin to show Edit Button
                 try {
-                    const meRes = await fetch('/auth/me', { credentials: 'include' });
+                    const meRes = await fetch('/auth/me');
                     if (meRes.ok) {
-                        const data = await meRes.json();
-                        const usr = data.user || {};
+                        const usr = await meRes.json();
                         if (usr.roles && (usr.roles.includes('admin') || usr.roles.includes('professor'))) {
                             document.getElementById('facultyAdminControls').innerHTML = `
-                                <button onclick="openFacultyEditor()" style="padding:1rem 2.5rem; font-size:1.1rem; background:linear-gradient(135deg, var(--gold), #b8860b); color:#000; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 0 25px var(--gold); margin: 1.5rem 0; font-family:'Cinzel',serif;">✨ Edit Faculty ✨</button>
+                                <button onclick="openFacultyEditor()" style="padding:1rem 2.5rem; font-size:1.2rem; background:linear-gradient(135deg, var(--gold), #b8860b); color:#000; border:2px solid #fff; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 0 25px var(--gold); margin: 2rem 0; font-family:'Cinzel',serif; transition: transform 0.2s;">✨ Edit Faculty ✨</button>
                             `;
                         }
                     }
-                } catch (e) { console.warn('Auth check failed:', e); }
+                } catch (e) { }
 
-                window.openFacultyEditor = function() {
+                window.openFacultyEditor = function () {
+                    if (!facultyData.length) return;
                     const list = document.getElementById('facultyEditList');
                     list.innerHTML = '';
                     facultyData.forEach((f, idx) => {
-                        let currentImgIndex = availImages.indexOf(f.image);
-                        if(currentImgIndex === -1) { availImages.push(f.image); currentImgIndex = availImages.length - 1; }
-                        
-                        list.innerHTML += `
-                            <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; display:grid; grid-template-columns: 120px 1fr; gap:1rem; align-items:center;">
-                                <div style="text-align:center;">
-                                    <img id="facImg_${idx}" src="${f.image}" style="width:80px; height:80px; object-fit:cover; border-radius:50%; border:2px solid var(--gold); margin-bottom:0.5rem;" onerror="this.src='assets/images/blank_profile.png'">
-                                    <div style="display:flex; justify-content:center; gap:0.5rem;">
-                                        <button onclick="changeFacImg(${idx}, -1)" style="background:var(--gold); border:none; border-radius:4px; cursor:pointer;">&#9664;</button>
-                                        <button onclick="changeFacImg(${idx}, 1)" style="background:var(--gold); border:none; border-radius:4px; cursor:pointer;">&#9654;</button>
-                                    </div>
-                                    <input type="hidden" id="facImgVal_${idx}" value="${f.image}">
-                                </div>
-                                <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                                    <input type="text" id="facName_${idx}" class="parchment-input" value="${f.name}" placeholder="Name">
-                                    <input type="text" id="facSubj_${idx}" class="parchment-input" value="${f.subject}" placeholder="Subject">
-                                </div>
+                        let imgIdx = availImages.indexOf(f.image);
+                        if (imgIdx === -1 && f.image) { availImages.push(f.image); imgIdx = availImages.length - 1; }
+                        if (imgIdx === -1) imgIdx = 0;
+
+                        const slot = document.createElement('div');
+                        slot.style.cssText = 'background:rgba(212,175,55,0.05);border:1px solid rgba(212,175,55,0.2);border-radius:10px;padding:1.2rem;display:grid;grid-template-columns:120px 1fr;gap:1.2rem;align-items:start;';
+
+                        const previewImg = document.createElement('img');
+                        previewImg.id = 'facImg_' + idx;
+                        previewImg.src = f.image;
+                        previewImg.alt = f.name;
+                        previewImg.style.cssText = 'width:84px;height:84px;object-fit:cover;border-radius:50%;border:3px solid var(--gold);box-shadow:0 0 16px rgba(212,175,55,0.4);display:block;margin:0 auto 0.5rem;';
+                        previewImg.onerror = function () { this.onerror = null; this.src = FALLBACK_IMG; };
+
+                        const imgLabel = document.createElement('div');
+                        imgLabel.id = 'facImgLabel_' + idx;
+                        imgLabel.style.cssText = 'font-size:0.62rem;color:rgba(212,175,55,0.55);word-break:break-all;margin-top:0.3rem;min-height:2em;';
+                        imgLabel.textContent = (f.image || '').split('/').pop();
+
+                        const leftCol = document.createElement('div');
+                        leftCol.style.textAlign = 'center';
+                        leftCol.appendChild(previewImg);
+
+                        const btnRow = document.createElement('div');
+                        btnRow.style.cssText = 'display:flex;justify-content:center;gap:6px;margin:0.4rem 0;';
+                        ['◀', '▶'].forEach((label, d) => {
+                            const btn = document.createElement('button');
+                            btn.textContent = label;
+                            btn.title = d === 0 ? 'รูปก่อนหน้า' : 'รูปถัดไป';
+                            btn.style.cssText = 'width:34px;height:34px;background:var(--gold);border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:1.1rem;';
+                            btn.onclick = () => window.changeFacImg(idx, d === 0 ? -1 : 1);
+                            btnRow.appendChild(btn);
+                        });
+                        leftCol.appendChild(btnRow);
+
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.id = 'facImgVal_' + idx;
+                        hiddenInput.value = f.image;
+                        leftCol.appendChild(hiddenInput);
+                        leftCol.appendChild(imgLabel);
+
+                        const inputStyle = 'width:100%;box-sizing:border-box;background:rgba(0,0,0,0.5);border:1px solid rgba(212,175,55,0.4);border-radius:6px;padding:0.5rem 0.75rem;color:#fff;font-family:\'Outfit\',sans-serif;font-size:0.9rem;outline:none;';
+                        const rightCol = document.createElement('div');
+                        rightCol.style.cssText = 'display:flex;flex-direction:column;gap:0.8rem;';
+                        rightCol.innerHTML = `
+                            <div>
+                                <label style="font-size:0.72rem;color:var(--gold);font-family:'Cinzel',serif;display:block;margin-bottom:4px;">ชื่อ</label>
+                                <input type="text" id="facName_${idx}" value="${f.name.replace(/"/g, '&quot;')}" style="${inputStyle}">
+                            </div>
+                            <div>
+                                <label style="font-size:0.72rem;color:var(--gold);font-family:'Cinzel',serif;display:block;margin-bottom:4px;">วิชาที่สอน</label>
+                                <input type="text" id="facSubj_${idx}" value="${f.subject.replace(/"/g, '&quot;')}" style="${inputStyle}">
                             </div>
                         `;
+
+                        slot.appendChild(leftCol);
+                        slot.appendChild(rightCol);
+                        list.appendChild(slot);
                     });
                     document.getElementById('facultyEditModal').style.display = 'flex';
                 };
 
-                window.changeFacImg = function(idx, dir) {
-                    const input = document.getElementById('facImgVal_'+idx);
+                window.changeFacImg = function (idx, dir) {
+                    const input = document.getElementById('facImgVal_' + idx);
                     let currIdx = availImages.indexOf(input.value);
-                    if(currIdx === -1) currIdx = 0;
-                    currIdx += dir;
-                    if(currIdx < 0) currIdx = availImages.length - 1;
-                    if(currIdx >= availImages.length) currIdx = 0;
-                    
+                    if (currIdx === -1) currIdx = 0;
+                    currIdx = (currIdx + dir + availImages.length) % availImages.length;
                     const newImg = availImages[currIdx];
                     input.value = newImg;
-                    document.getElementById('facImg_'+idx).src = newImg;
+                    // Safe preview update — break the onerror chain
+                    const preview = document.getElementById('facImg_' + idx);
+                    if (preview) { preview.onerror = function () { this.onerror = null; this.src = FALLBACK_IMG; }; preview.src = newImg; }
+                    const label = document.getElementById('facImgLabel_' + idx);
+                    if (label) label.textContent = newImg.split('/').pop();
                 };
 
-                window.saveFaculty = async function() {
+                window.saveFaculty = async function () {
                     const newFacData = [];
-                    for(let i=0; i<facultyData.length; i++) {
+                    for (let i = 0; i < facultyData.length; i++) {
                         newFacData.push({
-                            name: document.getElementById('facName_'+i).value,
-                            subject: document.getElementById('facSubj_'+i).value,
-                            image: document.getElementById('facImgVal_'+i).value
+                            name: document.getElementById('facName_' + i).value,
+                            subject: document.getElementById('facSubj_' + i).value,
+                            image: document.getElementById('facImgVal_' + i).value
                         });
                     }
                     try {
                         const r = await fetch('/api/users/faculty', {
-                            method:'POST', headers:{'Content-Type':'application/json'},
-                            body:JSON.stringify({ faculty: newFacData }),
-                            credentials: 'include'
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ faculty: newFacData })
                         });
                         if (r.ok) {
-                            alert('✅ Faculty updated successfully!');
+                            alert('Faculty updated successfully!');
                             document.getElementById('facultyEditModal').style.display = 'none';
                             facultyData = newFacData;
                             renderFacultyCards();
-                        } else {
-                            const d = await r.json();
-                            alert('❌ ' + (d.message || 'Failed to save.'));
-                        }
-                    } catch(e) { console.error(e); alert('❌ Connection error.'); }
+                        } else alert('Failed to save.');
+                    } catch (e) { console.error(e); }
                 };
 
                 loadFaculty();
@@ -791,22 +827,27 @@
                 }
             </style>
             <div id="facultyAdminControls" style="text-align: center; margin-bottom: 1rem;"></div>
-            <div class="item-grid" id="facultyGrid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="item-grid" id="facultyGrid"
+                style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                 <!-- Faculty cards loaded dynamically -->
             </div>
-            
+
             <!-- Edit Faculty Modal -->
             <div id="facultyEditModal" class="modal-overlay" style="display:none; z-index:2000;">
-                <div class="modal-container" style="max-height:80vh; overflow-y:auto; width:90%; max-width:800px; padding:2rem; background:#11091a; border:2px solid var(--gold); border-radius:12px;">
-                    <div class="modal-header" style="border-bottom:1px solid rgba(212,175,55,0.3); margin-bottom:1rem; padding-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
+                <div class="modal-container"
+                    style="max-height:80vh; overflow-y:auto; width:90%; max-width:800px; padding:2rem; background:#11091a; border:2px solid var(--gold); border-radius:12px;">
+                    <div class="modal-header"
+                        style="border-bottom:1px solid rgba(212,175,55,0.3); margin-bottom:1rem; padding-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
                         <h2 style="color:var(--gold); font-family:'Cinzel',serif; margin:0;">Edit Faculty</h2>
-                        <button onclick="document.getElementById('facultyEditModal').style.display='none'" style="background:none; border:none; color:var(--text-light); font-size:1.5rem; cursor:pointer;">&times;</button>
+                        <button onclick="document.getElementById('facultyEditModal').style.display='none'"
+                            style="background:none; border:none; color:var(--text-light); font-size:1.5rem; cursor:pointer;">&times;</button>
                     </div>
                     <div id="facultyEditList" style="display:flex; flex-direction:column; gap:1.5rem;">
                         <!-- Edit slots generated here -->
                     </div>
                     <div style="margin-top:2rem; text-align:right;">
-                        <button onclick="saveFaculty()" class="purchase-btn" style="background:#2a3d2a; color:#6af56a; border-color:#3d5c3d;">Save Changes</button>
+                        <button onclick="saveFaculty()" class="purchase-btn"
+                            style="background:#2a3d2a; color:#6af56a; border-color:#3d5c3d;">Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -1230,16 +1271,20 @@
                             placeholder="🔍 ค้นหาด้วย ID, ชื่อ, หรือปีการศึกษา...">
                     </div>
 
-                    <!-- Column header -->
-                    <div style="display:flex; align-items:center; padding: 0.6rem 1.25rem; border-bottom: 2px solid rgba(212,175,55,0.35); margin-bottom: 4px; position: sticky; top: 0; background: rgba(8,4,20,0.98); z-index:2;">
-                        <div style="width:18%; min-width:90px; font-family:'Cinzel',serif; font-size:0.8rem; color:var(--gold); text-transform:uppercase; letter-spacing:1px; flex-shrink:0;">รหัส</div>
-                        <div style="flex:1; font-family:'Cinzel',serif; font-size:0.8rem; color:var(--gold); text-transform:uppercase; letter-spacing:1px; padding: 0 0.5rem;">ชื่อ-นามสกุล</div>
-                        <div style="width:90px; text-align:right; flex-shrink:0; font-family:'Cinzel',serif; font-size:0.8rem; color:var(--gold); text-transform:uppercase; letter-spacing:1px;">ชั้นปี</div>
-                    </div>
-                    <!-- Student rows container -->
-                    <div id="studentTableBody">
-                        <!-- rows populated by JS -->
-                    </div>
+                    <table class="student-table">
+                        <thead>
+                            <tr
+                                style="background:linear-gradient(90deg, transparent, rgba(212,175,55,0.15), transparent);">
+                                <th style="text-align: center; width: 12%;">รูป</th>
+                                <th style="text-align: center; width: 18%;">รหัส</th>
+                                <th style="text-align: left; width: 52%;">ชื่อ-นามสกุล</th>
+                                <th style="text-align: center; width: 18%;">ชั้นปี</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody">
+                            <!-- Student rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
 
                 <!-- Student Detail View -->
