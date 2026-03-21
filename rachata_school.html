@@ -664,30 +664,35 @@
                     'assets/images/RCT.png',
                     'assets/images/RCT1.png',
                     'assets/images/RCT2.png',
-                    'assets/images/blank_profile.png'
+                    'assets/images/Eternity.png',
+                    'assets/images/Eternity1.png'
                 ];
+                // Inline SVG used as fallback (no external request = no loop)
+                const FALLBACK_IMG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23120a24' stroke='%23d4af37' stroke-width='3'/%3E%3Ctext x='50' y='62' text-anchor='middle' font-size='40' fill='%23d4af37'%3E%3F%3C/text%3E%3C/svg%3E`;
 
                 async function loadFaculty() {
                     try {
-                        const r = await fetch('/api/users/faculty');
+                        const r = await fetch('/api/users/faculty', { credentials: 'include' });
                         if (r.ok) {
                             facultyData = await r.json();
                             renderFacultyCards();
                         }
-                    } catch (e) { console.error(e); }
+                    } catch (e) { console.error('Faculty load failed:', e); }
                 }
 
                 function renderFacultyCards() {
                     const grid = document.getElementById('facultyGrid');
                     grid.innerHTML = '';
                     facultyData.forEach(f => {
-                        grid.innerHTML += `
-                            <div class="card">
-                                <img src="${f.image}" alt="Prof" onerror="this.src='assets/images/blank_profile.png'">
-                                <h3>${f.name}</h3>
-                                <p>${f.subject}</p>
-                            </div>
-                        `;
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        const img = document.createElement('img');
+                        img.src = f.image;
+                        img.alt = f.name;
+                        img.onerror = function() { this.onerror = null; this.src = FALLBACK_IMG; };
+                        card.appendChild(img);
+                        card.innerHTML += `<h3>${f.name}</h3><p>${f.subject}</p>`;
+                        grid.appendChild(card);
                     });
                 }
 
@@ -706,43 +711,85 @@
                 } catch (e) { console.warn('Auth check failed:', e); }
 
                 window.openFacultyEditor = function() {
+                    if (!facultyData.length) return;
                     const list = document.getElementById('facultyEditList');
                     list.innerHTML = '';
                     facultyData.forEach((f, idx) => {
-                        let currentImgIndex = availImages.indexOf(f.image);
-                        if(currentImgIndex === -1) { availImages.push(f.image); currentImgIndex = availImages.length - 1; }
-                        
-                        list.innerHTML += `
-                            <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; display:grid; grid-template-columns: 120px 1fr; gap:1rem; align-items:center;">
-                                <div style="text-align:center;">
-                                    <img id="facImg_${idx}" src="${f.image}" style="width:80px; height:80px; object-fit:cover; border-radius:50%; border:2px solid var(--gold); margin-bottom:0.5rem;" onerror="this.src='assets/images/blank_profile.png'">
-                                    <div style="display:flex; justify-content:center; gap:0.5rem;">
-                                        <button onclick="changeFacImg(${idx}, -1)" style="background:var(--gold); border:none; border-radius:4px; cursor:pointer;">&#9664;</button>
-                                        <button onclick="changeFacImg(${idx}, 1)" style="background:var(--gold); border:none; border-radius:4px; cursor:pointer;">&#9654;</button>
-                                    </div>
-                                    <input type="hidden" id="facImgVal_${idx}" value="${f.image}">
-                                </div>
-                                <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                                    <input type="text" id="facName_${idx}" class="parchment-input" value="${f.name}" placeholder="Name">
-                                    <input type="text" id="facSubj_${idx}" class="parchment-input" value="${f.subject}" placeholder="Subject">
-                                </div>
+                        let imgIdx = availImages.indexOf(f.image);
+                        if (imgIdx === -1 && f.image) { availImages.push(f.image); imgIdx = availImages.length - 1; }
+                        if (imgIdx === -1) imgIdx = 0;
+
+                        const slot = document.createElement('div');
+                        slot.style.cssText = 'background:rgba(212,175,55,0.05);border:1px solid rgba(212,175,55,0.2);border-radius:10px;padding:1.2rem;display:grid;grid-template-columns:120px 1fr;gap:1.2rem;align-items:start;';
+
+                        const previewImg = document.createElement('img');
+                        previewImg.id = 'facImg_' + idx;
+                        previewImg.src = f.image;
+                        previewImg.alt = f.name;
+                        previewImg.style.cssText = 'width:84px;height:84px;object-fit:cover;border-radius:50%;border:3px solid var(--gold);box-shadow:0 0 16px rgba(212,175,55,0.4);display:block;margin:0 auto 0.5rem;';
+                        previewImg.onerror = function() { this.onerror = null; this.src = FALLBACK_IMG; };
+
+                        const imgLabel = document.createElement('div');
+                        imgLabel.id = 'facImgLabel_' + idx;
+                        imgLabel.style.cssText = 'font-size:0.62rem;color:rgba(212,175,55,0.55);word-break:break-all;margin-top:0.3rem;min-height:2em;';
+                        imgLabel.textContent = (f.image || '').split('/').pop();
+
+                        const leftCol = document.createElement('div');
+                        leftCol.style.textAlign = 'center';
+                        leftCol.appendChild(previewImg);
+
+                        const btnRow = document.createElement('div');
+                        btnRow.style.cssText = 'display:flex;justify-content:center;gap:6px;margin:0.4rem 0;';
+                        ['◀','▶'].forEach((label, d) => {
+                            const btn = document.createElement('button');
+                            btn.textContent = label;
+                            btn.title = d === 0 ? 'รูปก่อนหน้า' : 'รูปถัดไป';
+                            btn.style.cssText = 'width:34px;height:34px;background:var(--gold);border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:1.1rem;';
+                            btn.onclick = () => window.changeFacImg(idx, d === 0 ? -1 : 1);
+                            btnRow.appendChild(btn);
+                        });
+                        leftCol.appendChild(btnRow);
+
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.id = 'facImgVal_' + idx;
+                        hiddenInput.value = f.image;
+                        leftCol.appendChild(hiddenInput);
+                        leftCol.appendChild(imgLabel);
+
+                        const inputStyle = 'width:100%;box-sizing:border-box;background:rgba(0,0,0,0.5);border:1px solid rgba(212,175,55,0.4);border-radius:6px;padding:0.5rem 0.75rem;color:#fff;font-family:\'Outfit\',sans-serif;font-size:0.9rem;outline:none;';
+                        const rightCol = document.createElement('div');
+                        rightCol.style.cssText = 'display:flex;flex-direction:column;gap:0.8rem;';
+                        rightCol.innerHTML = `
+                            <div>
+                                <label style="font-size:0.72rem;color:var(--gold);font-family:'Cinzel',serif;display:block;margin-bottom:4px;">ชื่อ</label>
+                                <input type="text" id="facName_${idx}" value="${f.name.replace(/"/g,'&quot;')}" style="${inputStyle}">
+                            </div>
+                            <div>
+                                <label style="font-size:0.72rem;color:var(--gold);font-family:'Cinzel',serif;display:block;margin-bottom:4px;">วิชาที่สอน</label>
+                                <input type="text" id="facSubj_${idx}" value="${f.subject.replace(/"/g,'&quot;')}" style="${inputStyle}">
                             </div>
                         `;
+
+                        slot.appendChild(leftCol);
+                        slot.appendChild(rightCol);
+                        list.appendChild(slot);
                     });
                     document.getElementById('facultyEditModal').style.display = 'flex';
                 };
 
                 window.changeFacImg = function(idx, dir) {
-                    const input = document.getElementById('facImgVal_'+idx);
+                    const input = document.getElementById('facImgVal_' + idx);
                     let currIdx = availImages.indexOf(input.value);
-                    if(currIdx === -1) currIdx = 0;
-                    currIdx += dir;
-                    if(currIdx < 0) currIdx = availImages.length - 1;
-                    if(currIdx >= availImages.length) currIdx = 0;
-                    
+                    if (currIdx === -1) currIdx = 0;
+                    currIdx = (currIdx + dir + availImages.length) % availImages.length;
                     const newImg = availImages[currIdx];
                     input.value = newImg;
-                    document.getElementById('facImg_'+idx).src = newImg;
+                    // Safe preview update — break the onerror chain
+                    const preview = document.getElementById('facImg_' + idx);
+                    if (preview) { preview.onerror = function() { this.onerror=null; this.src=FALLBACK_IMG; }; preview.src = newImg; }
+                    const label = document.getElementById('facImgLabel_' + idx);
+                    if (label) label.textContent = newImg.split('/').pop();
                 };
 
                 window.saveFaculty = async function() {

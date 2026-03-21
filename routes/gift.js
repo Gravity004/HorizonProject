@@ -5,6 +5,7 @@ const Item = require('../models/Item');
 const Gift = require('../models/Gift');
 const Transaction = require('../models/Transaction');
 const { isAuthenticated } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/sanitize');
 const crypto = require('crypto');
 
 function generateTxId() {
@@ -12,7 +13,7 @@ function generateTxId() {
 }
 
 // Send Gift/Letter
-router.post('/send', isAuthenticated, async (req, res) => {
+router.post('/send', isAuthenticated, sanitizeBody, async (req, res) => {
     const { recipientId, itemId, quantity, message } = req.body;
     const sendQuantity = parseInt(quantity) || 1;
 
@@ -99,7 +100,7 @@ router.get('/inbox', isAuthenticated, async (req, res) => {
 });
 
 // Claim Gift
-router.post('/claim', isAuthenticated, async (req, res) => {
+router.post('/claim', isAuthenticated, sanitizeBody, async (req, res) => {
     const { giftId } = req.body;
 
     try {
