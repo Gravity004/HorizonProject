@@ -701,13 +701,26 @@ function renderStudentTable() {
     }
 
     filteredStudents.forEach((student, idx) => {
-        const row = document.createElement('tr');
+        const row = document.createElement('div');
         row.className = 'student-row';
-        row.innerHTML = `
-            <td class="col-id">${student.id}</td>
-            <td class="col-name">${student.name}</td>
-            <td class="col-year"><span class="year-badge">ปีที่ ${student.year}</span></td>
+        row.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 0;
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(212,175,55,0.1);
+            transition: background 0.2s;
         `;
+        row.innerHTML = `
+            <div style="width:18%; min-width:90px; color:var(--gold); font-size:0.85rem; font-family:'Cinzel',serif; flex-shrink:0;">${student.id}</div>
+            <div style="flex:1; font-size:0.9rem; color:var(--text-light); padding: 0 0.5rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${student.name}</div>
+            <div style="width:90px; flex-shrink:0; text-align:right;">
+                <span style="background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.4); border-radius:20px; padding:2px 10px; font-size:0.78rem; color:var(--gold); white-space:nowrap;">ปีที่ ${student.year}</span>
+            </div>
+        `;
+        row.addEventListener('mouseenter', () => row.style.background = 'rgba(212,175,55,0.07)');
+        row.addEventListener('mouseleave', () => row.style.background = '');
         row.addEventListener('click', () => showStudentDetail(student.id));
         tbody.appendChild(row);
     });
