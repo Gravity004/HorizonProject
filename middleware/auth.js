@@ -39,6 +39,8 @@ async function checkGuildWithBot(discordId) {
     return await response.json(); // member data พร้อม roles[]
 }
 
+const GUILD_CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 const checkGuildMembership = async (req, res, next) => {
     // ตรวจว่าเป็น AJAX/fetch request หรือไม่
     const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest'
@@ -50,6 +52,12 @@ const checkGuildMembership = async (req, res, next) => {
         return isAjax
             ? res.status(401).json({ authenticated: false, error: 'not_logged_in', redirect: '/' })
             : res.redirect('/?error=not_in_guild');
+    }
+
+    // ✅ Session cache — ป้องกัน Discord API ถูกเรียกทุก request (infinite loop)
+    const now = Date.now();
+    if (req.session?.guildCheckTime && (now - req.session.guildCheckTime) < GUILD_CACHE_TTL) {
+        return next(); // ยังอยู่ใน cache window → ผ่านเลย
     }
 
     try {
@@ -120,6 +128,8 @@ const checkGuildMembership = async (req, res, next) => {
         }
 
         console.log(`[Middleware] ✅ ${user.username} ผ่านการตรวจสอบ`);
+        // ✅ บันทึกเวลาที่ check สำเร็จ ใน session cache
+        req.session.guildCheckTime = Date.now();
         next();
 
     } catch (err) {
