@@ -911,12 +911,13 @@
             <form id="addItemForm" onsubmit="handleAddItem(event)">
                 <input type="text" name="name" placeholder="Item Name" required class="parchment-input">
                 <input type="text" name="description" placeholder="Description" class="parchment-input">
-                <select name="type" required class="parchment-input">
+                <select name="type" id="addItemTypeSelect" required class="parchment-input">
                     <option value="material">Material</option>
                     <option value="potion">Potion</option>
                     <option value="food">Food</option>
                     <option value="equipment">Equipment</option>
                 </select>
+                <input type="text" name="mailboxMessage" id="addItemMailboxMessage" placeholder="Mailbox Message (For equipment gifts)" class="parchment-input" style="display: none;">
                 <select name="rarity" class="parchment-input">
                     <option value="common">Common</option>
                     <option value="rare">Rare</option>
@@ -1076,6 +1077,7 @@
                     <option value="food">Food</option>
                     <option value="equipment">Equipment</option>
                 </select>
+                <input type="text" id="editItemMailboxMessage" name="mailboxMessage" placeholder="Mailbox Message (For equipment gifts)" class="parchment-input" style="display: none;">
                 <select id="editItemRarity" name="rarity" class="parchment-input">
                     <option value="common">Common</option>
                     <option value="rare">Rare</option>

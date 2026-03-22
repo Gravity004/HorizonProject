@@ -57,11 +57,11 @@ router.post('/changeName', isAuthenticated, sanitizeBody, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         const itemIdx = user.inventory.findIndex(i => i.itemId.toString() === itemId);
-        
+
         if (itemIdx === -1 || user.inventory[itemIdx].quantity < 1) {
             return res.status(400).json({ message: 'You do not have a Name Change Card.' });
         }
-        
+
         // Deduct 1 item
         user.inventory[itemIdx].quantity -= 1;
         if (user.inventory[itemIdx].quantity <= 0) {
@@ -69,7 +69,7 @@ router.post('/changeName', isAuthenticated, sanitizeBody, async (req, res) => {
         }
         user.markModified('inventory');
         user.username = newName;
-        
+
         await user.save();
         res.json({ message: 'Name changed successfully', username: user.username });
     } catch (err) { res.status(500).json({ message: err.message }); }
@@ -96,7 +96,7 @@ router.post('/admin/health', isAuthenticated, hasRole(['admin', 'professor']), s
         } else {
             target.health = Math.min(amount, target.maxHealth);
         }
-        
+
         await target.save();
 
         res.json({
@@ -136,18 +136,18 @@ router.post('/boosters', isAuthenticated, hasRole(['admin', 'professor']), sanit
         if (!Array.isArray(boosters) || boosters.length !== 3) {
             return res.status(400).json({ message: 'Invalid boosters data layout.' });
         }
-        
+
         let config = await Config.findOne({ key: 'server_boosters' });
         if (!config) {
             config = new Config({ key: 'server_boosters', value: boosters });
         } else {
             config.value = boosters;
         }
-        
+
         // Use markModified because value is Mixed type
         config.markModified('value');
         await config.save();
-        
+
         res.json({ message: 'Boosters configuration updated successfully.', boosters: config.value });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -162,14 +162,14 @@ router.get('/faculty', async (req, res) => {
             facultyConfig = new Config({
                 key: 'faculty_members',
                 value: [
-                    { name: 'Prof. Richard Moore', subject: 'Ancient Charms', image: 'assets/images/ProfRichard.png' },
-                    { name: 'Prof. Mathal', subject: 'Charms', image: 'assets/images/ProfRichard.png' },
+                    { name: 'Prof. Richard Moore', subject: 'Aweth', image: 'assets/images/ProfRichard.png' },
+                    { name: 'Prof. Mathal', subject: 'Charms', image: 'assets/images/Mathal.png' },
                     { name: 'Prof. King Zadkiel Winchester', subject: 'Faculty Member', image: 'assets/images/King Zadkiel Winchester.png' },
-                    { name: 'Prof. Navin White Rosier', subject: 'Astronomy', image: 'assets/images/ProfRichard.png' },
-                    { name: 'Prof. Tulphat Narintrapakdee', subject: 'Faculty Member', image: 'assets/images/Tulphat Narintrapakdee.JPG' },
-                    { name: 'Prof. Sofia McQueen', subject: 'Faculty Member', image: 'assets/images/Sofia McQueen.JPG' },
-                    { name: 'Prof. ScarDKillz', subject: 'Faculty Member', image: 'assets/images/ScarDKillz.jpg' },
-                    { name: 'Sir. Ngong Ngaeng', subject: 'Faculty Member', image: 'assets/images/Ngong Ngaeng.JPG' }
+                    { name: 'Prof. Navin White Rosier', subject: 'Astronomy', image: 'assets/images/Navin White Rosier.png' },
+                    { name: 'Prof. Tulphat Narintrapakdee', subject: 'Faculty Member', image: 'assets/images/Tulphat Narintrapakdee.png' },
+                    { name: 'Prof. Sofia McQueen', subject: 'Herblology', image: 'assets/images/Sofia McQueen.png' },
+                    { name: 'Prof. ScarDKillz', subject: 'Faculty Member', image: 'assets/images/ScarDKillz.png' },
+                    { name: 'Sir. Ngong Ngaeng', subject: 'Faculty Member', image: 'assets/images/Ngong Ngaeng.png' }
                 ]
             });
             await facultyConfig.save();
@@ -187,17 +187,17 @@ router.post('/faculty', isAuthenticated, hasRole(['admin', 'professor']), saniti
         if (!Array.isArray(faculty)) {
             return res.status(400).json({ message: 'Invalid faculty data layout.' });
         }
-        
+
         let config = await Config.findOne({ key: 'faculty_members' });
         if (!config) {
             config = new Config({ key: 'faculty_members', value: faculty });
         } else {
             config.value = faculty;
         }
-        
+
         config.markModified('value');
         await config.save();
-        
+
         res.json({ message: 'Faculty configuration updated successfully.', faculty: config.value });
     } catch (err) {
         res.status(500).json({ message: err.message });

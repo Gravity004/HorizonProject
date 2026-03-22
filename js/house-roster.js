@@ -713,47 +713,27 @@ function renderStudentTable() {
         const row = document.createElement('tr');
         row.className = 'student-row';
 
-        // Generate initials from name (Thai/English)
-        const nameParts = student.name.trim().split(/\s+/);
-        const initials = nameParts.length >= 2
-            ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
-            : nameParts[0].substring(0, 2).toUpperCase();
-
-        // Deterministic color variation using student ID
-        const idNum = parseInt(student.id.replace('RS-', '')) || index;
-        const hueShift = (idNum * 37) % 360;
-
         row.innerHTML = `
-            <td style="padding:10px 8px; width:56px; min-width:56px;">
-                <div style="
-                    width:40px; height:40px; border-radius:50%;
-                    background: conic-gradient(from ${hueShift}deg, ${hc.secondary}, ${hc.primary}, ${hc.secondary});
-                    display:flex; align-items:center; justify-content:center;
-                    font-size:0.75rem; font-weight:700; color:#0d0d1a;
-                    box-shadow: 0 0 10px ${hc.glow}, inset 0 1px 2px rgba(255,255,255,0.2);
-                    font-family:'Cinzel',serif; letter-spacing:0.5px;
-                    flex-shrink:0; margin:0 auto;
-                ">${initials}</div>
-            </td>
-            <td style="text-align:center; width:80px; white-space:nowrap; padding:10px 6px;">
+            <td style="text-align:center; width:20%; white-space:nowrap; padding:12px 10px;">
                 <span style="
-                    background:rgba(212,175,55,0.12);
-                    border:1px solid rgba(212,175,55,0.35);
-                    border-radius:6px; padding:3px 8px;
-                    font-size:0.75rem; color:${hc.primary};
-                    font-family:'Cinzel',serif; letter-spacing:0.3px;
+                    background:rgba(212,175,55,0.08);
+                    border:1px solid rgba(212,175,55,0.3);
+                    border-radius:4px; padding:4px 10px;
+                    font-size:0.85rem; color:${hc.primary};
+                    font-family:'Cinzel',serif; letter-spacing:1px;
                     white-space:nowrap; display:inline-block;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.2);
                 ">${student.id}</span>
             </td>
-            <td style="text-align:left; padding:10px 8px; word-break:break-word;">
-                <div style="font-size:0.88rem; color:#f0e8d0; line-height:1.4; font-weight:500;">${student.name}</div>
+            <td style="text-align:left; padding:12px 15px; word-break:break-word; width:60%;">
+                <div style="font-size:0.95rem; color:#f4eedc; line-height:1.4; font-weight:500; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${student.name}</div>
             </td>
-            <td style="text-align:center; width:72px; padding:10px 6px;">
+            <td style="text-align:center; width:20%; padding:12px 10px;">
                 <span style="
-                    background:rgba(255,255,255,0.07);
-                    border:1px solid rgba(255,255,255,0.15);
-                    border-radius:20px; padding:3px 10px;
-                    font-size:0.76rem; color:rgba(255,255,255,0.7);
+                    background:rgba(255,255,255,0.05);
+                    border:1px solid rgba(255,255,255,0.1);
+                    border-radius:12px; padding:4px 12px;
+                    font-size:0.8rem; color:rgba(255,255,255,0.8);
                     white-space:nowrap; display:inline-block;
                 ">ปีที่ ${student.year}</span>
             </td>

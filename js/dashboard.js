@@ -281,7 +281,8 @@ window.handleAddItem = async function (e) {
 
     const itemData = {
         name: fd.get('name'), description: fd.get('description'), type: fd.get('type'),
-        price: parseInt(fd.get('price')), image: imageUrl, rarity: fd.get('rarity') || 'common'
+        price: parseInt(fd.get('price')), image: imageUrl, rarity: fd.get('rarity') || 'common',
+        mailboxMessage: fd.get('mailboxMessage') || ''
     };
     try {
         const r = await fetch('/api/shop/add', {
@@ -308,10 +309,21 @@ window.openEditItemModal = function(itemId) {
     document.getElementById('editItemId').value = item._id;
     document.getElementById('editItemName').value = item.name || '';
     document.getElementById('editItemDescription').value = item.description || '';
-    document.getElementById('editItemType').value = item.type || 'material';
+    const typeSelect = document.getElementById('editItemType');
+    typeSelect.value = item.type || 'material';
     document.getElementById('editItemRarity').value = item.rarity || 'common';
     document.getElementById('editItemPrice').value = item.price || 0;
     document.getElementById('editItemImage').value = item.image || '';
+
+    const mailboxInput = document.getElementById('editItemMailboxMessage');
+    if (item.type === 'equipment') {
+        mailboxInput.style.display = 'block';
+        mailboxInput.value = item.mailboxMessage || '';
+    } else {
+        mailboxInput.style.display = 'none';
+        mailboxInput.value = '';
+    }
+
     document.getElementById('editItemModal').style.display = 'block';
 }
 
@@ -328,7 +340,8 @@ window.handleEditItem = async function(e) {
         type: document.getElementById('editItemType').value,
         rarity: document.getElementById('editItemRarity').value,
         price: parseInt(document.getElementById('editItemPrice').value),
-        image: document.getElementById('editItemImage').value
+        image: document.getElementById('editItemImage').value,
+        mailboxMessage: document.getElementById('editItemMailboxMessage').value
     };
     try {
         const r = await fetch('/api/shop/' + itemId, {
@@ -346,7 +359,7 @@ window.handleEditItem = async function(e) {
     } catch (err) { console.error(err); }
 }
 
-// Image file preview
+// image file preview
 document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('itemImageFile');
     if (fileInput) {
@@ -360,6 +373,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.readAsDataURL(e.target.files[0]);
             } else {
                 preview.innerHTML = '';
+            }
+        });
+    }
+
+    // Toggle mailbox message inputs based on item type
+    const addTypeSelect = document.getElementById('addItemTypeSelect');
+    const addMailboxInput = document.getElementById('addItemMailboxMessage');
+    if (addTypeSelect && addMailboxInput) {
+        addTypeSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'equipment') {
+                addMailboxInput.style.display = 'block';
+            } else {
+                addMailboxInput.style.display = 'none';
+            }
+        });
+    }
+
+    const editTypeSelect = document.getElementById('editItemType');
+    const editMailboxInput = document.getElementById('editItemMailboxMessage');
+    if (editTypeSelect && editMailboxInput) {
+        editTypeSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'equipment') {
+                editMailboxInput.style.display = 'block';
+            } else {
+                editMailboxInput.style.display = 'none';
             }
         });
     }
@@ -377,6 +415,7 @@ async function fetchRecipes() {
         const lovePotionRecipe = {
             _id: 'love_potion',
             resultItemName: 'Amortentia Potion',
+            resultItemId: { image: 'assets/images/Amortentia.png', name: 'Amortentia Potion' },
             craftingType: 'cauldron',
             ingredients: [
                 { itemId: { name: 'วัตถุดิบ Legendary ขนิดใดก็ได้ (Any Legendary Item)' }, quantity: 2 },

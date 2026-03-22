@@ -8,7 +8,8 @@ const itemSchema = new mongoose.Schema({
     sellPrice: { type: Number }, // Sell price (usually lower)
     image: { type: String }, // URL or path to image
     rarity: { type: String, enum: ['common', 'rare', 'epic', 'legendary'], default: 'common' },
-    effects: { type: Object } // JSON for special effects stats
+    effects: { type: Object }, // JSON for special effects stats
+    mailboxMessage: { type: String } // Message sent to mailbox when equipment is purchased
 }, {
     toJSON: { versionKey: false }
 });
