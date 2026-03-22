@@ -145,23 +145,20 @@ app.use('/api/forest', forestRoutes);
 const { checkGuildMembership } = require('./middleware/auth');
 
 // ✅ คนที่ออก guild จะถูก redirect ออกทันที
-app.get(/^\/dashboard/, checkGuildMembership, (req, res) => {
+app.get(['/dashboard', '/dashboard/*path'], checkGuildMembership, (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
-// Serve Vue SPA (only in production)
+// Serve Vue SPA (only in production, only if dist folder was built)
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, 'frontend/dist')));
-    // Fix: Express 5 standard catch-all for SPA is '*' or a named param like ':path*'
-    // '{*path}' is not standard Express syntax and might cause issues in some versions.
-    app.get('*', (req, res) => {
-        // Only redirect to index.html for non-API routes
-        if (!req.path.startsWith('/api/') && !req.path.startsWith('/auth/')) {
-            res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
-        } else {
-            res.status(404).json({ message: 'API Route Not Found' });
-        }
-    });
+    const fs = require('fs');
+    const distPath = path.join(__dirname, 'frontend/dist');
+    if (fs.existsSync(distPath)) {
+        app.use(express.static(distPath));
+        app.get('/{*path}', (req, res) => {
+            res.sendFile(path.join(distPath, 'index.html'));
+        });
+    }
 }
 
 // Start Server
