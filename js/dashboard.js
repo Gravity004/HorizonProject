@@ -48,6 +48,32 @@ async function checkAuth() {
         }
 
         currentUser = data.user;
+
+        // Check Detention
+        if (currentUser.isDetained && currentUser.detentionEndDate) {
+            const end = new Date(currentUser.detentionEndDate);
+            if (end > new Date()) {
+                document.getElementById('detentionOverlay').style.display = 'flex';
+                document.getElementById('detentionReasonDisplay').textContent = currentUser.detentionReason || "Rule Violation";
+                
+                const timerEl = document.getElementById('detentionTimer');
+                const interval = setInterval(() => {
+                    const now = new Date();
+                    const diff = end - now;
+                    if (diff <= 0) {
+                        clearInterval(interval);
+                        window.location.reload();
+                        return;
+                    }
+                    const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+                    const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+                    const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                    timerEl.textContent = `${h}:${m}:${s}`;
+                }, 1000);
+                return; // Block loading dashboard features
+            }
+        }
+
         renderUserProfile();
         setupAdminControls();
 
@@ -56,6 +82,7 @@ async function checkAuth() {
         fetchRecipes();
         fetchBalance();
         fetchMailbox(); // Initialize mailbox badge
+        fetchDailyQuests(); // Initialize daily quests
 
     } catch (err) {
         console.error('Auth check failed', err);
@@ -149,6 +176,7 @@ window.switchNav = function (tabId) {
         loadAdminData();
     }
     if (tabId === 'mailbox') fetchMailbox();
+    if (tabId === 'pets') fetchPets();
 }
 
 // ═══════════════════════════════════════════════
@@ -758,6 +786,13 @@ function renderInventory() {
         const img = item?.image || 'assets/images/placeholder_item.png';
         const type = item?.type || 'unknown';
         const id = item?._id || slot.itemId;
+        
+        const isEgg = name.toLowerCase().includes('egg') || name.toLowerCase().includes('ไข่');
+        let useBtn = `<button class="use-item-btn" onclick="useItem('${id}', '${name}')">Use</button>`;
+        if (isEgg) {
+            useBtn = `<button class="use-item-btn" style="background:var(--magical-glow); color:#000;" onclick="startIncubating('${id}')">Incubate</button>`;
+        }
+        
         return `
             <div class="inventory-slot">
                 <img src="${img}" alt="${name}">
@@ -766,7 +801,7 @@ function renderInventory() {
                     <strong>${name}</strong>
                     <small>${type}</small>
                     <div class="inv-actions">
-                        <button class="use-item-btn" onclick="useItem('${id}', '${name}')">Use</button>
+                        ${useBtn}
                         <button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>
                     </div>
                 </div>
@@ -1408,6 +1443,37 @@ function renderLogContainer() {
 
 window.closeLogModal = () => document.getElementById('logModal').style.display = 'none';
 
+window.adminDetainUser = async function () {
+    const targetUserId = document.getElementById('adminDetainUser').value.trim();
+    const minutes = document.getElementById('adminDetainMinutes').value;
+    const reason = document.getElementById('adminDetainReason').value.trim();
+
+    if (!targetUserId || !minutes) {
+        spawnEffect('❌', 'Please enter target and duration.');
+        return;
+    }
+
+    try {
+        const r = await fetch('/api/users/admin/detain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUserId, minutes, reason }),
+            credentials: 'include'
+        });
+        const data = await r.json();
+        if (r.ok) {
+            spawnEffect('⛓️', data.message);
+            document.getElementById('adminDetainUser').value = '';
+            document.getElementById('adminDetainMinutes').value = '';
+            document.getElementById('adminDetainReason').value = '';
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) {
+        spawnEffect('❌', 'Failed to detain user.');
+    }
+}
+
 // Close modals when clicking outside
 window.onclick = function (event) {
     const modals = ['adminModal', 'receiptModal', 'logModal', 'sendGiftModal'];
@@ -1521,4 +1587,314 @@ function spawnEffect(emoji, text) {
     `;
     overlay.classList.add('active');
     setTimeout(() => { overlay.classList.remove('active'); overlay.innerHTML = ''; }, 2500);
+}
+
+// ═══════════════════════════════════════════════
+// DAILY QUESTS
+// ═══════════════════════════════════════════════
+async function fetchDailyQuests() {
+    try {
+        const res = await fetch('/api/quests', { credentials: 'include' });
+        const data = await res.json();
+        if (res.ok && data.quests) {
+            currentUser.dailyQuests = data.quests;
+            updateQuestsBadge();
+        }
+    } catch (err) {
+        console.error('Failed to fetch quests', err);
+    }
+}
+
+function updateQuestsBadge() {
+    const badge = document.getElementById('questsBadge');
+    if (!badge || !currentUser.dailyQuests) return;
+    const hasClaimable = currentUser.dailyQuests.some(q => q.isCompleted && !q.isClaimed);
+    if (hasClaimable) {
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+window.openQuestsModal = function() {
+    document.getElementById('questsModal').style.display = 'block';
+    renderQuests();
+}
+
+window.closeQuestsModal = function() {
+    document.getElementById('questsModal').style.display = 'none';
+}
+
+function renderQuests() {
+    const container = document.getElementById('questsContainer');
+    if (!container || !currentUser?.dailyQuests) return;
+
+    if (currentUser.dailyQuests.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#a89070;">No quests available today.</p>';
+        return;
+    }
+
+    const questLabels = {
+        'explore_himmapan': '🌲 เอาตัวรอดในป่าหิมพานต์ (Explore Himmapan)',
+        'craft_potion': '⚗️ ปรุงยาเวทมนตร์ (Craft Potion)',
+        'buy_item': '🛒 ซื้อไอเทมจากร้านค้า (Buy Item)',
+        'send_gift': '🦉 ส่งของขวัญให้เพื่อน (Send Gift)'
+    };
+
+    container.innerHTML = currentUser.dailyQuests.map(q => {
+        const title = questLabels[q.questType] || q.questType;
+        const progressPct = Math.min(100, (q.progress / q.target) * 100);
+        const rewardText = q.rewardType === 'galleons' ? `${q.rewardAmount} Galleons` : `สุ่มวัตถุดิบ (Random Material) x${q.rewardAmount}`;
+        
+        let actionHTML = '';
+        if (q.isClaimed) {
+            actionHTML = `<div class="quest-claimed-stamp" style="display:block;">CLAIMED</div>`;
+        } else if (q.isCompleted) {
+            actionHTML = `<button class="quest-claim-btn" style="display:block;" onclick="claimQuest('${q._id}')">✨ Claim Reward</button>`;
+        }
+
+        return `
+            <div class="quest-card ${q.isCompleted ? 'completed' : ''}">
+                <div class="quest-header">
+                    <h3 class="quest-title">${title}</h3>
+                    <span class="quest-progress-text">${q.progress} / ${q.target}</span>
+                </div>
+                <div class="quest-bar-bg">
+                    <div class="quest-bar-fill" style="width: ${progressPct}%"></div>
+                </div>
+                <div class="quest-reward">
+                    🎁 รางวัล: <strong>${rewardText}</strong>
+                </div>
+                ${actionHTML}
+            </div>
+        `;
+    }).join('');
+}
+
+window.claimQuest = async function(questId) {
+    try {
+        const res = await fetch('/api/quests/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ questId }),
+            credentials: 'include'
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            spawnEffect('✨', data.message);
+            currentUser.balance = data.balance;
+            currentUser.dailyQuests = data.quests;
+            renderUserProfile();
+            fetchInventory();
+            renderQuests();
+            updateQuestsBadge();
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        spawnEffect('❌', 'Failed to claim quest');
+    }
+}
+
+// ═══════════════════════════════════════════════
+// PETS & INCUBATOR
+// ═══════════════════════════════════════════════
+let currentPetsData = null;
+
+async function fetchPets() {
+    try {
+        const res = await fetch('/api/pets', { credentials: 'include' });
+        if (res.ok) {
+            currentPetsData = await res.json();
+            renderIncubator(currentPetsData.incubator);
+            renderMyPets(currentPetsData.pets, currentPetsData.activePetId);
+        }
+    } catch (error) {
+        console.error('Failed to fetch pets data', error);
+    }
+}
+
+function renderIncubator(incubator) {
+    const container = document.getElementById('incubatorContainer');
+    if (!container) return;
+
+    if (!incubator || !incubator.eggItemId) {
+        container.innerHTML = `
+            <div style="opacity:0.5; margin: 2rem 0;">
+                <img src="assets/images/placeholder_item.png" style="width:80px; filter:grayscale(1);">
+                <p style="color:#a89070; margin-top:1rem;">Incubator is empty.<br>Place a magic egg from your inventory.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const { eggName, eggImage, warmedDays, requiredDays, isReadyToHatch, lastWarmedDate } = incubator;
+    const isWarmedToday = lastWarmedDate ? (new Date(lastWarmedDate).toDateString() === new Date().toDateString()) : false;
+
+    let actionBtn = '';
+    
+    if (isReadyToHatch) {
+        actionBtn = `<button class="conjure-btn" style="margin-top:1rem; animation: pulse 1.5s infinite;" onclick="hatchEgg()">✨ Hatch Egg! ✨</button>`;
+    } else if (isWarmedToday) {
+        actionBtn = `<button class="conjure-btn" style="margin-top:1rem; opacity:0.5; cursor:not-allowed;" disabled>🔥 Warmed Today</button>`;
+    } else {
+        actionBtn = `<button class="conjure-btn" style="margin-top:1rem;" onclick="warmEgg()">🔥 Give Warmth</button>`;
+    }
+
+    const progressPct = Math.min(100, (warmedDays / requiredDays) * 100);
+
+    container.innerHTML = `
+        <img src="${eggImage}" style="width: 100px; height: 100px; object-fit: contain; margin-bottom: 1rem; ${isReadyToHatch ? 'animation: wiggle 0.5s infinite;' : ''}">
+        <h4 style="color:#d4af37; margin:0 0 0.5rem 0; font-family:'Cinzel', serif;">${eggName}</h4>
+        
+        <div class="quest-bar-bg" style="margin-bottom: 0.5rem;">
+            <div class="quest-bar-fill" style="width: ${progressPct}%; background: linear-gradient(90deg, #d44b37, #f5a623);"></div>
+        </div>
+        <p style="color:#a89070; font-size:0.85rem; margin-top:0;">Warmth: ${warmedDays} / ${requiredDays} Days</p>
+
+        ${actionBtn}
+    `;
+}
+
+function renderMyPets(pets, activePetId) {
+    const container = document.getElementById('petsListContainer');
+    if (!container) return;
+
+    if (!pets || pets.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#a89070; font-size:0.9rem;">You don\'t have any familiars yet.</p>';
+        updateActivePetDisplay(null);
+        return;
+    }
+
+    const activePet = pets.find(p => p._id.toString() === (activePetId || '').toString());
+    updateActivePetDisplay(activePet || null);
+
+    container.innerHTML = pets.map(pet => {
+        const isActive = activePetId && activePetId.toString() === pet._id.toString();
+        const buffTexts = pet.buffs.map(b => `${b.target.replace(/_/g, ' ')} +${b.value}${b.target.includes('rate') ? '%' : ''}`).join(', ');
+
+        return `
+            <div style="background:rgba(0,0,0,0.3); border:1px solid ${isActive ? '#d4af37' : '#554433'}; border-radius:8px; padding:1rem; display:flex; gap:1rem; align-items:center;">
+                <img src="${pet.image}" style="width:64px; height:64px; object-fit:contain; border-radius:8px; background:rgba(255,255,255,0.05);">
+                <div style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h4 style="margin:0; color:${isActive ? '#d4af37' : '#e0d0b0'}; font-family:'Cinzel', serif;">${pet.name}</h4>
+                        <span style="font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:4px; background:rgba(255,255,255,0.1); text-transform:uppercase;">${pet.rarity}</span>
+                    </div>
+                    <p style="font-size:0.8rem; color:#8ab4f8; margin:0.3rem 0;">✨ ${buffTexts}</p>
+                    <button class="buy-spell-btn" style="margin-top:0.5rem; ${isActive ? 'background:#8b6914; color:#fff;' : ''}" onclick="toggleActivePet('${pet._id}', ${isActive})">
+                        ${isActive ? 'Unequip' : 'Equip'}
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateActivePetDisplay(activePet) {
+    const display = document.getElementById('activePetDisplay');
+    const img = document.getElementById('activePetImg');
+    const name = document.getElementById('activePetName');
+    const buff = document.getElementById('activePetBuff');
+
+    if (!display) return;
+
+    if (!activePet) {
+        display.style.display = 'none';
+        return;
+    }
+
+    display.style.display = 'flex';
+    img.src = activePet.image;
+    name.textContent = activePet.name;
+    const buffTexts = activePet.buffs.map(b => `${b.target.replace(/_/g, ' ')} +${b.value}${b.target.includes('rate') ? '%' : ''}`).join(', ');
+    buff.textContent = `✨ ${buffTexts}`;
+}
+
+
+async function warmEgg() {
+    try {
+        const res = await fetch('/api/pets/warm', { method: 'POST', credentials: 'include' });
+        const data = await res.json();
+        if (res.ok) {
+            spawnEffect('🔥', data.message);
+            currentPetsData.incubator = data.incubator;
+            renderIncubator(data.incubator);
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        spawnEffect('❌', 'Failed to warm egg.');
+    }
+}
+
+async function hatchEgg() {
+    try {
+        const res = await fetch('/api/pets/hatch', { method: 'POST', credentials: 'include' });
+        const data = await res.json();
+        if (res.ok) {
+            spawnEffect('🐣', data.message);
+            fetchPets(); // Refresh everything
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        spawnEffect('❌', 'Failed to hatch egg.');
+    }
+}
+
+async function toggleActivePet(petId, currentlyActive) {
+    try {
+        const reqPetId = currentlyActive ? null : petId;
+        const res = await fetch('/api/pets/equip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ petId: reqPetId }),
+            credentials: 'include'
+        });
+        const data = await res.json();
+        if (res.ok) {
+            spawnEffect('✨', data.message);
+            currentPetsData.activePetId = reqPetId;
+            renderMyPets(currentPetsData.pets, reqPetId);
+            if (data.maxHealth) {
+                currentUser.maxHealth = data.maxHealth;
+                if (currentUser.health > currentUser.maxHealth) currentUser.health = currentUser.maxHealth;
+                renderHealthUI();
+            }
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) {
+        console.error(err);
+        spawnEffect('❌', 'Failed to change active pet.');
+    }
+}
+
+async function startIncubating(itemId) {
+    showConfirm('Incubator', 'Place this egg in the incubator?', async () => {
+        try {
+            const res = await fetch('/api/pets/incubate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (res.ok) {
+                spawnEffect('🥚', data.message);
+                fetchInventory(); // remove from inventory array
+                switchNav('pets'); // Go to pets tab
+            } else {
+                spawnEffect('❌', data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            spawnEffect('❌', 'Failed to incubate egg.');
+        }
+    });
 }

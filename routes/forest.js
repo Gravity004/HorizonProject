@@ -107,17 +107,35 @@ router.post('/gather', isAuthenticated, sanitizeBody, async (req, res) => {
         }
 
         // 3. Roll for rarity drop
-        // Probabilities: Common 55%, Uncommon 25%, Rare 15%, Legendary 5%
+        // Base Probabilities: Common 55%, Uncommon 25%, Rare 15%, Legendary 5%
+        let rareBonus = 0;
+        let legBonus = 0;
+
+        if (user.activePetId) {
+            const pet = user.pets.find(p => p._id.toString() === user.activePetId.toString());
+            if (pet) {
+                const dropBuff = pet.buffs.find(b => b.target === 'forest_drop_rate');
+                if (dropBuff) {
+                    rareBonus = dropBuff.value;
+                    legBonus = Math.floor(dropBuff.value / 2);
+                }
+            }
+        }
+
+        const legThreshold = 5 + legBonus;
+        const rareThreshold = 20 + rareBonus;
+        const uncommonThreshold = 45 + Math.floor(rareBonus / 2);
+
         const roll = Math.random() * 100;
         let selectedRarity = 'common';
         
-        if (roll <= 5) {
+        if (roll <= legThreshold) {
             selectedRarity = 'legendary';
-        } else if (roll <= 20) { // 5 to 20 = 15%
+        } else if (roll <= rareThreshold) {
             selectedRarity = 'rare';
-        } else if (roll <= 45) { // 20 to 45 = 25%
+        } else if (roll <= uncommonThreshold) {
             selectedRarity = 'uncommon';
-        } // 45 to 100 = 55% common (default)
+        }
 
         // 4. Fetch random item of that rarity
         const potentialItems = await Item.find({ rarity: selectedRarity, type: 'material' });
@@ -141,6 +159,9 @@ router.post('/gather', isAuthenticated, sanitizeBody, async (req, res) => {
         user.lastForestGatherDate = now;
         user.markModified('inventory');
         await user.save();
+
+        const { updateQuestProgress } = require('../utils/quest');
+        await updateQuestProgress(user._id, 'explore_himmapan');
 
         res.json({
             message: `You ventured into the Himmapan Forest and found: ${randomItem.name}!`,

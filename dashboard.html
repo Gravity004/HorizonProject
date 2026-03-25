@@ -625,6 +625,97 @@
             border-color: #e8a0d0;
             color: #e8a0d0;
         }
+
+        /* ── Daily Quests ── */
+        .quest-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #554433;
+            border-left: 4px solid #8b6914;
+            border-radius: 8px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: all 0.2s;
+        }
+        .quest-card.completed {
+            border-left-color: #6af56a;
+            background: rgba(106, 245, 106, 0.08);
+        }
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .quest-title {
+            font-family: 'Cinzel', serif;
+            color: #d4af37;
+            font-size: 1rem;
+            margin: 0;
+            flex: 1;
+        }
+        .quest-progress-text {
+            font-size: 0.8rem;
+            color: #a89070;
+            background: rgba(0,0,0,0.5);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+        .quest-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #332211;
+        }
+        .quest-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b6914, #d4af37);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .quest-card.completed .quest-bar-fill {
+            background: linear-gradient(90deg, #2a5c2a, #6af56a);
+        }
+        .quest-reward {
+            font-size: 0.85rem;
+            color: #b0c4de;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .quest-claim-btn {
+            width: 100%;
+            background: #2a3d2a;
+            color: #6af56a;
+            border: 1px solid #3d5c3d;
+            padding: 0.65rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .quest-claim-btn:hover {
+            background: #3d5c3d;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(106,245,106,0.3);
+        }
+        .quest-claimed-stamp {
+            text-align: center;
+            color: #2a5c2a;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            letter-spacing: 2px;
+            padding: 0.5rem;
+            border: 1px dashed #2a5c2a;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            display: none;
+        }
     </style>
 </head>
 
@@ -632,6 +723,9 @@
     <div class="magic-background"></div>
     <!-- Top Actions (Daily Magic & Home) -->
     <div class="top-actions-container">
+        <button class="top-pill-btn" onclick="openQuestsModal()" id="dailyQuestsBtn" title="Daily Quests">
+            📜 Daily Quests <span id="questsBadge" class="badge hidden" style="font-size:0.6rem;padding:0.1rem 0.3rem;background:#f56a6a;margin-left:5px">!</span>
+        </button>
         <button class="top-pill-btn" onclick="castDailyMagic()" id="dailyMagicBtn" title="Daily rewards">
             🪙 Daily rewards
         </button>
@@ -656,6 +750,13 @@
                             <div class="hp-bar-fill" id="userHpBar" style="width: 100%;"></div>
                         </div>
                     </div>
+                    <div class="active-pet-container" id="activePetDisplay" style="display:none; margin-top: 10px; align-items:center; gap:10px; padding:5px; background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid rgba(212,175,55,0.2);">
+                        <img src="" id="activePetImg" style="width:40px; height:40px; object-fit:contain; animation: pulse 2s infinite;">
+                        <div>
+                            <div id="activePetName" style="color:#d4af37; font-size:0.8rem; font-family:'Cinzel',serif; font-weight:bold;"></div>
+                            <div id="activePetBuff" style="color:#8ab4f8; font-size:0.65rem;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -666,6 +767,9 @@
                 <button class="spell-btn" onclick="switchNav('inventory')">🎒 Inventory</button>
                 <button class="spell-btn" onclick="switchNav('mailbox')">📮 Mailbox <span id="mailBadge"
                         class="badge role-admin hidden" style="font-size:0.6rem;padding:0.1rem 0.3rem">!</span></button>
+                <button class="spell-btn" onclick="switchNav('pets')">🦉 Pets</button>
+                <button class="spell-btn" onclick="switchNav('divination')">🔮 Divination</button>
+                <a href="/classroom" class="spell-btn" style="text-decoration:none; display:inline-block; text-align:center;">🏫 Classroom</a>
                 <button class="spell-btn admin-only hidden" id="adminTabBtn" onclick="switchNav('admin')">⚙️
                     Admin</button>
                 <button class="spell-btn admin-only hidden" onclick="openLogModal()">📋 Log</button>
@@ -755,6 +859,50 @@
                 <div id="mailboxContainer" class="mailbox-grid"></div>
             </section>
 
+            <!-- PETS SECTION -->
+            <section id="pets" class="magic-section">
+                <h2>🦉 Magical Familiars & Incubator</h2>
+                
+                <div class="pets-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+                    
+                    <!-- Incubator Panel -->
+                    <div class="incubator-panel parchment" style="padding: 1.5rem; border-radius: 12px; text-align: center; position: relative;">
+                        <h3 style="color:#d4af37; font-family:'Cinzel', serif; margin-top:0;">Incubator</h3>
+                        <div id="incubatorContainer">
+                            <p style="color:#a89070;">Loading Incubator...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- My Pets Panel -->
+                    <div class="my-pets-panel parchment" style="padding: 1.5rem; border-radius: 12px;">
+                        <h3 style="color:#d4af37; font-family:'Cinzel', serif; margin-top:0;">My Familiars</h3>
+                        <div id="petsListContainer" class="scroll-content" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px;">
+                            <p style="text-align:center; color:#a89070; font-size:0.9rem;">You don't have any pets yet.</p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DIVINATION TOWER SECTION -->
+            <section id="divination" class="magic-section">
+                <h2>🔮 Divination Tower</h2>
+                <div style="text-align:center; padding: 2rem;">
+                    <p style="color:#a89070; font-size:1.1rem; margin-bottom: 2rem;">
+                        Peer into the crystal ball and discover your daily fate. The stars shift every midnight.
+                    </p>
+                    <div id="divinationCrystalBall" style="margin: 0 auto 2rem; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffffff, #91cbed, #0c2b5e); box-shadow: 0 0 40px #91cbed, inset 0 0 40px #ffffff; animation: float 4s ease-in-out infinite, pulse 3s infinite; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative;" onclick="drawDivination()">
+                        <span id="crystalBallText" style="position: absolute; color: rgba(255,255,255,0.8); font-size: 0.9rem; pointer-events: none; text-shadow: 0 0 5px rgba(0,0,0,0.8);">Gaze...</span>
+                    </div>
+
+                    <div id="divinationResult" class="parchment" style="display: none; max-width: 400px; margin: 0 auto; padding: 2rem; border-radius: 12px; border: 1px solid #d4af37; box-shadow: 0 0 20px rgba(212,175,55,0.2);">
+                        <div id="divinationIcon" style="font-size: 3rem; margin-bottom: 1rem; animation: float 3s infinite;">✨</div>
+                        <h3 id="divinationBuffName" style="color: #d4af37; font-family: 'Cinzel', serif; font-size: 1.5rem; margin-top: 0;">Buff Name</h3>
+                        <p id="divinationBuffDesc" style="color: #6a8caf; font-size: 0.95rem; margin-bottom: 0;">Buff Description</p>
+                    </div>
+                </div>
+            </section>
+
             <!-- ADMIN SECTION -->
             <section id="admin" class="magic-section">
                 <h2>⚙️ Professor's Control Panel</h2>
@@ -810,6 +958,24 @@
                             <input type="number" id="adminHpAmount" class="parchment-input" placeholder="100" min="0" max="100">
                         </div>
                         <button onclick="adminAdjustHealth()" class="admin-btn" style="background:#5c2a2a;color:#ff9999;border-color:#8a3d3d;">Adjust Health</button>
+                    </div>
+
+                    <!-- Admin: Detain -->
+                    <div class="admin-card">
+                        <h3>⛓️ Detain User</h3>
+                        <div class="input-group">
+                            <label>Target (Discord username)</label>
+                            <input type="text" id="adminDetainUser" class="parchment-input" placeholder="discord username">
+                        </div>
+                        <div class="input-group">
+                            <label>Duration (Minutes)</label>
+                            <input type="number" id="adminDetainMinutes" class="parchment-input" placeholder="e.g. 15" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Reason</label>
+                            <input type="text" id="adminDetainReason" class="parchment-input" placeholder="Rule violation">
+                        </div>
+                        <button onclick="adminDetainUser()" class="admin-btn" style="background:#5c2a2a;color:#ff9999;border-color:#8a3d3d;">Send to Detention</button>
                     </div>
 
                     <!-- Admin: Server Boosters -->
@@ -1095,8 +1261,31 @@
         </div>
     </div>
 
+    <!-- Daily Quests Modal -->
+    <div id="questsModal" class="modal">
+        <div class="modal-content parchment" style="max-width: 500px;">
+            <span class="close-modal" onclick="closeQuestsModal()">×</span>
+            <h2>📜 Daily Quests</h2>
+            <p style="text-align: center; color: #a89070; font-size: 0.9rem; margin-bottom: 1.5rem;">Complete tasks to earn magical rewards. Resets daily.</p>
+            <div id="questsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Quests will be injected here -->
+            </div>
+        </div>
+    </div>
+
     <!-- Effects Overlay -->
     <div id="effectsOverlay" class="effects-overlay"></div>
+
+    <!-- Detention Overlay -->
+    <div id="detentionOverlay" class="effects-overlay" style="background:rgba(0,0,0,0.95); z-index:999999; display:none; flex-direction:column; justify-content:center; align-items:center;">
+        <h1 style="color:#f56a6a; font-family:'Cinzel', serif; font-size:4rem; margin-bottom:1rem; text-shadow:0 0 20px #f56a6a; letter-spacing: 5px;">DETENTION</h1>
+        <p style="color:#d4af37; font-size:1.2rem; margin-bottom:2rem; width:80%; text-align:center;">You have violated the rules of the academy. You are confined here, stripped of magic, until your punishment ends.</p>
+        <div style="background:rgba(255,0,0,0.1); border:1px solid #f56a6a; padding:2rem; border-radius:12px; text-align:center;">
+            <div style="font-size:1rem; color:#a89070; margin-bottom:1rem; text-transform:uppercase;">Time Remaining</div>
+            <div id="detentionTimer" style="font-size:4rem; font-family:monospace; color:#fff; font-weight:bold; letter-spacing:5px;">00:00:00</div>
+            <div id="detentionReasonDisplay" style="margin-top:1rem; color:#f56a6a; font-style:italic;"></div>
+        </div>
+    </div>
 
     <script src="js/dashboard.js"></script>
 </body>

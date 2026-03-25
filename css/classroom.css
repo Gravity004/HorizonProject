@@ -1,0 +1,556 @@
+/* css/classroom.css */
+
+/* Background */
+.classroom-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, #1a1228, #0a0512);
+    overflow: hidden;
+}
+
+/* Three.js Canvas Container */
+#magicBgCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Classroom specific overrides */
+.room-section {
+    display: none;
+    padding: 2rem;
+    animation: fadeIn 0.4s ease forwards;
+    position: relative;
+    z-index: 10;
+}
+
+.room-section.active {
+    display: block;
+}
+
+/* Herbology Room */
+.herbology-layout {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 900px) {
+    .herbology-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.garden-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.herb-plot {
+    background: rgba(40, 30, 20, 0.8);
+    border: 2px solid #554433;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    transition: transform 0.2s, border-color 0.2s;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.herb-plot:hover {
+    border-color: #8b6914;
+    transform: translateY(-2px);
+}
+
+.plot-img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 0 8px rgba(100, 255, 100, 0.2));
+}
+
+.plot-empty {
+    width: 64px;
+    height: 64px;
+    background: rgba(0,0,0,0.3);
+    border: 1px dashed rgba(139, 105, 20, 0.5);
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+}
+
+.plot-name {
+    color: #d4af37;
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+}
+
+.plot-status {
+    font-size: 0.8rem;
+    color: #a89070;
+    margin-bottom: 0.8rem;
+}
+
+.plot-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    width: 100%;
+}
+
+.plot-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    border: 1px solid #554433;
+    background: #2a2016;
+    color: #f0e6c8;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Cinzel', serif;
+}
+
+.plot-btn:hover:not(:disabled) {
+    background: #4a3824;
+    border-color: #8b6914;
+    color: #fff;
+}
+
+.plot-btn.water {
+    background: #1a2a3a;
+    border-color: #2a4a6a;
+    color: #8ac0f0;
+}
+
+.plot-btn.water:hover:not(:disabled) {
+    background: #2a4a6a;
+    border-color: #4a8ada;
+}
+
+.plot-btn.harvest {
+    background: #2a3d2a;
+    border-color: #3d5c3d;
+    color: #6af56a;
+}
+
+.plot-btn.harvest:hover:not(:disabled) {
+    background: #3d5c3d;
+    border-color: #8af58a;
+}
+
+.plot-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+
+.seed-shop-panel {
+    background: linear-gradient(145deg, rgba(20, 15, 30, 0.9), rgba(10, 8, 20, 0.95));
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.seed-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #332211;
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
+}
+
+.seed-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.seed-info {
+    flex: 1;
+}
+
+.seed-name {
+    color: #d4af37;
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
+}
+
+.seed-time {
+    color: #a89070;
+    font-size: 0.7rem;
+}
+
+.buy-seed-btn {
+    background: linear-gradient(135deg, #8b6914, #d4af37);
+    color: #1a1228;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+/* Charms Room */
+.charms-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.charms-spell-list {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.charm-btn {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #2a3a5a;
+    color: #8ab4f8;
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-family: 'Cinzel', serif;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.charm-btn:hover, .charm-btn.active {
+    background: rgba(20, 40, 80, 0.8);
+    border-color: #6ab0f5;
+    box-shadow: 0 0 15px rgba(106, 176, 245, 0.4);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.canvas-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1;
+    background: rgba(10, 15, 30, 0.8);
+    border: 2px solid #2a3a5a;
+    border-radius: 16px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(42, 58, 90, 0.5);
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+#spellCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.canvas-guidelines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.2;
+    background-image: 
+        linear-gradient(rgba(106, 176, 245, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(106, 176, 245, 0.3) 1px, transparent 1px);
+    background-size: 50px 50px;
+    background-position: center center;
+}
+
+.canvas-instruction {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: rgba(138, 180, 248, 0.6);
+    pointer-events: none;
+    z-index: 1;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.charm-result {
+    text-align: center;
+    min-height: 40px;
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: #d4af37;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+/* Potion Room */
+.potion-layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 900px) {
+    .potion-layout { grid-template-columns: 1fr; }
+}
+
+.potion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.potion-card {
+    background: linear-gradient(145deg, rgba(30, 15, 35, 0.8), rgba(15, 5, 20, 0.9));
+    border: 1px solid rgba(200, 100, 200, 0.3);
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    gap: 1.5rem;
+    transition: all 0.3s;
+}
+
+.potion-card:hover {
+    border-color: rgba(200, 100, 200, 0.6);
+    box-shadow: 0 0 20px rgba(200, 100, 200, 0.2);
+}
+
+.potion-img-wrap {
+    width: 80px;
+    height: 80px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px inset rgba(200, 100, 200, 0.3);
+}
+
+.potion-img-wrap img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(200, 100, 200, 0.4));
+}
+
+.potion-details {
+    flex: 1;
+}
+
+.potion-name {
+    color: #f0c8f0;
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.potion-reqs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+}
+
+.req-badge {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #554433;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: #a89070;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.req-badge.has {
+    border-color: #3d5c3d;
+    color: #8af58a;
+}
+.req-badge.missing {
+    border-color: #5c3d3d;
+    color: #f58a8a;
+}
+
+.brew-btn {
+    background: linear-gradient(135deg, #4a1c6a, #8f34c8);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.brew-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5b2282, #a73de8);
+    box-shadow: 0 0 15px rgba(167, 61, 232, 0.5);
+}
+
+.brew-btn:disabled {
+    background: #2a2030;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.cauldron-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.3);
+    border-radius: 16px;
+    border: 1px dashed #554433;
+    padding: 2rem;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.cauldron-area.drop-hover {
+    background: rgba(200, 100, 200, 0.1);
+    border: 2px dashed #c882e8;
+    box-shadow: inset 0 0 30px rgba(200, 100, 200, 0.2);
+}
+
+.draggable-ing {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #554433;
+    border-radius: 8px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: grab;
+    transition: transform 0.2s, border-color 0.2s;
+    user-select: none;
+    width: 60px;
+}
+
+.draggable-ing:hover {
+    border-color: #c882e8;
+    transform: translateY(-2px);
+}
+
+.draggable-ing.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.draggable-ing img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    margin-bottom: 0.3rem;
+}
+
+.draggable-ing span.qty {
+    font-size: 0.7rem;
+    color: #a89070;
+}
+
+.draggable-ing span.name {
+    font-size: 0.6rem;
+    color: #f0c8f0;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropped-item {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    animation: dropInCauldron 1s forwards ease-in;
+    z-index: 1;
+}
+
+@keyframes dropInCauldron {
+    0% { transform: translateY(-100px) scale(1) rotate(0deg); opacity: 1; }
+    80% { transform: translateY(0px) scale(0.8) rotate(45deg); opacity: 1; }
+    100% { transform: translateY(20px) scale(0) rotate(90deg); opacity: 0; }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modals */
+.plant-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 20000;
+    align-items: center;
+    justify-content: center;
+}
+
+.plant-modal-overlay.active {
+    display: flex;
+}
+
+.plant-modal {
+    background: #1a1228;
+    border: 2px solid #8b6914;
+    border-radius: 12px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Admin Logs */
+.log-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+}
+
+.log-table th {
+    text-align: left;
+    padding: 0.8rem;
+    border-bottom: 2px solid #8b6914;
+    color: #d4af37;
+    font-family: 'Cinzel', serif;
+}
+
+.log-table td {
+    padding: 0.8rem;
+    border-bottom: 1px solid #332211;
+    color: #e0d0b0;
+}
+
+.log-table tr:hover {
+    background: rgba(255,255,255,0.05);
+}

@@ -134,6 +134,10 @@ const bankRoutes = require('./routes/bank');
 const usersRoutes = require('./routes/users');
 const giftRoutes = require('./routes/gift');
 const forestRoutes = require('./routes/forest');
+const questRoutes = require('./routes/quests');
+const petRoutes = require('./routes/pets');
+const divinationRoutes = require('./routes/divination');
+const classroomRoutes = require('./routes/classroom');
 
 app.use('/api/shop', shopRoutes);
 app.use('/api/craft', craftRoutes);
@@ -141,12 +145,20 @@ app.use('/api/bank', bankRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/gift', giftRoutes);
 app.use('/api/forest', forestRoutes);
+app.use('/api/quests', questRoutes);
+app.use('/api/pets', petRoutes);
+app.use('/api/divination', divinationRoutes);
+app.use('/api/classroom', classroomRoutes);
 
 const { checkGuildMembership } = require('./middleware/auth');
 
 // ✅ คนที่ออก guild จะถูก redirect ออกทันที
 app.get(['/dashboard', '/dashboard/*path'], checkGuildMembership, (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+app.get(['/classroom', '/classroom/*path'], checkGuildMembership, (req, res) => {
+    res.sendFile(path.join(__dirname, 'classroom.html'));
 });
 
 // Serve Vue SPA (only in production, only if dist folder was built)

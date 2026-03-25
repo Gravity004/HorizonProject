@@ -204,4 +204,38 @@ router.post('/faculty', isAuthenticated, hasRole(['admin', 'professor']), saniti
     }
 });
 
+// Admin: Detain User
+router.post('/admin/detain', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
+    try {
+        const { targetUserId, minutes, reason } = req.body;
+        const mins = parseInt(minutes);
+
+        if (!targetUserId || isNaN(mins) || mins <= 0) {
+            return res.status(400).json({ message: 'Invalid target or duration.' });
+        }
+
+        const target = await User.findOne({
+            $or: [{ discordId: targetUserId }, { username: targetUserId }]
+        });
+
+        if (!target) return res.status(404).json({ message: 'User not found' });
+
+        // Calculate end date
+        const endDate = new Date(Date.now() + mins * 60000);
+        
+        target.isDetained = true;
+        target.detentionEndDate = endDate;
+        target.detentionReason = reason || 'Violation of school rules';
+
+        await target.save();
+
+        res.json({
+            message: `${target.username} has been sent to detention for ${mins} minutes.`,
+            detentionEndDate: endDate
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

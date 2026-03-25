@@ -81,6 +81,9 @@ router.post('/send', isAuthenticated, sanitizeBody, async (req, res) => {
         });
         await transaction.save();
 
+        const { updateQuestProgress } = require('../utils/quest');
+        await updateQuestProgress(sender._id, 'send_gift');
+
         res.json({ message: `Sent ${item.name} to ${recipient.username} successfully!` });
     } catch (err) {
         res.status(500).json({ message: err.message });

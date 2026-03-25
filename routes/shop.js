@@ -22,10 +22,12 @@ const upload = multer({
     }
 });
 
-// Get all items
+// Get all items (optional ?type= filter)
 router.get('/items', async (req, res) => {
     try {
-        const items = await Item.find();
+        const filter = {};
+        if (req.query.type) filter.type = req.query.type;
+        const items = await Item.find(filter);
         res.json(items);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -74,6 +76,9 @@ router.post('/buy', isAuthenticated, sanitizeBody, async (req, res) => {
             });
             await letter.save();
         }
+
+        const { updateQuestProgress } = require('../utils/quest');
+        await updateQuestProgress(user._id, 'buy_item');
 
         res.json({ message: 'Purchase successful', balance: user.balance, inventory: user.inventory });
     } catch (err) {
@@ -194,7 +199,7 @@ router.post('/upload', isAuthenticated, hasRole(['admin', 'professor']), upload.
 
 // Add item (Admin only)
 router.post('/add', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
-    const { name, type, price, image, rarity, effects, description } = req.body;
+    const { name, type, price, image, rarity, effects, description, mailboxMessage } = req.body;
 
     // Check for existing item with the same name
     const existingItem = await Item.findOne({ name });

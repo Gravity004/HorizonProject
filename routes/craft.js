@@ -127,6 +127,9 @@ router.post('/craft', isAuthenticated, sanitizeBody, async (req, res) => {
             user.markModified('inventory');
             await user.save();
 
+            const { updateQuestProgress } = require('../utils/quest');
+            await updateQuestProgress(user._id, 'craft_potion');
+
             return res.json({
                 message: `Successfully crafted Amortentia Potion!`,
                 resultItemName: 'Amortentia Potion',
@@ -179,6 +182,9 @@ router.post('/craft', isAuthenticated, sanitizeBody, async (req, res) => {
 
         user.markModified('inventory');
         await user.save();
+
+        const { updateQuestProgress } = require('../utils/quest');
+        await updateQuestProgress(user._id, 'craft_potion');
 
         res.json({
             message: `Successfully crafted ${resultItemDisplayName}!`,
