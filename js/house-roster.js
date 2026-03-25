@@ -691,55 +691,55 @@ function renderStudentTable() {
 
     if (filteredStudents.length === 0) {
         tbody.innerHTML = `
-            <tr>
-                <td colspan="3" class="no-results">
-                    ไม่พบข้อมูลนักเรียนที่ค้นหา
-                </td>
-            </tr>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #a89070;">
+                ไม่พบข้อมูลนักเรียนที่ค้นหา
+            </div>
         `;
         return;
     }
 
     // Group students by year for styled rendering
     const houseColors = {
-        garuda: { primary: '#D4AF37', secondary: '#8B6914', glow: 'rgba(212,175,55,0.3)' },
-        erawan: { primary: '#4FC3F7', secondary: '#0288D1', glow: 'rgba(79,195,247,0.3)' },
-        qilin: { primary: '#81C784', secondary: '#2E7D32', glow: 'rgba(129,199,132,0.3)' },
-        naga: { primary: '#CE93D8', secondary: '#7B1FA2', glow: 'rgba(206,147,216,0.3)' }
+        garuda: { primary: '#D4AF37', secondary: '#8B6914', glow: 'rgba(212,175,55,0.3)', border: 'rgba(212,175,55,0.3)' },
+        erawan: { primary: '#4FC3F7', secondary: '#0288D1', glow: 'rgba(79,195,247,0.3)', border: 'rgba(79,195,247,0.3)' },
+        qilin: { primary: '#81C784', secondary: '#2E7D32', glow: 'rgba(129,199,132,0.3)', border: 'rgba(129,199,132,0.3)' },
+        naga: { primary: '#CE93D8', secondary: '#7B1FA2', glow: 'rgba(206,147,216,0.3)', border: 'rgba(206,147,216,0.3)' }
     };
     const hc = houseColors[currentHouse] || houseColors.garuda;
 
     filteredStudents.forEach((student, index) => {
-        const row = document.createElement('tr');
-        row.className = 'student-row';
+        const card = document.createElement('div');
+        card.className = 'student-card-item';
+        card.style.border = `1px solid ${hc.border}`;
+        
+        card.onmouseenter = () => {
+            card.style.boxShadow = `0 8px 25px ${hc.glow}`;
+            card.style.borderColor = hc.primary;
+        };
+        card.onmouseleave = () => {
+            card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.4)';
+            card.style.border = `1px solid ${hc.border}`;
+        };
 
-        row.innerHTML = `
-            <td style="text-align:center; width:20%; white-space:nowrap; padding:12px 10px;">
-                <span style="
-                    background:rgba(212,175,55,0.08);
-                    border:1px solid rgba(212,175,55,0.3);
-                    border-radius:4px; padding:4px 10px;
-                    font-size:0.85rem; color:${hc.primary};
-                    font-family:'Cinzel',serif; letter-spacing:1px;
-                    white-space:nowrap; display:inline-block;
-                    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-                ">${student.id}</span>
-            </td>
-            <td style="text-align:left; padding:12px 15px; word-break:break-word; width:60%;">
-                <div style="font-size:0.95rem; color:#f4eedc; line-height:1.4; font-weight:500; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${student.name}</div>
-            </td>
-            <td style="text-align:center; width:20%; padding:12px 10px;">
-                <span style="
-                    background:rgba(255,255,255,0.05);
-                    border:1px solid rgba(255,255,255,0.1);
-                    border-radius:12px; padding:4px 12px;
-                    font-size:0.8rem; color:rgba(255,255,255,0.8);
-                    white-space:nowrap; display:inline-block;
-                ">ปีที่ ${student.year}</span>
-            </td>
+        const shortName = student.name.split(' (')[0];
+        const enName = student.name.includes('(') ? student.name.split(' (')[1].replace(')', '') : '';
+
+        card.innerHTML = `
+            <div style="position: absolute; top:0; left:0; width:100%; height:3px; background:linear-gradient(90deg, transparent, ${hc.primary}, transparent);"></div>
+            <div class="card-header-row">
+                <span class="card-badge-id" style="color: ${hc.primary}; border-color: ${hc.border}; background: ${hc.glow.replace('0.3', '0.1')}">${student.id}</span>
+                <span class="card-badge-year">ชั้นปี ${student.year}</span>
+            </div>
+            <div class="card-name-row">
+                <div style="font-weight: 600;">${shortName}</div>
+                <div style="font-size: 0.8rem; color: #a89070; margin-top: 2px;">${enName}</div>
+            </div>
+            <div class="card-hometown-row">
+                📍 ${student.hometown}
+            </div>
         `;
-        row.addEventListener('click', () => showStudentDetail(student.id));
-        tbody.appendChild(row);
+        card.addEventListener('click', () => showStudentDetail(student.id));
+        tbody.appendChild(card);
     });
 }
 

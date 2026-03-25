@@ -11,7 +11,7 @@ const userGoldEl = document.getElementById('userGold');
 // Init
 async function initClassroom() {
     try {
-        const res = await fetch('/api/users/me');
+        const res = await fetch('/auth/me', { credentials: 'include' });
         if (!res.ok) {
             window.location.href = '/?error=not_logged_in';
             return;
@@ -65,43 +65,167 @@ function switchClassroomTab(room) {
 function initThreeJS() {
     const canvas = document.getElementById('magicBgCanvas');
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    scene.fog = new THREE.FogExp2(0x0a050f, 0.02);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, logarithmicDepthBuffer: true });
     
     renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.position.z = 30;
+    renderer.setPixelRatio(window.devicePixelRatio);
+    camera.position.z = 25;
 
-    const particleCount = 800; // floating magical dust
+    // --- Dynamic Lighting ---
+    const ambientLight = new THREE.AmbientLight(0x221133, 1.5);
+    scene.add(ambientLight);
+    
+    const pointLight = new THREE.PointLight(0xd4af37, 2, 50);
+    pointLight.position.set(0, 5, 10);
+    scene.add(pointLight);
+
+    // --- Particles ---
+    const particleCount = 1500;
     const particles = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
+    const velocities = [];
 
-    for (let i = 0; i < particleCount * 3; i++) {
-        positions[i] = (Math.random() - 0.5) * 100;
+    for (let i = 0; i < particleCount * 3; i+=3) {
+        positions[i] = (Math.random() - 0.5) * 80;
+        positions[i+1] = (Math.random() - 0.5) * 80;
+        positions[i+2] = (Math.random() - 0.5) * 40 - 10;
+        velocities.push({
+            y: Math.random() * 0.02 + 0.01,
+            x: (Math.random() - 0.5) * 0.01
+        });
     }
 
     particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     
+    // Create a circular texture for particles programmatically
+    const canvasPoint = document.createElement('canvas');
+    canvasPoint.width = 16;
+    canvasPoint.height = 16;
+    const contextPoint = canvasPoint.getContext('2d');
+    const gradientPoint = contextPoint.createRadialGradient(8, 8, 0, 8, 8, 8);
+    gradientPoint.addColorStop(0, 'rgba(255,255,255,1)');
+    gradientPoint.addColorStop(1, 'rgba(255,255,255,0)');
+    contextPoint.fillStyle = gradientPoint;
+    contextPoint.fillRect(0, 0, 16, 16);
+    const particleTexture = new THREE.CanvasTexture(canvasPoint);
+
     const pMaterial = new THREE.PointsMaterial({
-        color: 0xd4af37, // golden
-        size: 0.15,
+        color: 0xd4af37,
+        size: 0.6,
+        map: particleTexture,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.8,
+        depthWrite: false,
         blending: THREE.AdditiveBlending
     });
 
     const particleSystem = new THREE.Points(particles, pMaterial);
     scene.add(particleSystem);
 
+    // --- Floating 3D Objects (Crystals/Runes) ---
+    const floatingObjects = new THREE.Group();
+    const geoTypes = [
+        new THREE.OctahedronGeometry(1, 0),
+        new THREE.DodecahedronGeometry(0.8, 0),
+        new THREE.TetrahedronGeometry(1.2, 0)
+    ];
+
+    const objMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0x4a1c6a,
+        emissiveIntensity: 0.5,
+        roughness: 0.2,
+        metalness: 0.8,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.6
+    });
+
+    for(let i=0; i<15; i++) {
+        const mesh = new THREE.Mesh(geoTypes[Math.floor(Math.random() * geoTypes.length)], objMaterial.clone());
+        mesh.position.set(
+            (Math.random() - 0.5) * 40,
+            (Math.random() - 0.5) * 20,
+            (Math.random() - 0.5) * 15 - 10
+        );
+        mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+        
+        // Custom properties for animation
+        mesh.userData = {
+            rotSpeedX: (Math.random() - 0.5) * 0.02,
+            rotSpeedY: (Math.random() - 0.5) * 0.02,
+            floatSpeed: Math.random() * 0.02 + 0.01,
+            startY: mesh.position.y,
+            offset: Math.random() * Math.PI * 2
+        };
+        floatingObjects.add(mesh);
+    }
+    scene.add(floatingObjects);
+
+    // --- Mouse Interaction ---
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+    const windowHalfX = window.innerWidth / 2;
+    const windowHalfY = window.innerHeight / 2;
+    
+    document.addEventListener('mousemove', (event) => {
+        mouseX = (event.clientX - windowHalfX) * 0.05;
+        mouseY = (event.clientY - windowHalfY) * 0.05;
+    });
+
+    // --- Animation Loop ---
+    let time = 0;
     function animate() {
         requestAnimationFrame(animate);
-        particleSystem.rotation.y += 0.001;
-        particleSystem.rotation.x += 0.0005;
+        time += 0.01;
 
-        // Change color slightly based on room
-        if (currentRoom === 'potion') pMaterial.color.setHex(0xc882e8); // Potion: purple
-        else if (currentRoom === 'herbology') pMaterial.color.setHex(0x8af58a); // Herb: green
-        else if (currentRoom === 'charms') pMaterial.color.setHex(0x8ab4f8); // Charms: blue
-        else pMaterial.color.setHex(0xd4af37); // Admin/Default: gold
+        // Mouse paralax
+        targetX = mouseX * 0.1;
+        targetY = mouseY * 0.1;
+        camera.position.x += (targetX - camera.position.x) * 0.05;
+        camera.position.y += (-targetY - camera.position.y) * 0.05;
+        camera.lookAt(scene.position);
+
+        // Update particles slowly moving up
+        const positionsArr = particleSystem.geometry.attributes.position.array;
+        for(let i=0, j=0; i<particleCount; i++, j+=3) {
+            positionsArr[j+1] += velocities[i].y;
+            positionsArr[j] += velocities[i].x;
+            if(positionsArr[j+1] > 40) {
+                positionsArr[j+1] = -40;
+                positionsArr[j] = (Math.random() - 0.5) * 80;
+            }
+        }
+        particleSystem.geometry.attributes.position.needsUpdate = true;
+        particleSystem.rotation.y = time * 0.05;
+
+        // Animate Floating Objects
+        floatingObjects.children.forEach(mesh => {
+            mesh.rotation.x += mesh.userData.rotSpeedX;
+            mesh.rotation.y += mesh.userData.rotSpeedY;
+            mesh.position.y = mesh.userData.startY + Math.sin(time + mesh.userData.offset) * 2;
+            
+            // Sync colors with room
+            if (currentRoom === 'potion') mesh.material.emissive.setHex(0x6a1c4a);
+            else if (currentRoom === 'herbology') mesh.material.emissive.setHex(0x1c6a2e);
+            else if (currentRoom === 'charms') mesh.material.emissive.setHex(0x1c4a6a);
+            else mesh.material.emissive.setHex(0x6a541c);
+        });
+
+        // Change light and particle color based on room
+        const colorTarget = new THREE.Color();
+        if (currentRoom === 'potion') colorTarget.setHex(0xc882e8); 
+        else if (currentRoom === 'herbology') colorTarget.setHex(0x8af58a); 
+        else if (currentRoom === 'charms') colorTarget.setHex(0x8ab4f8); 
+        else colorTarget.setHex(0xd4af37); 
+        
+        pMaterial.color.lerp(colorTarget, 0.05);
+        pointLight.color.lerp(colorTarget, 0.05);
 
         renderer.render(scene, camera);
     }
@@ -379,6 +503,7 @@ async function finishBrewMinigame() {
         const res = await fetch('/api/classroom/potion/brew', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ potionName: activeBrew.recipe.name })
         });
         const data = await res.json();
@@ -412,7 +537,7 @@ let currentPlantSlot = -1;
 
 async function loadHerbPlots() {
     try {
-        const res = await fetch('/api/classroom/herbs/me');
+        const res = await fetch('/api/classroom/herbs/me', { credentials: 'include' });
         const plots = await res.json();
         const container = document.getElementById('herbPlotsContainer');
         container.innerHTML = '';
@@ -484,7 +609,7 @@ async function loadHerbPlots() {
 
 async function loadSeedShop() {
     try {
-        const res = await fetch('/api/shop/items?type=seed');
+        const res = await fetch('/api/shop/items?type=seed', { credentials: 'include' });
         shopSeeds = await res.json();
         
         const container = document.getElementById('seedShopContainer');
@@ -522,6 +647,7 @@ async function buySeed(itemId, price, name) {
         const res = await fetch('/api/shop/buy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ itemId, quantity: 1 })
         });
         const data = await res.json();
@@ -546,7 +672,7 @@ async function openPlantModal(slot) {
     container.innerHTML = '';
     
     // Refresh inventory
-    const userRes = await fetch('/api/users/me');
+    const userRes = await fetch('/auth/me', { credentials: 'include' });
     if (userRes.ok) user = await userRes.json();
     userInventory = user.inventory || [];
     
@@ -586,6 +712,7 @@ async function submitPlant(seedItemId) {
         const res = await fetch('/api/classroom/herbs/plant', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ slot: currentPlantSlot, seedItemId })
         });
         const data = await res.json();
@@ -606,6 +733,7 @@ async function waterPlant(slot) {
         const res = await fetch('/api/classroom/herbs/water', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ slot })
         });
         const data = await res.json();
@@ -625,6 +753,7 @@ async function harvestPlant(slot) {
         const res = await fetch('/api/classroom/herbs/harvest', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ slot })
         });
         const data = await res.json();
