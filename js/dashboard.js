@@ -191,13 +191,53 @@ async function fetchShopItems() {
     } catch (err) { console.error('Failed to fetch shop items', err); }
 }
 
+let currentShopCategory = 'all';
+
+window.filterShop = function(category, btnEl) {
+    currentShopCategory = category;
+    
+    // Update active tab styling
+    const tabs = document.querySelectorAll('.shop-category-tabs .shop-tab');
+    if (tabs.length) {
+        tabs.forEach(t => t.classList.remove('active'));
+        if (btnEl) btnEl.classList.add('active');
+    }
+    
+    applyShopFilters();
+}
+
+// Global scope for search input
+window.filterShopBySearch = function() {
+    applyShopFilters();
+}
+
+function applyShopFilters() {
+    const searchInput = document.getElementById('shopSearchInput');
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    
+    let filtered = currentItems;
+    
+    if (currentShopCategory !== 'all') {
+        filtered = filtered.filter(item => item.type === currentShopCategory);
+    }
+    
+    if (query) {
+        filtered = filtered.filter(item => 
+            (item.name && item.name.toLowerCase().includes(query)) || 
+            (item.description && item.description.toLowerCase().includes(query))
+        );
+    }
+    
+    renderShop(filtered);
+}
+
 function renderShop(items) {
     const container = document.getElementById('shopContainer');
     if (!container) return;
     const isAdmin = currentUser.roles.includes('admin') || currentUser.roles.includes('professor');
 
     if (!items.length) {
-        container.innerHTML = '<p class="empty-msg">The shelves are empty... An Admin must stock items first.</p>';
+        container.innerHTML = '<p class="empty-msg">No items match your criteria.</p>';
         return;
     }
 

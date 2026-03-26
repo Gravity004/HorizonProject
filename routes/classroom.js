@@ -223,8 +223,11 @@ router.post('/charms/cast', isAuthenticated, sanitizeBody, async (req, res) => {
 // Get classroom logs (admin/professor only)
 router.get('/admin/logs', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
     try {
-        const { room, page = 1, limit = 50 } = req.query;
-        const query = room ? { room } : {};
+        const { room, username, page = 1, limit = 50 } = req.query;
+        const query = {};
+        if (room) query.room = room;
+        if (username) query.username = new RegExp(username, 'i');
+        
         const total = await ClassroomLog.countDocuments(query);
         const logs = await ClassroomLog.find(query)
             .sort({ timestamp: -1 })

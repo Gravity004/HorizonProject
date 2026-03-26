@@ -787,6 +787,22 @@
                         <button class="admin-btn" onclick="openAdminModal()">+ Stock New Item</button>
                     </div>
                 </div>
+                
+                <div class="shop-filters" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                    <div class="shop-category-tabs" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
+                        <button class="plot-btn shop-tab active" onclick="filterShop('all', this)">All</button>
+                        <button class="plot-btn shop-tab" onclick="filterShop('material', this)">Materials</button>
+                        <button class="plot-btn shop-tab" onclick="filterShop('food', this)">Food</button>
+                        <button class="plot-btn shop-tab" onclick="filterShop('potion', this)">Potions</button>
+                        <button class="plot-btn shop-tab" onclick="filterShop('equipment', this)">Equipment</button>
+                        <button class="plot-btn shop-tab" onclick="filterShop('seed', this)">Seeds</button>
+                    </div>
+                    <div class="shop-search">
+                        <input type="text" id="shopSearchInput" placeholder="Search items..." oninput="filterShopBySearch()" 
+                            style="background: rgba(0,0,0,0.5); border: 1px solid #554433; color: #fff; padding: 0.6rem 1rem; border-radius: 20px; font-family: 'Playfair Display', serif; min-width: 250px;">
+                    </div>
+                </div>
+
                 <div class="shop-shelves" id="shopContainer">
                     <!-- Items injected here -->
                 </div>

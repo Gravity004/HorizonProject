@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Magical Classroom - Horizon</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital@0;1&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard-magic.css">
     <link rel="stylesheet" href="css/classroom.css">
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
+
 <body>
     <div class="classroom-bg">
         <canvas id="magicBgCanvas"></canvas>
@@ -18,7 +22,8 @@
 
     <!-- Top Actions -->
     <div class="top-actions-container">
-        <div class="gold-pouch" style="background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 20px; border: 1px solid #8b6914;">
+        <div class="gold-pouch"
+            style="background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 20px; border: 1px solid #8b6914;">
             <span class="gold-icon">🪙</span>
             <span id="userGold" class="gold-amount" style="color:#d4af37;">0</span>
         </div>
@@ -27,160 +32,218 @@
 
     <div class="dashboard-wrapper">
         <header class="wizard-profile" style="margin-bottom: 1rem; padding-bottom: 0;">
-            <h1 style="color: #d4af37; font-family: 'Cinzel', serif; text-align: center; font-size: 2.5rem; text-shadow: 0 0 20px rgba(212,175,55,0.5);">Magical Classrooms</h1>
-            <p style="text-align: center; color: #a89070; margin-bottom: 2rem;">Master the arcane arts, brew potent elixirs, and cultivate magical flora.</p>
-            
-            <nav class="spell-nav" style="justify-content: center;">
-                <button class="spell-btn active" onclick="switchClassroomTab('potion')">🧪 Potion Room</button>
-                <button class="spell-btn" onclick="switchClassroomTab('herbology')">🌿 Herbology Room</button>
-                <button class="spell-btn" onclick="switchClassroomTab('charms')">✨ Charms Room</button>
-                <button class="spell-btn admin-only hidden" id="adminLogBtn" onclick="switchClassroomTab('admin_logs')">📋 Admin Logs</button>
-            </nav>
+            <h1
+                style="color: #d4af37; font-family: 'Cinzel', serif; text-align: center; font-size: 2.5rem; text-shadow: 0 0 20px rgba(212,175,55,0.5);">
+                Magical Classrooms</h1>
+            <p style="text-align: center; color: #a89070; margin-bottom: 2rem;">Master the arcane arts, brew potent
+                elixirs, and cultivate magical flora.</p>
         </header>
 
-        <main class="magic-viewport" style="background: rgba(10, 5, 15, 0.6); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid #3a2200; box-shadow: 0 0 50px rgba(0,0,0,0.8); display: flex; gap: 1rem; padding: 1rem;">
-            
+        <main class="classroom-layout">
+        <!-- Main Work Area -->
+        <section class="work-area">
+            <!-- Top Actions -->
+            <div class="top-actions-container" style="margin-top: 1rem;">
+                <nav class="spell-nav">
+                    <button class="spell-btn active" onclick="switchClassroomTab('potion')">🪄 Potion Room</button>
+                    <button class="spell-btn" onclick="switchClassroomTab('herbology')">🌿 Herbology Room</button>
+                    <button class="spell-btn" onclick="switchClassroomTab('charms')">✨ Charms Room</button>
+                    <button class="spell-btn admin-only hidden" onclick="switchClassroomTab('admin_logs')" id="adminTabBtn">📋 Admin Logs</button>
+                </nav>
+            </div>
+
+            <div class="magic-viewport"
+            style="background: rgba(10, 5, 15, 0.6); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid #3a2200; box-shadow: 0 0 50px rgba(0,0,0,0.8); display: flex; gap: 1rem; padding: 1rem;">
+
             <!-- CLASSROOM INVENTORY SIDEBAR -->
-            <aside class="classroom-sidebar" style="width: 250px; background: rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column;">
-                <h3 style="color: #d4af37; font-family: 'Cinzel', serif; margin-top: 0; text-align: center; border-bottom: 1px dashed rgba(212,175,55,0.3); padding-bottom: 0.5rem; font-size: 1rem;">💼 My Inventory</h3>
-                <div id="classroomSidebarInventory" class="scroll-content" style="flex: 1; overflow-y: auto; display: grid; gap: 0.5rem; grid-template-columns: repeat(3, 1fr); align-content: start;">
+            <aside class="classroom-sidebar"
+                style="width: 250px; background: rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column;">
+                <h3
+                    style="color: #d4af37; font-family: 'Cinzel', serif; margin-top: 0; text-align: center; border-bottom: 1px dashed rgba(212,175,55,0.3); padding-bottom: 0.5rem; font-size: 1rem;">
+                    💼 My Inventory</h3>
+                <div id="classroomSidebarInventory" class="scroll-content"
+                    style="flex: 1; overflow-y: auto; display: grid; gap: 0.5rem; grid-template-columns: repeat(3, 1fr); align-content: start;">
                     <!-- Populated by JS -->
                 </div>
             </aside>
-            
+
             <!-- MAIN ROOM CONTENT -->
             <div style="flex: 1; position: relative;">
 
-            <!-- POTION ROOM -->
-            <section id="room-potion" class="room-section active" style="padding: 0;">
-                <h2 style="color: #f0c8f0; font-family: 'Cinzel', serif; border-bottom: 1px solid rgba(200,100,200,0.3); padding-bottom: 0.5rem;">🧪 Advanced Potion-Making</h2>
-                <p style="color: rgba(200,150,200,0.8); margin-bottom: 2rem;">Follow the exact instructions. Drag the required ingredients into the cauldron and perform the final wand gesture.</p>
-                
-                <div class="potion-layout">
-                    <div class="potion-list scroll-content" id="potionListContainer">
-                        <!-- Populated by JS -->
-                    </div>
-                    
-                    <div class="cauldron-area-container" style="display:flex; flex-direction:column; gap:1rem;">
-                        <!-- Mini Inventory for Dragging Ingredients -->
-                        <div class="ingredient-stash" id="ingredientStash" style="background: rgba(20,10,30,0.6); padding: 1rem; border-radius: 8px; border: 1px solid #c882e8; min-height: 80px; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <div style="width:100%; color:#f0c8f0; font-size:0.8rem; text-align:center; font-style:italic;">Select a recipe to prepare ingredients</div>
-                        </div>
+                <!-- POTION ROOM -->
+                <section id="room-potion" class="room-section active" style="padding: 0;">
+                    <h2
+                        style="color: #f0c8f0; font-family: 'Cinzel', serif; border-bottom: 1px solid rgba(200,100,200,0.3); padding-bottom: 0.5rem;">
+                        🧪 Advanced Potion-Making</h2>
+                    <p style="color: rgba(200,150,200,0.8); margin-bottom: 2rem;">Follow the exact instructions. Drag
+                        the required ingredients into the cauldron and perform the final wand gesture.</p>
 
-                        <!-- The Cauldron and Canvas overlay -->
-                        <div class="cauldron-area 3d-cauldron-container" id="cauldronDropZone" style="position: relative; overflow: hidden; height: 350px; perspective: 1000px;">
-                            <!-- 3D CSS Cauldron Glow Effect -->
-                            <div class="cauldron-glow" style="position: absolute; bottom: 20px; width: 140px; height: 40px; background: radial-gradient(ellipse, rgba(200,100,200,0.6) 0%, transparent 70%); z-index: 1; filter: blur(10px); animation: pulseGlow 2s infinite alternate;"></div>
-                            
-                            <!-- Cauldron Image -->
-                            <img src="assets/images/item.png" id="cauldronImg" style="width:140px; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(200,100,200,0.4)); z-index: 2; position: absolute; bottom: 20px; transform: rotateX(10deg); transition: transform 0.3s;" alt="3D Cauldron">
-                            
-                            <!-- Dropped ingredients float here -->
-                            <div id="droppedIngredients" style="position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 3;"></div>
-                            
-                            <!-- Wand Gesture Canvas (Hidden until ingredients are in) -->
-                            <div id="potionCanvasContainer" style="display: none; position: absolute; inset: 0; z-index: 10; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); border-radius: 16px;">
-                                <canvas id="potionCanvas" width="300" height="350" style="width: 100%; height: 100%; cursor: crosshair;"></canvas>
-                                <div style="position:absolute; bottom: 20px; width:100%; text-align:center; color:#c882e8; font-size:1rem; font-family:'Cinzel', serif; text-shadow: 0 0 10px #c882e8; pointer-events:none;" id="potionGestureHint">Cast the final spell!</div>
-                            </div>
-                            
-                            <h3 id="brewingStatus" style="color: #f0c8f0; position: absolute; top: 10px; font-family: 'Cinzel', serif; text-align: center; width: 100%; z-index: 4; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Select a recipe</h3>
-                            <div id="potionStepStatus" style="color: #a89070; font-size: 0.9rem; position: absolute; top: 45px; text-align: center; width: 100%; z-index: 4; font-weight: bold;"></div>
-                        </div>
-                        <button class="plot-btn" id="finishBrewBtn" style="display:none; margin-top:0.5rem; background: linear-gradient(135deg, #4a1c6a, #8f34c8); color:white; border:none; padding:10px; border-radius:8px;" onclick="finishBrewMinigame()">Complete Potion</button>
-                        <button class="plot-btn" id="resetBrewBtn" style="display:none; margin-top:0.5rem;" onclick="resetBrewMinigame()">Reset Cauldron</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- HERBOLOGY ROOM -->
-            <section id="room-herbology" class="room-section">
-                <h2 style="color: #a8e0a8; font-family: 'Cinzel', serif; border-bottom: 1px solid rgba(100,200,100,0.3); padding-bottom: 0.5rem;">🌿 The Greenhouses</h2>
-                <p style="color: rgba(150,200,150,0.8); margin-bottom: 2rem;">Muffliato recommended. Cultivate magical plants. Beware the Mandrakes.</p>
-                
-                <div class="herbology-layout">
-                    <div class="garden-grid" id="herbPlotsContainer">
-                        <!-- Slots 0-5 populated by JS -->
-                    </div>
-                    
-                    <div class="seed-shop-panel" style="display: flex; flex-direction: column;">
-                        <h3 style="color: #d4af37; font-family: 'Cinzel', serif; margin-top: 0; text-align: center; border-bottom: 1px dashed #554433; padding-bottom: 0.5rem;">Magic Shop</h3>
-                        
-                        <!-- Shop Category Tabs -->
-                        <div class="shop-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; justify-content: center;">
-                            <button class="plot-btn shop-tab active" onclick="loadShopCategory('seed', this)">🌱 Seeds</button>
-                            <button class="plot-btn shop-tab" onclick="loadShopCategory('food', this)">🍗 Food</button>
-                            <button class="plot-btn shop-tab" onclick="loadShopCategory('equipment', this)">🎒 Equip</button>
-                        </div>
-
-                        <!-- Shop Filter Search -->
-                        <input type="text" id="shopSearchFilter" oninput="filterShopItems()" placeholder="Search items..." style="background: rgba(0,0,0,0.5); border: 1px solid #554433; color: #fff; padding: 0.5rem; border-radius: 6px; margin-bottom: 1rem; font-family: 'Playfair Display', serif;">
-
-                        <div id="seedShopContainer" class="scroll-content" style="flex: 1;">
+                    <div class="potion-layout">
+                        <div class="potion-list scroll-content" id="potionListContainer">
                             <!-- Populated by JS -->
                         </div>
-                    </div>
-                </div>
-            </section>
 
-            <!-- CHARMS ROOM -->
-            <section id="room-charms" class="room-section">
-                <h2 style="color: #a8cdef; font-family: 'Cinzel', serif; border-bottom: 1px solid rgba(100,150,200,0.3); padding-bottom: 0.5rem;">✨ Charms Practice</h2>
-                <p style="color: rgba(150,180,220,0.8); margin-bottom: 2rem; text-align: center;">Swish and flick. Draw the wand movement steadily on the practice canvas.</p>
-                
-                <div class="charms-layout">
-                    <div class="charms-spell-list" id="spellListContainer">
-                        <!-- Populated by JS -->
-                    </div>
-                    
-                    <div class="canvas-container">
-                        <canvas id="spellCanvas" width="500" height="500"></canvas>
-                        <div class="canvas-guidelines"></div>
-                        <div class="canvas-instruction">Draw the spell shape here</div>
-                    </div>
-                    
-                    <div class="charm-result" id="charmResultDisplay">Select a spell to practice</div>
-                    <button class="plot-btn" id="clearCanvasBtn" style="padding: 0.5rem 2rem;">Clear Canvas</button>
-                    <button class="plot-btn harvest" id="castSpellBtn" style="padding: 0.5rem 2rem; font-size: 1rem;" disabled>Cast Spell</button>
-                </div>
-            </section>
+                        <div class="cauldron-area-container" style="display:flex; flex-direction:column; gap:1rem;">
+                            <!-- Mini Inventory for Dragging Ingredients -->
+                            <div class="ingredient-stash" id="ingredientStash"
+                                style="background: rgba(20,10,30,0.6); padding: 1rem; border-radius: 8px; border: 1px solid #c882e8; min-height: 80px; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <div
+                                    style="width:100%; color:#f0c8f0; font-size:0.8rem; text-align:center; font-style:italic;">
+                                    Select a recipe to prepare ingredients</div>
+                            </div>
 
-            <!-- ADMIN LOGS -->
-            <section id="room-admin_logs" class="room-section" style="display: none;">
-                <h2 style="color: #d4af37; font-family: 'Cinzel', serif; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 0.5rem;">📋 Professor's Log</h2>
-                
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                    <select id="adminLogRoomFilter" class="parchment-input" style="max-width: 200px;" onchange="loadAdminLogs(1)">
-                        <option value="">All Rooms</option>
-                        <option value="potion">Potion Room</option>
-                        <option value="herbology">Herbology Room</option>
-                        <option value="charms">Charms Room</option>
-                    </select>
-                    <button class="plot-btn" onclick="loadAdminLogs(1)">Refresh Logs</button>
-                </div>
+                            <!-- The Cauldron and Canvas overlay -->
+                            <div class="cauldron-area 3d-cauldron-container" id="cauldronDropZone"
+                                style="position: relative; overflow: hidden; height: 350px; perspective: 1000px;">
+                                <!-- 3D CSS Cauldron Glow Effect -->
+                                <div class="cauldron-glow"
+                                    style="position: absolute; bottom: 20px; width: 140px; height: 40px; background: radial-gradient(ellipse, rgba(200,100,200,0.6) 0%, transparent 70%); z-index: 1; filter: blur(10px); animation: pulseGlow 2s infinite alternate;">
+                                </div>
 
-                <div class="table-responsive">
-                    <table class="log-table">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Wizard</th>
-                                <th>Room</th>
-                                <th>Action</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminLogsTableBody">
-                            <tr><td colspan="5" style="text-align:center;">Loading logs...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                    <button class="plot-btn" id="logPrevPage" onclick="changeLogPage(-1)" disabled>Previous</button>
-                    <span id="logPageInfo" style="color:#a89070;">Page 1</span>
-                    <button class="plot-btn" id="logNextPage" onclick="changeLogPage(1)" disabled>Next</button>
-                </div>
-            </section>
+                                <!-- Cauldron Image -->
+                                <img src="assets/images/cauldron_3d.png" id="cauldronImg"
+                                    style="width:140px; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(200,100,200,0.4)); z-index: 2; position: absolute; bottom: 20px; transform: rotateX(10deg); transition: transform 0.3s;"
+                                    alt="3D Cauldron">
+
+                                <!-- Dropped ingredients float here -->
+                                <div id="droppedIngredients"
+                                    style="position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 3;">
+                                </div>
+
+                                <!-- Wand Gesture Canvas (Hidden until ingredients are in) -->
+                                <div id="potionCanvasContainer"
+                                    style="display: none; position: absolute; inset: 0; z-index: 10; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); border-radius: 16px;">
+                                    <canvas id="potionCanvas" width="300" height="350"
+                                        style="width: 100%; height: 100%; cursor: crosshair;"></canvas>
+                                    <div style="position:absolute; bottom: 20px; width:100%; text-align:center; color:#c882e8; font-size:1rem; font-family:'Cinzel', serif; text-shadow: 0 0 10px #c882e8; pointer-events:none;"
+                                        id="potionGestureHint">Cast the final spell!</div>
+                                </div>
+
+                                <h3 id="brewingStatus"
+                                    style="color: #f0c8f0; position: absolute; top: 10px; font-family: 'Cinzel', serif; text-align: center; width: 100%; z-index: 4; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+                                    Select a recipe</h3>
+                                <div id="potionStepStatus"
+                                    style="color: #a89070; font-size: 0.9rem; position: absolute; top: 45px; text-align: center; width: 100%; z-index: 4; font-weight: bold;">
+                                </div>
+                            </div>
+                            <button class="plot-btn" id="finishBrewBtn"
+                                style="display:none; margin-top:0.5rem; background: linear-gradient(135deg, #4a1c6a, #8f34c8); color:white; border:none; padding:10px; border-radius:8px;"
+                                onclick="finishBrewMinigame()">Complete Potion</button>
+                            <button class="plot-btn" id="resetBrewBtn" style="display:none; margin-top:0.5rem;"
+                                onclick="resetBrewMinigame()">Reset Cauldron</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- HERBOLOGY ROOM -->
+                <section id="room-herbology" class="room-section">
+                    <h2
+                        style="color: #a8e0a8; font-family: 'Cinzel', serif; border-bottom: 1px solid rgba(100,200,100,0.3); padding-bottom: 0.5rem;">
+                        🌿 The Greenhouses</h2>
+                    <p style="color: rgba(150,200,150,0.8); margin-bottom: 2rem;">Muffliato recommended. Cultivate
+                        magical plants. Beware the Mandrakes.</p>
+
+                    <div class="herbology-layout">
+                        <div class="garden-grid" id="herbPlotsContainer">
+                            <!-- Slots 0-5 populated by JS -->
+                        </div>
+
+                        <div class="seed-shop-panel" style="display: flex; flex-direction: column;">
+                            <h3
+                                style="color: #d4af37; font-family: 'Cinzel', serif; margin-top: 0; text-align: center; border-bottom: 1px dashed #554433; padding-bottom: 0.5rem;">
+                                Magic Shop</h3>
+
+                            <!-- Shop Category Tabs -->
+                            <div class="shop-tabs"
+                                style="display: flex; gap: 0.5rem; margin-bottom: 1rem; justify-content: center;">
+                                <button class="plot-btn shop-tab active" onclick="loadShopCategory('seed', this)">🌱
+                                    Seeds</button>
+                                <button class="plot-btn shop-tab" onclick="loadShopCategory('food', this)">🍗
+                                    Food</button>
+                                <button class="plot-btn shop-tab" onclick="loadShopCategory('equipment', this)">🎒
+                                    Equip</button>
+                            </div>
+
+                            <!-- Shop Filter Search -->
+                            <input type="text" id="shopSearchFilter" oninput="filterShopItems()"
+                                placeholder="Search items..."
+                                style="background: rgba(0,0,0,0.5); border: 1px solid #554433; color: #fff; padding: 0.5rem; border-radius: 6px; margin-bottom: 1rem; font-family: 'Playfair Display', serif;">
+
+                            <div id="seedShopContainer" class="scroll-content" style="flex: 1;">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CHARMS ROOM -->
+                <section id="room-charms" class="room-section">
+                    <h2
+                        style="color: #a8cdef; font-family: 'Cinzel', serif; border-bottom: 1px solid rgba(100,150,200,0.3); padding-bottom: 0.5rem;">
+                        ✨ Charms Practice</h2>
+                    <p style="color: rgba(150,180,220,0.8); margin-bottom: 2rem; text-align: center;">Swish and flick.
+                        Draw the wand movement steadily on the practice canvas.</p>
+
+                    <div class="charms-layout">
+                        <div class="charms-spell-list" id="spellListContainer">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div class="canvas-container">
+                            <canvas id="spellCanvas" width="500" height="500"></canvas>
+                            <div class="canvas-guidelines"></div>
+                            <div class="canvas-instruction">Draw the spell shape here</div>
+                        </div>
+
+                        <div class="charm-result" id="charmResultDisplay">Select a spell to practice</div>
+                        <button class="plot-btn" id="clearCanvasBtn" style="padding: 0.5rem 2rem;">Clear Canvas</button>
+                        <button class="plot-btn harvest" id="castSpellBtn"
+                            style="padding: 0.5rem 2rem; font-size: 1rem;" disabled>Cast Spell</button>
+                    </div>
+                </section>
+
+                <!-- ADMIN LOGS -->
+                <section id="room-admin_logs" class="room-section" style="display: none;">
+                    <h2
+                        style="color: #d4af37; font-family: 'Cinzel', serif; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 0.5rem;">
+                        📋 Professor's Log</h2>
+
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;">
+                        <input type="text" id="adminLogUserFilter" class="parchment-input" placeholder="Search Wizard Name..." style="max-width: 200px;" onkeyup="if(event.key==='Enter') loadAdminLogs(1)">
+                        <select id="adminLogRoomFilter" class="parchment-input" style="max-width: 200px;"
+                            onchange="loadAdminLogs(1)">
+                            <option value="">All Rooms</option>
+                            <option value="potion">Potion Room</option>
+                            <option value="herbology">Herbology Room</option>
+                            <option value="charms">Charms Room</option>
+                        </select>
+                        <button class="plot-btn" onclick="loadAdminLogs(1)">Refresh Logs</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="log-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Wizard</th>
+                                    <th>Room</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminLogsTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align:center;">Loading logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                        <button class="plot-btn" id="logPrevPage" onclick="changeLogPage(-1)" disabled>Previous</button>
+                        <span id="logPageInfo" style="color:#a89070;">Page 1</span>
+                        <button class="plot-btn" id="logNextPage" onclick="changeLogPage(1)" disabled>Next</button>
+                    </div>
+                </section>
 
             </div>
         </main>
@@ -189,112 +252,141 @@
     <!-- Plant Seed Modal -->
     <div id="plantModal" class="plant-modal-overlay">
         <div class="plant-modal">
-            <h3 style="color: #d4af37; font-family: 'Cinzel', serif; margin-top: 0; text-align: center;">Select Seed to Plant</h3>
-            <p style="color: #a89070; font-size: 0.85rem; text-align: center; margin-bottom: 1rem;">You can only plant seeds you currently own in your inventory.</p>
-            <div id="inventorySeedsContainer" class="scroll-content" style="max-height: 300px; display: flex; flex-direction: column; gap: 0.5rem;">
+            <h3 style="color: #d4af37; font-family: 'Cinzel', serif; margin-top: 0; text-align: center;">Select Seed to
+                Plant</h3>
+            <p style="color: #a89070; font-size: 0.85rem; text-align: center; margin-bottom: 1rem;">You can only plant
+                seeds you currently own in your inventory.</p>
+            <div id="inventorySeedsContainer" class="scroll-content"
+                style="max-height: 300px; display: flex; flex-direction: column; gap: 0.5rem;">
                 <!-- Populated by JS -->
             </div>
             <button class="plot-btn" style="width: 100%; margin-top: 1rem;" onclick="closePlantModal()">Cancel</button>
         </div>
     </div>
 
-        <style>
-            /* Inventory Sidebar Styles */
-            .inv-small-item {
-                background: rgba(0,0,0,0.6);
-                border: 1px solid #554433;
-                border-radius: 8px;
-                padding: 0.5rem;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                position: relative;
-                aspect-ratio: 1;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .inv-small-item:hover {
-                border-color: #d4af37;
-                background: rgba(212,175,55,0.1);
-            }
-            .inv-small-item img {
-                width: 32px;
-                height: 32px;
-                object-fit: contain;
-            }
-            .inv-small-qty {
-                position: absolute;
-                bottom: 2px;
-                right: 4px;
-                font-size: 0.7rem;
-                font-weight: bold;
-                color: #fff;
-                text-shadow: 1px 1px 2px #000;
-            }
-            .inv-small-tooltip {
-                position: absolute;
-                bottom: 110%;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(0,0,0,0.9);
-                color: #d4af37;
-                padding: 4px 8px;
-                border-radius: 4px;
-                white-space: nowrap;
-                font-size: 0.75rem;
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.2s;
-                border: 1px solid #d4af37;
-                z-index: 100;
-            }
-            .inv-small-item:hover .inv-small-tooltip {
-                opacity: 1;
+    <style>
+        /* Inventory Sidebar Styles */
+        .inv-small-item {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #554433;
+            border-radius: 8px;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .inv-small-item:hover {
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .inv-small-item img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        .inv-small-qty {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .inv-small-tooltip {
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #d4af37;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            border: 1px solid #d4af37;
+            z-index: 100;
+        }
+
+        .inv-small-item:hover .inv-small-tooltip {
+            opacity: 1;
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                opacity: 0.5;
+                transform: scale(0.9);
             }
 
-            @keyframes pulseGlow {
-                0% { opacity: 0.5; transform: scale(0.9); }
-                100% { opacity: 1; transform: scale(1.1); }
-            }
-
-            .spell-btn {
-                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-            }
-            .spell-btn:hover {
-                transform: translateY(-3px) scale(1.05);
-                box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
-            }
-            .plot-btn {
-                transition: transform 0.2s, box-shadow 0.2s;
-                position: relative;
-                overflow: hidden;
-            }
-            .plot-btn::after {
-                content: '';
-                position: absolute;
-                top: -50%; left: -50%; width: 200%; height: 200%;
-                background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-                transform: rotate(45deg);
-                transition: 0.5s;
-                opacity: 0;
-            }
-            .plot-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
-            }
-            .plot-btn:hover::after {
+            100% {
                 opacity: 1;
-                left: 100%;
+                transform: scale(1.1);
             }
-            .potion-card, .herb-plot, .charms-layout .charm-btn {
-                transition: all 0.3s ease;
-            }
-            .potion-card:hover, .herb-plot:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 10px 25px rgba(138, 43, 226, 0.2);
-            }
-        </style>
+        }
+
+        .spell-btn {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+        }
+
+        .spell-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .plot-btn {
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plot-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: 0.5s;
+            opacity: 0;
+        }
+
+        .plot-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .plot-btn:hover::after {
+            opacity: 1;
+            left: 100%;
+        }
+
+        .potion-card,
+        .herb-plot,
+        .charms-layout .charm-btn {
+            transition: all 0.3s ease;
+        }
+
+        .potion-card:hover,
+        .herb-plot:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(138, 43, 226, 0.2);
+        }
+    </style>
     <script src="js/classroom.js"></script>
 </body>
+
 </html>

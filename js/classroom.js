@@ -1066,11 +1066,15 @@ let currentLogPage = 1;
 
 async function loadAdminLogs(page = 1) {
     if (!user || (!user.roles?.includes('admin') && !user.roles?.includes('professor'))) return;
-
+    
     currentLogPage = page;
     const roomFilter = document.getElementById('adminLogRoomFilter').value;
-    const url = `/api/classroom/admin/logs?page=${page}&limit=20${roomFilter ? `&room=${roomFilter}` : ''}`;
-
+    const userFilter = document.getElementById('adminLogUserFilter')?.value.trim();
+    
+    let url = `/api/classroom/admin/logs?page=${page}&limit=20`;
+    if (roomFilter) url += `&room=${roomFilter}`;
+    if (userFilter) url += `&username=${encodeURIComponent(userFilter)}`;
+    
     try {
         const res = await fetch(url);
         const data = await res.json();
