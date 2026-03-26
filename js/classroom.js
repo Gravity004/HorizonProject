@@ -16,7 +16,12 @@ async function initClassroom() {
             window.location.href = '/?error=not_logged_in';
             return;
         }
-        user = await res.json();
+        const authData = await res.json();
+        if (!authData.authenticated || !authData.user) {
+            window.location.href = '/?error=not_logged_in';
+            return;
+        }
+        user = authData.user;
         
         userGoldEl.textContent = user.balance;
 
@@ -25,6 +30,7 @@ async function initClassroom() {
             document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
         }
 
+        renderInventoryPanel();
         initThreeJS();
         switchClassroomTab('potion');
 
@@ -36,6 +42,53 @@ async function initClassroom() {
 // ----------------------------------------------------
 //  TAB SWITCHING
 // ----------------------------------------------------
+async function renderInventoryPanel() {
+    const container = document.getElementById('classroomSidebarInventory');
+    if (!container) return; // Feature added to HTML next
+    
+    container.innerHTML = '<p style="color:#a89070; text-align:center;">Loading...</p>';
+    
+    try {
+        const res = await fetch('/auth/me', { credentials: 'include' });
+        if (res.ok) {
+            const authData = await res.json();
+            if (authData.user && authData.user.inventory) {
+                user.inventory = authData.user.inventory;
+            }
+        }
+    } catch(e) {}
+
+    const inv = user.inventory || [];
+    container.innerHTML = '';
+    
+    if (inv.length === 0) {
+        container.innerHTML = '<p style="color:#777; font-size: 0.8rem; text-align:center;">กระเป๋าว่างเปล่า</p>';
+        return;
+    }
+
+    inv.forEach(slot => {
+        if (!slot.itemId || slot.quantity <= 0) return;
+        
+        let item = slot.itemId;
+        let img = 'assets/images/item.png';
+        let name = 'Unknown Item';
+        
+        if (typeof item === 'object') {
+            img = item.image || img;
+            name = item.name || name;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'inv-small-item';
+        div.innerHTML = `
+            <img src="${img}" alt="${name}">
+            <div class="inv-small-qty">x${slot.quantity}</div>
+            <div class="inv-small-tooltip">${name}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
 function switchClassroomTab(room) {
     currentRoom = room;
     // Update nav buttons
@@ -53,7 +106,7 @@ function switchClassroomTab(room) {
     if (room === 'potion') loadPotions();
     else if (room === 'herbology') {
         loadHerbPlots();
-        loadSeedShop();
+        loadShopCategory('seed', document.querySelector('.shop-tab.active'));
     }
     else if (room === 'charms') loadCharms();
     else if (room === 'admin_logs') loadAdminLogs(1);
@@ -69,7 +122,7 @@ function initThreeJS() {
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, logarithmicDepthBuffer: true });
-    
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     camera.position.z = 25;
@@ -77,7 +130,7 @@ function initThreeJS() {
     // --- Dynamic Lighting ---
     const ambientLight = new THREE.AmbientLight(0x221133, 1.5);
     scene.add(ambientLight);
-    
+
     const pointLight = new THREE.PointLight(0xd4af37, 2, 50);
     pointLight.position.set(0, 5, 10);
     scene.add(pointLight);
@@ -88,10 +141,10 @@ function initThreeJS() {
     const positions = new Float32Array(particleCount * 3);
     const velocities = [];
 
-    for (let i = 0; i < particleCount * 3; i+=3) {
+    for (let i = 0; i < particleCount * 3; i += 3) {
         positions[i] = (Math.random() - 0.5) * 80;
-        positions[i+1] = (Math.random() - 0.5) * 80;
-        positions[i+2] = (Math.random() - 0.5) * 40 - 10;
+        positions[i + 1] = (Math.random() - 0.5) * 80;
+        positions[i + 2] = (Math.random() - 0.5) * 40 - 10;
         velocities.push({
             y: Math.random() * 0.02 + 0.01,
             x: (Math.random() - 0.5) * 0.01
@@ -99,7 +152,7 @@ function initThreeJS() {
     }
 
     particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    
+
     // Create a circular texture for particles programmatically
     const canvasPoint = document.createElement('canvas');
     canvasPoint.width = 16;
@@ -144,15 +197,15 @@ function initThreeJS() {
         opacity: 0.6
     });
 
-    for(let i=0; i<15; i++) {
+    for (let i = 0; i < 15; i++) {
         const mesh = new THREE.Mesh(geoTypes[Math.floor(Math.random() * geoTypes.length)], objMaterial.clone());
         mesh.position.set(
             (Math.random() - 0.5) * 40,
             (Math.random() - 0.5) * 20,
             (Math.random() - 0.5) * 15 - 10
         );
-        mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
-        
+        mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+
         // Custom properties for animation
         mesh.userData = {
             rotSpeedX: (Math.random() - 0.5) * 0.02,
@@ -172,7 +225,7 @@ function initThreeJS() {
     let targetY = 0;
     const windowHalfX = window.innerWidth / 2;
     const windowHalfY = window.innerHeight / 2;
-    
+
     document.addEventListener('mousemove', (event) => {
         mouseX = (event.clientX - windowHalfX) * 0.05;
         mouseY = (event.clientY - windowHalfY) * 0.05;
@@ -193,11 +246,11 @@ function initThreeJS() {
 
         // Update particles slowly moving up
         const positionsArr = particleSystem.geometry.attributes.position.array;
-        for(let i=0, j=0; i<particleCount; i++, j+=3) {
-            positionsArr[j+1] += velocities[i].y;
+        for (let i = 0, j = 0; i < particleCount; i++, j += 3) {
+            positionsArr[j + 1] += velocities[i].y;
             positionsArr[j] += velocities[i].x;
-            if(positionsArr[j+1] > 40) {
-                positionsArr[j+1] = -40;
+            if (positionsArr[j + 1] > 40) {
+                positionsArr[j + 1] = -40;
                 positionsArr[j] = (Math.random() - 0.5) * 80;
             }
         }
@@ -209,7 +262,7 @@ function initThreeJS() {
             mesh.rotation.x += mesh.userData.rotSpeedX;
             mesh.rotation.y += mesh.userData.rotSpeedY;
             mesh.position.y = mesh.userData.startY + Math.sin(time + mesh.userData.offset) * 2;
-            
+
             // Sync colors with room
             if (currentRoom === 'potion') mesh.material.emissive.setHex(0x6a1c4a);
             else if (currentRoom === 'herbology') mesh.material.emissive.setHex(0x1c6a2e);
@@ -219,11 +272,11 @@ function initThreeJS() {
 
         // Change light and particle color based on room
         const colorTarget = new THREE.Color();
-        if (currentRoom === 'potion') colorTarget.setHex(0xc882e8); 
-        else if (currentRoom === 'herbology') colorTarget.setHex(0x8af58a); 
-        else if (currentRoom === 'charms') colorTarget.setHex(0x8ab4f8); 
-        else colorTarget.setHex(0xd4af37); 
-        
+        if (currentRoom === 'potion') colorTarget.setHex(0xc882e8);
+        else if (currentRoom === 'herbology') colorTarget.setHex(0x8af58a);
+        else if (currentRoom === 'charms') colorTarget.setHex(0x8ab4f8);
+        else colorTarget.setHex(0xd4af37);
+
         pMaterial.color.lerp(colorTarget, 0.05);
         pointLight.color.lerp(colorTarget, 0.05);
 
@@ -245,38 +298,38 @@ function initThreeJS() {
 //  POTION ROOM (Interactive Minigame)
 // ----------------------------------------------------
 const POTION_RECIPES = [
-    { 
-        name: 'Polyjuice Potion', 
-        desc: 'Allows the drinker to assume the form of someone else.', 
-        img: 'assets/images/potion.png', 
+    {
+        name: 'Polyjuice Potion',
+        desc: 'Allows the drinker to assume the form of someone else.',
+        img: 'assets/images/potion.png',
         reqs: ['Fluxweed', 'Knotgrass', 'Lacewing Flies', 'Horn of Bicorn'],
-        gesture: 'circle' 
+        gesture: 'circle'
     },
-    { 
-        name: 'Veritaserum', 
-        desc: 'A powerful truth serum.', 
-        img: 'assets/images/potion.png', 
+    {
+        name: 'Veritaserum',
+        desc: 'A powerful truth serum.',
+        img: 'assets/images/potion.png',
         reqs: ['Jobberknoll Feather', 'Syrup of Hellebore'],
         gesture: 'straight'
     },
-    { 
-        name: 'Felix Felicis', 
-        desc: 'Liquid luck. Makes the drinker successful in all their endeavours.', 
-        img: 'assets/images/potion.png', 
+    {
+        name: 'Felix Felicis',
+        desc: 'Liquid luck. Makes the drinker successful in all their endeavours.',
+        img: 'assets/images/potion.png',
         reqs: ['Ashwinder Egg', 'Squill Bulb', 'Murtlap Tentacle'],
         gesture: 'zigzag'
     },
-    { 
-        name: 'Amortentia Potion', 
-        desc: 'The most powerful love potion in the world.', 
-        img: 'assets/images/potion.png', 
+    {
+        name: 'Amortentia Potion',
+        desc: 'The most powerful love potion in the world.',
+        img: 'assets/images/Amortentia.png',
         reqs: ['Pearl Dust', 'Rose Petals', 'Peppermint'],
         gesture: 'heart'
     },
-    { 
-        name: 'Wolfsbane Potion', 
-        desc: 'Relieves, but does not cure, the symptoms of lycanthropy.', 
-        img: 'assets/images/potion.png', 
+    {
+        name: 'Wolfsbane Potion',
+        desc: 'Relieves, but does not cure, the symptoms of lycanthropy.',
+        img: 'assets/images/potion.png',
         reqs: ['Wolfsbane'],
         gesture: 'straight'
     }
@@ -290,7 +343,7 @@ let pPath = [];
 function loadPotions() {
     const listContainer = document.getElementById('potionListContainer');
     listContainer.innerHTML = '';
-    
+
     POTION_RECIPES.forEach((potion) => {
         const card = document.createElement('div');
         card.className = 'potion-card';
@@ -316,15 +369,15 @@ function initPotionCanvas() {
     pCanvas = document.getElementById('potionCanvas');
     if (!pCanvas) return;
     pCtx = pCanvas.getContext('2d');
-    
+
     pCanvas.addEventListener('mousedown', startPDraw);
     pCanvas.addEventListener('mousemove', pDraw);
     pCanvas.addEventListener('mouseup', endPDraw);
-    
+
     // Touch
-    pCanvas.addEventListener('touchstart', e => { e.preventDefault(); startPDraw(e.touches[0]); }, {passive: false});
-    pCanvas.addEventListener('touchmove', e => { e.preventDefault(); pDraw(e.touches[0]); }, {passive: false});
-    pCanvas.addEventListener('touchend', e => { e.preventDefault(); endPDraw(); }, {passive: false});
+    pCanvas.addEventListener('touchstart', e => { e.preventDefault(); startPDraw(e.touches[0]); }, { passive: false });
+    pCanvas.addEventListener('touchmove', e => { e.preventDefault(); pDraw(e.touches[0]); }, { passive: false });
+    pCanvas.addEventListener('touchend', e => { e.preventDefault(); endPDraw(); }, { passive: false });
 }
 
 function startBrewing(potionName) {
@@ -343,7 +396,7 @@ function startBrewing(potionName) {
     document.getElementById('finishBrewBtn').style.display = 'none';
     document.getElementById('potionCanvasContainer').style.display = 'none';
     document.getElementById('droppedIngredients').innerHTML = '';
-    
+
     // Setup Stash
     setupIngredientStash(recipe);
     setupDropZone();
@@ -352,7 +405,7 @@ function startBrewing(potionName) {
 function setupIngredientStash(recipe) {
     const stash = document.getElementById('ingredientStash');
     stash.innerHTML = '';
-    
+
     // For Roleplay/Demo, we provide the ingredients even if not in inv (as per previous logic), 
     // but marked with quantity if we want to be fancy.
     // Let's just provide the recipe ingredients for dragging.
@@ -375,7 +428,7 @@ function setupIngredientStash(recipe) {
 
 function setupDropZone() {
     const zone = document.getElementById('cauldronDropZone');
-    
+
     zone.addEventListener('dragover', (e) => {
         e.preventDefault();
         zone.classList.add('drop-hover');
@@ -397,7 +450,7 @@ function handleIngDrop(ingName) {
     if (!activeBrew || activeBrew.waitingForGesture) return;
 
     const expected = activeBrew.recipe.reqs[activeBrew.step];
-    
+
     // Visual feedback for drop
     const dropFeedback = document.createElement('div');
     dropFeedback.className = 'dropped-item';
@@ -411,7 +464,7 @@ function handleIngDrop(ingName) {
     if (ingName === expected) {
         activeBrew.added.push(ingName);
         activeBrew.step++;
-        
+
         if (activeBrew.step >= activeBrew.recipe.reqs.length) {
             // All ingredients added, now the wand wave
             activeBrew.waitingForGesture = true;
@@ -419,7 +472,7 @@ function handleIngDrop(ingName) {
         } else {
             const next = activeBrew.recipe.reqs[activeBrew.step];
             document.getElementById('potionStepStatus').innerHTML = `Correct! Next: <span style="color:#f0c8f0;">${next}</span>`;
-            
+
             // Cauldron glow effect
             document.getElementById('cauldronImg').style.filter = 'drop-shadow(0 0 30px rgba(200, 130, 232, 0.8))';
             setTimeout(() => {
@@ -436,15 +489,15 @@ function handleIngDrop(ingName) {
 function showWandGestureStep() {
     document.getElementById('potionStepStatus').innerHTML = `<span style="color:#6af56a; font-weight:bold;">Ingredients complete!</span> Perform the final gesture.`;
     document.getElementById('potionCanvasContainer').style.display = 'block';
-    
+
     const gesture = activeBrew.recipe.gesture || 'circle';
     let hint = 'Draw a circle to stir';
     if (gesture === 'straight') hint = 'Flick upwards';
     if (gesture === 'zigzag') hint = 'Draw a zigzag';
     if (gesture === 'heart') hint = 'Draw a heart shape';
-    
+
     document.getElementById('potionGestureHint').textContent = hint;
-    
+
     // Clear sub-canvas
     pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
 }
@@ -461,7 +514,7 @@ function startPDraw(e) {
     const rect = pCanvas.getBoundingClientRect();
     const x = (e.clientX || e.pageX) - rect.left;
     const y = (e.clientY || e.pageY) - rect.top;
-    pPath.push({x, y});
+    pPath.push({ x, y });
     pCtx.beginPath();
     pCtx.moveTo(x, y);
 }
@@ -471,8 +524,8 @@ function pDraw(e) {
     const rect = pCanvas.getBoundingClientRect();
     const x = (e.clientX || e.pageX) - rect.left;
     const y = (e.clientY || e.pageY) - rect.top;
-    pPath.push({x, y});
-    
+    pPath.push({ x, y });
+
     pCtx.lineTo(x, y);
     pCtx.strokeStyle = '#c882e8';
     pCtx.lineWidth = 3;
@@ -482,7 +535,7 @@ function pDraw(e) {
 function endPDraw() {
     if (!pDrawing) return;
     pDrawing = false;
-    
+
     if (pPath.length > 10) {
         document.getElementById('finishBrewBtn').style.display = 'block';
     }
@@ -490,15 +543,15 @@ function endPDraw() {
 
 async function finishBrewMinigame() {
     if (!activeBrew) return;
-    
+
     const status = document.getElementById('brewingStatus');
     const stepStatus = document.getElementById('potionStepStatus');
-    
+
     status.innerHTML = `Finishing <span style="color:#d4af37;">${activeBrew.recipe.name}</span>...`;
-    
+
     // Simulated gesture check
     const success = pPath.length > 20; // Simplified for demo
-    
+
     try {
         const res = await fetch('/api/classroom/potion/brew', {
             method: 'POST',
@@ -507,7 +560,7 @@ async function finishBrewMinigame() {
             body: JSON.stringify({ potionName: activeBrew.recipe.name })
         });
         const data = await res.json();
-        
+
         if (success) {
             document.getElementById('cauldronImg').style.filter = 'drop-shadow(0 0 50px rgba(106, 245, 106, 0.9))';
             status.innerHTML = `✨ Successfully brewed <span style="color:#d4af37;">${activeBrew.recipe.name}</span>!`;
@@ -524,7 +577,7 @@ async function finishBrewMinigame() {
     } catch (err) {
         console.error(err);
     }
-    
+
     document.getElementById('finishBrewBtn').style.display = 'none';
     document.getElementById('potionCanvasContainer').style.display = 'none';
 }
@@ -541,17 +594,17 @@ async function loadHerbPlots() {
         const plots = await res.json();
         const container = document.getElementById('herbPlotsContainer');
         container.innerHTML = '';
-        
+
         for (let i = 0; i < 6; i++) {
             const plotData = plots.find(p => p.slot === i && !p.isHarvested);
             const div = document.createElement('div');
             div.className = 'herb-plot';
-            
+
             if (!plotData) {
                 // Empty Plot
                 div.innerHTML = `
                     <div class="plot-empty"></div>
-                    <div class="plot-name" style="color:#a89070;">Empty Plot ${i+1}</div>
+                    <div class="plot-name" style="color:#a89070;">Empty Plot ${i + 1}</div>
                     <div class="plot-status">Ready for planting</div>
                     <div class="plot-actions">
                         <button class="plot-btn" onclick="openPlantModal(${i})">Plant Seed</button>
@@ -561,10 +614,10 @@ async function loadHerbPlots() {
                 // Occupied Plot
                 const img = plotData.image || 'assets/images/item.png';
                 const name = plotData.seedName || 'Unknown Plant';
-                
+
                 let btnHtml = '';
                 let statusHtml = '';
-                
+
                 if (plotData.isReady) {
                     statusHtml = '<span style="color:#6af56a; font-weight:bold;">Ready to harvest!</span>';
                     btnHtml = `<button class="plot-btn harvest" onclick="harvestPlant(${i})">Harvest</button>`;
@@ -573,12 +626,12 @@ async function loadHerbPlots() {
                     const lastWatered = new Date(plotData.lastWateredAt);
                     const hoursSinceWater = (now - lastWatered) / 3600000;
                     const cooldown = plotData.waterIntervalHours * 0.5;
-                    
+
                     const harvestTime = new Date(plotData.harvestAt);
                     const hoursLeft = Math.max(0, (harvestTime - now) / 3600000).toFixed(1);
-                    
+
                     statusHtml = `Growing... <span style="color:#d4af37; font-weight:bold;">${hoursLeft}h</span> left`;
-                    
+
                     if (hoursSinceWater >= cooldown) {
                         btnHtml = `<button class="plot-btn water" onclick="waterPlant(${i})">Water</button>`;
                     } else {
@@ -586,14 +639,14 @@ async function loadHerbPlots() {
                         btnHtml = `<button class="plot-btn water" disabled title="Water in ${waitHours}h">Water (${waitHours}h)</button>`;
                     }
                 }
-                
+
                 div.innerHTML = `
                     <img src="${img}" class="plot-img" alt="${name}">
                     <div class="plot-name">${name}</div>
                     <div class="plot-status">${statusHtml}</div>
                     <div class="plot-actions">${btnHtml}</div>
                 `;
-                
+
                 // Add minor glow if ready
                 if (plotData.isReady) {
                     div.style.borderColor = '#6af56a';
@@ -607,42 +660,64 @@ async function loadHerbPlots() {
     }
 }
 
-async function loadSeedShop() {
-    try {
-        const res = await fetch('/api/shop/items?type=seed', { credentials: 'include' });
-        shopSeeds = await res.json();
-        
-        const container = document.getElementById('seedShopContainer');
-        container.innerHTML = '';
-        
-        if (shopSeeds.length === 0) {
-            container.innerHTML = '<p style="color:#a89070; text-align:center;">No seeds available in shop.</p>';
-            return;
-        }
-        
-        shopSeeds.forEach(seed => {
-            const div = document.createElement('div');
-            div.className = 'seed-item';
-            div.innerHTML = `
-                <img src="${seed.image || 'assets/images/item.png'}" alt="${seed.name}">
-                <div class="seed-info">
-                    <div class="seed-name">${seed.name}</div>
-                    <div class="seed-time">Grow Time: ${seed.effects?.growHours || 48}h</div>
-                </div>
-                <button class="buy-seed-btn" onclick="buySeed('${seed._id}', ${seed.price}, '${seed.name}')">Buy (${seed.price} G)</button>
-            `;
-            container.appendChild(div);
-        });
-    } catch (err) {
-        console.error('Failed to load shop seeds', err);
+let currentShopCategory = 'seed';
+let allShopItems = [];
+
+async function loadShopCategory(category, btnEl) {
+    if (btnEl) {
+        document.querySelectorAll('.shop-tab').forEach(b => b.classList.remove('active'));
+        btnEl.classList.add('active');
     }
+    
+    currentShopCategory = category;
+    
+    try {
+        const res = await fetch(`/api/shop/items?type=${category}`, { credentials: 'include' });
+        allShopItems = await res.json();
+        filterShopItems(); // Re-render with any existing search
+    } catch (err) {
+        console.error('Failed to load shop items', err);
+    }
+}
+
+function filterShopItems() {
+    const searchVal = document.getElementById('shopSearchFilter').value.toLowerCase();
+    const container = document.getElementById('seedShopContainer');
+    container.innerHTML = '';
+    
+    const filtered = allShopItems.filter(item => item.name.toLowerCase().includes(searchVal));
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="color:#a89070; text-align:center;">No items found.</p>';
+        return;
+    }
+    
+    filtered.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'seed-item';
+        
+        // Show grow time for seeds, nothing for regular food/equip (or describe effects)
+        let extraInfo = '';
+        if (item.type === 'seed') extraInfo = `Grow Time: ${item.effects?.growHours || 48}h`;
+        else if (item.description) extraInfo = `<span style="font-size:0.65rem; color:#888;">${item.description.slice(0, 30)}...</span>`;
+        
+        div.innerHTML = `
+            <img src="${item.image || 'assets/images/item.png'}" alt="${item.name}">
+            <div class="seed-info">
+                <div class="seed-name">${item.name}</div>
+                <div class="seed-time">${extraInfo}</div>
+            </div>
+            <button class="buy-seed-btn" onclick="buySeed('${item._id}', ${item.price}, '${item.name}')">Buy (${item.price} 🪙)</button>
+        `;
+        container.appendChild(div);
+    });
 }
 
 async function buySeed(itemId, price, name) {
     if (user.balance < price) {
         return showToast('Not enough Galleons!', 'error');
     }
-    
+
     try {
         const res = await fetch('/api/shop/buy', {
             method: 'POST',
@@ -656,7 +731,8 @@ async function buySeed(itemId, price, name) {
             userGoldEl.textContent = user.balance;
             // update user inv
             user.inventory = data.inventory;
-            showToast(`Purchased ${name} for ${price} Galleons!`, 'success');
+            renderInventoryPanel(); // Refresh sidebar inventory!
+            showToast(`Purchased ${name} for ${price} 🪙!`, 'success');
         } else {
             showToast(data.message, 'error');
         }
@@ -669,15 +745,31 @@ async function openPlantModal(slot) {
     currentPlantSlot = slot;
     const modal = document.getElementById('plantModal');
     const container = document.getElementById('inventorySeedsContainer');
-    container.innerHTML = '';
+    container.innerHTML = '<p style="color:#a89070; text-align:center;">Loading inventory...</p>';
+    modal.classList.add('active');
     
     // Refresh inventory
-    const userRes = await fetch('/auth/me', { credentials: 'include' });
-    if (userRes.ok) user = await userRes.json();
+    try {
+        const userRes = await fetch('/auth/me', { credentials: 'include' });
+        if (userRes.ok) {
+            const authData = await userRes.json();
+            if (authData.user && authData.user.inventory) {
+                user.inventory = authData.user.inventory;
+            }
+        }
+    } catch (e) { console.error('Error refreshing inventory', e); }
+    
     userInventory = user.inventory || [];
     
-    // Filter inventory for seeds (check type from item population)
-    const seedsInInv = userInventory.filter(i => i.quantity > 0 && i.itemId && i.itemId.type === 'seed');
+    container.innerHTML = '';
+    
+    // Filter inventory for seeds // checking if itemId is populated
+    const seedsInInv = userInventory.filter(i => {
+        if (!i.itemId) return false;
+        // If it's populated, it's an object with .type
+        if (typeof i.itemId === 'object') return i.itemId.type === 'seed' && i.quantity > 0;
+        return false;
+    });
     
     if (seedsInInv.length === 0) {
         container.innerHTML = `<p style="color:#f56a6a; text-align:center; margin-top: 1rem;">You don't have any seeds! Buy some from The Spore & Seed shop panel.</p>`;
@@ -699,7 +791,7 @@ async function openPlantModal(slot) {
             container.appendChild(div);
         });
     }
-    
+
     modal.classList.add('active');
 }
 
@@ -786,7 +878,7 @@ let path = [];
 function loadCharms() {
     const listContainer = document.getElementById('spellListContainer');
     listContainer.innerHTML = '';
-    
+
     SPELLS.forEach(spell => {
         const btn = document.createElement('button');
         btn.className = 'charm-btn';
@@ -799,21 +891,21 @@ function loadCharms() {
     if (!canvas) {
         canvas = document.getElementById('spellCanvas');
         ctx = canvas.getContext('2d');
-        
+
         canvas.addEventListener('mousedown', startDraw);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', endDraw);
         canvas.addEventListener('mouseout', endDraw);
-        
+
         // Touch supports
-        canvas.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e.touches[0]); }, {passive: false});
-        canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e.touches[0]); }, {passive: false});
-        canvas.addEventListener('touchend', e => { e.preventDefault(); endDraw(); }, {passive: false});
+        canvas.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e.touches[0]); }, { passive: false });
+        canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e.touches[0]); }, { passive: false });
+        canvas.addEventListener('touchend', e => { e.preventDefault(); endDraw(); }, { passive: false });
 
         document.getElementById('clearCanvasBtn').onclick = clearCanvas;
         document.getElementById('castSpellBtn').onclick = submitCastSpell;
     }
-    
+
     // Clear canvas and reset state on load
     clearCanvas();
 }
@@ -822,12 +914,12 @@ function selectSpell(id, btnEl) {
     activeSpell = id;
     document.querySelectorAll('.charm-btn').forEach(b => b.classList.remove('active'));
     btnEl.classList.add('active');
-    
+
     const spell = SPELLS.find(s => s.id === id);
     const resultDisplay = document.getElementById('charmResultDisplay');
     resultDisplay.style.color = '#8ab4f8';
     resultDisplay.textContent = spell.patternDesc;
-    
+
     document.getElementById('castSpellBtn').disabled = true;
     clearCanvas();
 }
@@ -850,7 +942,7 @@ function startDraw(e) {
     path.push(pos);
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
-    
+
     // Sparkle effect at start
     ctx.shadowBlur = 15;
     ctx.shadowColor = '#6ab0f5';
@@ -860,7 +952,7 @@ function draw(e) {
     if (!drawing) return;
     const pos = getPos(e);
     path.push(pos);
-    
+
     ctx.lineTo(pos.x, pos.y);
     ctx.strokeStyle = '#a8cdef';
     ctx.lineWidth = 4;
@@ -872,7 +964,7 @@ function draw(e) {
     if (Math.random() < 0.1) {
         ctx.fillStyle = '#fff';
         ctx.beginPath();
-        ctx.arc(pos.x + (Math.random()-0.5)*10, pos.y + (Math.random()-0.5)*10, Math.random()*2, 0, Math.PI*2);
+        ctx.arc(pos.x + (Math.random() - 0.5) * 10, pos.y + (Math.random() - 0.5) * 10, Math.random() * 2, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath(); // Reset path for drawing line
         ctx.moveTo(pos.x, pos.y);
@@ -883,7 +975,7 @@ function endDraw() {
     if (!drawing) return;
     drawing = false;
     ctx.shadowBlur = 0;
-    
+
     if (path.length > 5) {
         document.getElementById('castSpellBtn').disabled = false;
     }
@@ -894,7 +986,7 @@ function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     path = [];
     document.getElementById('castSpellBtn').disabled = true;
-    
+
     if (activeSpell) {
         const spell = SPELLS.find(s => s.id === activeSpell);
         const resultDisplay = document.getElementById('charmResultDisplay');
@@ -905,17 +997,17 @@ function clearCanvas() {
 
 async function submitCastSpell() {
     if (!activeSpell || path.length < 5) return;
-    
+
     const spell = SPELLS.find(s => s.id === activeSpell);
-    
+
     // VERY simple fake gesture recognition logic for fun roleplay
     // We just check overall direction or complexity, but mostly allow it to succeed if they drew enough
     let success = false;
-    
+
     const startX = path[0].x;
-    const endX = path[path.length-1].x;
+    const endX = path[path.length - 1].x;
     const startY = path[0].y;
-    const endY = path[path.length-1].y;
+    const endY = path[path.length - 1].y;
     const dx = endX - startX;
     const dy = endY - startY;
 
@@ -930,13 +1022,13 @@ async function submitCastSpell() {
     } else if (activeSpell === 'expelliarmus') {
         success = (Math.abs(dx) > 50 && path.length > 15); // Zigzag needs length
     }
-    
+
     // Add small random chance to fail even if pattern roughly matches for realism
     if (success && Math.random() < 0.1) success = false;
     if (!success && Math.random() < 0.2) success = true; // small chance to succeed anyway
 
     const resultDisplay = document.getElementById('charmResultDisplay');
-    
+
     try {
         const res = await fetch('/api/classroom/charms/cast', {
             method: 'POST',
@@ -944,11 +1036,11 @@ async function submitCastSpell() {
             body: JSON.stringify({ charmName: spell.name, success })
         });
         const data = await res.json();
-        
+
         if (data.success) {
             resultDisplay.style.color = '#6af56a';
             resultDisplay.innerHTML = `✨ ${data.message}`;
-            
+
             // Canvas flash effect
             ctx.fillStyle = 'rgba(106, 245, 106, 0.4)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -956,7 +1048,7 @@ async function submitCastSpell() {
         } else {
             resultDisplay.style.color = '#f56a6a';
             resultDisplay.innerHTML = `💨 ${data.message}`;
-            
+
             // Canvas red flash effect
             ctx.fillStyle = 'rgba(245, 106, 106, 0.3)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -974,25 +1066,25 @@ let currentLogPage = 1;
 
 async function loadAdminLogs(page = 1) {
     if (!user || (!user.roles?.includes('admin') && !user.roles?.includes('professor'))) return;
-    
+
     currentLogPage = page;
     const roomFilter = document.getElementById('adminLogRoomFilter').value;
     const url = `/api/classroom/admin/logs?page=${page}&limit=20${roomFilter ? `&room=${roomFilter}` : ''}`;
-    
+
     try {
         const res = await fetch(url);
         const data = await res.json();
-        
+
         const tbody = document.getElementById('adminLogsTableBody');
         tbody.innerHTML = '';
-        
+
         if (data.logs.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#a89070;">No logs found.</td></tr>';
         } else {
             data.logs.forEach(log => {
                 const tr = document.createElement('tr');
                 const timeStr = new Date(log.timestamp).toLocaleString('en-GB', { hour12: false });
-                
+
                 let detailsStr = '';
                 if (log.action === 'plant') detailsStr = `Planted ${log.details?.seed} (Slot ${log.details?.slot})`;
                 else if (log.action === 'water') detailsStr = `Watered ${log.details?.seed} (Slot ${log.details?.slot})`;
@@ -1011,11 +1103,11 @@ async function loadAdminLogs(page = 1) {
                 tbody.appendChild(tr);
             });
         }
-        
+
         document.getElementById('logPageInfo').textContent = `Page ${data.page} of ${data.totalPages || 1}`;
         document.getElementById('logPrevPage').disabled = data.page <= 1;
         document.getElementById('logNextPage').disabled = data.page >= (data.totalPages || 1);
-        
+
     } catch (err) {
         console.error('Failed to load logs', err);
     }
@@ -1047,9 +1139,9 @@ function showToast(message, type = 'success') {
     toast.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
     toast.style.background = type === 'success' ? 'linear-gradient(135deg, #1f4037, #99f2c8)' : 'linear-gradient(135deg, #cb2d3e, #ef473a)';
     if (type !== 'success') toast.style.color = '#fff'; else toast.style.color = '#000';
-    
+
     toast.innerHTML = message;
-    
+
     document.body.appendChild(toast);
 
     setTimeout(() => {

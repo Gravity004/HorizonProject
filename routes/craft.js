@@ -103,7 +103,7 @@ router.post('/craft', isAuthenticated, sanitizeBody, async (req, res) => {
                     image: 'assets/images/Amortentia.png'
                 });
                 await potion.save();
-            } else if (potion.image === 'assets/images/potion.png' || potion.image === 'assets/images/Potion.png') {
+            } else if (potion.image === 'assets/images/Amortentia.png' || potion.image === 'assets/images/Amortentia.png') {
                 potion.image = 'assets/images/Amortentia.png';
                 await potion.save();
             }
