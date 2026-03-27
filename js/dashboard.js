@@ -169,6 +169,8 @@ window.switchNav = function (tabId) {
     const target = document.getElementById(tabId);
     if (target) target.classList.add('active');
 
+    if (typeof updateMagicBgCanvas === 'function') updateMagicBgCanvas(tabId);
+
     // Load data when switching to specific tabs
     if (tabId === 'bank') fetchTransactions();
     if (tabId === 'admin') {
@@ -2241,3 +2243,194 @@ window.cleanseCurse = async function() {
     });
 };
 
+// ═══════════════════════════════════════════════
+// THREE.JS MAGICAL BACKGROUND (PETS & DIVINATION)
+// ═══════════════════════════════════════════════
+let dashboardMagicScene = null;
+let dashboardMagicTargetColor = new THREE.Color(0xd4af37);
+let dashboardMagicActive = false;
+let dashboardParticles, dashboardLight, dashboardObjects;
+
+function initDashboardThreeJS() {
+    const canvas = document.getElementById('dashboardMagicBg');
+    if (!canvas || !window.THREE) return;
+
+    dashboardMagicScene = new THREE.Scene();
+    dashboardMagicScene.fog = new THREE.FogExp2(0x0a050f, 0.02);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, logarithmicDepthBuffer: true });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    camera.position.z = 25;
+
+    const ambientLight = new THREE.AmbientLight(0x221133, 1.5);
+    dashboardMagicScene.add(ambientLight);
+
+    dashboardLight = new THREE.PointLight(0xd4af37, 2, 50);
+    dashboardLight.position.set(0, 5, 10);
+    dashboardMagicScene.add(dashboardLight);
+
+    const particleCount = 1000;
+    const particles = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = [];
+
+    for (let i = 0; i < particleCount * 3; i += 3) {
+        positions[i] = (Math.random() - 0.5) * 80;
+        positions[i + 1] = (Math.random() - 0.5) * 80;
+        positions[i + 2] = (Math.random() - 0.5) * 40 - 10;
+        velocities.push({
+            y: Math.random() * 0.02 + 0.01,
+            x: (Math.random() - 0.5) * 0.01
+        });
+    }
+
+    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    const canvasPoint = document.createElement('canvas');
+    canvasPoint.width = 16;
+    canvasPoint.height = 16;
+    const contextPoint = canvasPoint.getContext('2d');
+    const gradientPoint = contextPoint.createRadialGradient(8, 8, 0, 8, 8, 8);
+    gradientPoint.addColorStop(0, 'rgba(255,255,255,1)');
+    gradientPoint.addColorStop(1, 'rgba(255,255,255,0)');
+    contextPoint.fillStyle = gradientPoint;
+    contextPoint.fillRect(0, 0, 16, 16);
+    const particleTexture = new THREE.CanvasTexture(canvasPoint);
+
+    dashboardParticles = new THREE.PointsMaterial({
+        color: 0xd4af37,
+        size: 0.8,
+        map: particleTexture,
+        transparent: true,
+        opacity: 0.8,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+    });
+
+    const particleSystem = new THREE.Points(particles, dashboardParticles);
+    dashboardMagicScene.add(particleSystem);
+
+    dashboardObjects = new THREE.Group();
+    const geoTypes = [
+        new THREE.OctahedronGeometry(1, 0),
+        new THREE.DodecahedronGeometry(0.8, 0),
+        new THREE.TetrahedronGeometry(1.2, 0)
+    ];
+
+    const objMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0x4a1c6a,
+        emissiveIntensity: 0.6,
+        roughness: 0.2,
+        metalness: 0.8,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.5
+    });
+
+    for (let i = 0; i < 12; i++) {
+        const mesh = new THREE.Mesh(geoTypes[Math.floor(Math.random() * geoTypes.length)], objMaterial.clone());
+        mesh.position.set(
+            (Math.random() - 0.5) * 40,
+            (Math.random() - 0.5) * 20,
+            (Math.random() - 0.5) * 15 - 10
+        );
+        mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+
+        mesh.userData = {
+            rotSpeedX: (Math.random() - 0.5) * 0.02,
+            rotSpeedY: (Math.random() - 0.5) * 0.02,
+            floatSpeed: Math.random() * 0.02 + 0.01,
+            startY: mesh.position.y,
+            offset: Math.random() * Math.PI * 2
+        };
+        dashboardObjects.add(mesh);
+    }
+    dashboardMagicScene.add(dashboardObjects);
+
+    let mouseX = 0; let mouseY = 0;
+    const windowHalfX = window.innerWidth / 2;
+    const windowHalfY = window.innerHeight / 2;
+    document.addEventListener('mousemove', (event) => {
+        if (!dashboardMagicActive) return;
+        mouseX = (event.clientX - windowHalfX) * 0.05;
+        mouseY = (event.clientY - windowHalfY) * 0.05;
+    });
+
+    let time = 0;
+    function animate() {
+        requestAnimationFrame(animate);
+        if (!dashboardMagicActive) return;
+        
+        time += 0.01;
+        camera.position.x += (mouseX * 0.1 - camera.position.x) * 0.05;
+        camera.position.y += (-mouseY * 0.1 - camera.position.y) * 0.05;
+        camera.lookAt(dashboardMagicScene.position);
+
+        const positionsArr = particleSystem.geometry.attributes.position.array;
+        for (let i = 0, j = 0; i < particleCount; i++, j += 3) {
+            positionsArr[j + 1] += velocities[i].y;
+            positionsArr[j] += velocities[i].x;
+            if (positionsArr[j + 1] > 40) {
+                positionsArr[j + 1] = -40;
+                positionsArr[j] = (Math.random() - 0.5) * 80;
+            }
+        }
+        particleSystem.geometry.attributes.position.needsUpdate = true;
+        particleSystem.rotation.y = time * 0.05;
+
+        dashboardObjects.children.forEach(mesh => {
+            mesh.rotation.x += mesh.userData.rotSpeedX;
+            mesh.rotation.y += mesh.userData.rotSpeedY;
+            mesh.position.y = mesh.userData.startY + Math.sin(time + mesh.userData.offset) * 2;
+        });
+
+        dashboardParticles.color.lerp(dashboardMagicTargetColor, 0.05);
+        dashboardLight.color.lerp(dashboardMagicTargetColor, 0.05);
+        dashboardObjects.children.forEach(mesh => {
+            mesh.material.emissive.lerp(dashboardMagicTargetColor, 0.05);
+        });
+
+        renderer.render(dashboardMagicScene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+        if (!dashboardMagicActive) return;
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+}
+
+function updateMagicBgCanvas(tabId) {
+    const canvas = document.getElementById('dashboardMagicBg');
+    if (!canvas) return;
+
+    if (tabId === 'pets' || tabId === 'divination') {
+        if (!dashboardMagicScene) initDashboardThreeJS();
+        dashboardMagicActive = true;
+        
+        // Ensure elements don't block canvas randomly
+        canvas.style.display = 'block';
+        // Let it layout before fading in
+        setTimeout(() => { canvas.style.opacity = '1'; }, 50);
+
+        if (tabId === 'pets') {
+            dashboardMagicTargetColor.setHex(0xd46f10); // Warm fiery orange/gold
+        } else if (tabId === 'divination') {
+            dashboardMagicTargetColor.setHex(0x8a2be2); // Mystic purple
+        }
+    } else {
+        canvas.style.opacity = '0';
+        setTimeout(() => { 
+            if(canvas.style.opacity === '0') {
+                dashboardMagicActive = false; 
+                canvas.style.display = 'none';
+            }
+        }, 1000);
+    }
+}
