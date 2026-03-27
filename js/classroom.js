@@ -81,7 +81,7 @@ async function renderInventoryPanel() {
         const div = document.createElement('div');
         div.className = 'inv-small-item';
         div.innerHTML = `
-            <img src="${img}" alt="${name}">
+            <img src="${img}" alt="${name}" loading="lazy">
             <div class="inv-small-qty">x${slot.quantity}</div>
             <div class="inv-small-tooltip">${name}</div>
         `;
@@ -348,7 +348,7 @@ function loadPotions() {
         const card = document.createElement('div');
         card.className = 'potion-card';
         card.innerHTML = `
-            <div class="potion-img-wrap"><img src="${potion.img}" alt="Potion"></div>
+            <div class="potion-img-wrap"><img src="${potion.img}" alt="Potion" loading="lazy"></div>
             <div class="potion-details">
                 <h3 class="potion-name">${potion.name}</h3>
                 <p style="font-size: 0.8rem; color: #a89070; margin-bottom: 0.8rem;">${potion.desc}</p>
@@ -641,7 +641,7 @@ async function loadHerbPlots() {
                 }
 
                 div.innerHTML = `
-                    <img src="${img}" class="plot-img" alt="${name}">
+                    <img src="${img}" class="plot-img" alt="${name}" loading="lazy">
                     <div class="plot-name">${name}</div>
                     <div class="plot-status">${statusHtml}</div>
                     <div class="plot-actions">${btnHtml}</div>
@@ -702,7 +702,7 @@ function filterShopItems() {
         else if (item.description) extraInfo = `<span style="font-size:0.65rem; color:#888;">${item.description.slice(0, 30)}...</span>`;
         
         div.innerHTML = `
-            <img src="${item.image || 'assets/images/item.png'}" alt="${item.name}">
+            <img src="${item.image || 'assets/images/item.png'}" alt="${item.name}" loading="lazy">
             <div class="seed-info">
                 <div class="seed-name">${item.name}</div>
                 <div class="seed-time">${extraInfo}</div>
@@ -780,7 +780,7 @@ async function openPlantModal(slot) {
             div.style = 'display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.5); padding: 0.8rem; border-radius: 8px; border: 1px solid #554433;';
             div.innerHTML = `
                 <div style="display:flex; align-items:center; gap: 1rem;">
-                    <img src="${item.image || 'assets/images/item.png'}" style="width:32px; height:32px;">
+                    <img src="${item.image || 'assets/images/item.png'}" loading="lazy" style="width:32px; height:32px;">
                     <div>
                         <div style="color:#d4af37; font-size: 0.9rem; font-family:'Cinzel', serif;">${item.name}</div>
                         <div style="color:#a89070; font-size: 0.75rem;">Owned: ${invItem.quantity}</div>

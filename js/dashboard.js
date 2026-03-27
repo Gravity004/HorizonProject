@@ -245,7 +245,7 @@ function renderShop(items) {
         <div class="magic-card item-rarity-${item.rarity || 'common'}">
             ${isAdmin ? `<button class="delete-btn" style="right:2.7rem;background:#2a3d2a;color:#6af56a;border-color:#3d5c3d;" title="Edit Item" onclick="openEditItemModal('${item._id}')">✎</button><button class="delete-btn" title="Remove Item" onclick="deleteItem('${item._id}')">×</button>` : ''}
             <div class="card-image">
-                <img src="${item.image || 'assets/images/placeholder_item.png'}" alt="${item.name}">
+                <img src="${item.image || 'assets/images/placeholder_item.png'}" alt="${item.name}" loading="lazy">
             </div>
             <div class="card-info">
                 <h3>${item.name}</h3>
@@ -835,7 +835,7 @@ function renderInventory() {
         
         return `
             <div class="inventory-slot">
-                <img src="${img}" alt="${name}">
+                <img src="${img}" alt="${name}" loading="lazy">
                 <span class="qty">${slot.quantity}</span>
                 <div class="inv-tooltip">
                     <strong>${name}</strong>
@@ -1055,7 +1055,7 @@ function renderMailbox(gifts) {
                 </div>
                 ${msgHtml}
                 <div class="gift-body" style="display:flex;align-items:center;gap:0.8rem;background:rgba(200,170,120,0.25);border-radius:6px;padding:0.6rem;margin:0.5rem 0;">
-                    <img src="${itemImg}" alt="${itemName}" style="width:42px;height:42px;object-fit:contain;border-radius:4px;">
+                    <img src="${itemImg}" alt="${itemName}" loading="lazy" style="width:42px;height:42px;object-fit:contain;border-radius:4px;">
                     <div>
                         <strong style="color:#3e2723;font-size:0.9rem;">${itemName}</strong><br>
                         <small style="color:#6d4c41;">Qty: ${gift.quantity}</small>
@@ -1817,7 +1817,7 @@ function renderMyPets(pets, activePetId) {
 
         return `
             <div style="background:rgba(0,0,0,0.3); border:1px solid ${isActive ? '#d4af37' : '#554433'}; border-radius:8px; padding:1rem; display:flex; gap:1rem; align-items:center;">
-                <img src="${pet.image}" style="width:64px; height:64px; object-fit:contain; border-radius:8px; background:rgba(255,255,255,0.05);">
+                <img src="${pet.image}" loading="lazy" style="width:64px; height:64px; object-fit:contain; border-radius:8px; background:rgba(255,255,255,0.05);">
                 <div style="flex:1;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <h4 style="margin:0; color:${isActive ? '#d4af37' : '#e0d0b0'}; font-family:'Cinzel', serif;">${pet.name}</h4>
