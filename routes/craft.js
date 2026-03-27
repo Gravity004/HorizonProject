@@ -160,7 +160,46 @@ router.post('/craft', isAuthenticated, sanitizeBody, async (req, res) => {
             }
         }
 
-        let resultItemDisplayName = recipe.resultItemName || 'Unknown';
+        let resultItemDisplayName = recipe.resultItemName || (recipe.resultItemId ? 'item' : 'Unknown');
+
+        // ── Active pet buff: Kneazle craft_safety ──────────────────────────
+        let craftSafetyBonus = 0;
+        let craftSafetyMsg = '';
+        if (user.activePetId) {
+            const activePet = user.pets.find(p => p._id.toString() === user.activePetId.toString());
+            if (activePet) {
+                const safetyBuff = activePet.buffs.find(b => b.target === 'craft_safety');
+                if (safetyBuff) {
+                    craftSafetyBonus = safetyBuff.value; // e.g. 15
+                    craftSafetyMsg = ` 🐱 ${activePet.name} ensured no cauldron explosions (+${craftSafetyBonus}% success)`;
+                }
+            }
+        }
+
+        // ── Divination debuff: omen_snake (craft failure +20%) ─────────────
+        let omenPenalty = 0;
+        if (user.dailyDivination && user.dailyDivination.buffType === 'omen_snake' &&
+            user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
+            omenPenalty = 20;
+        }
+
+        // Apply recipe success rate with pet/omen modifiers
+        if (recipe.successRate && recipe.successRate < 100) {
+            const effectiveRate = Math.min(100, recipe.successRate + craftSafetyBonus - omenPenalty);
+            if (Math.random() * 100 > effectiveRate) {
+                // Craft failed — still deduct ingredients, just no result
+                user.markModified('inventory');
+                await user.save();
+                const { updateQuestProgress } = require('../utils/quest');
+                await updateQuestProgress(user._id, 'craft_potion');
+                return res.status(200).json({
+                    message: `The cauldron bubbles and smokes... ${resultItemDisplayName} failed to materialize. Better luck next time!${omenPenalty > 0 ? ' 🐍 The Serpent\'s Hex made this harder.' : ''}`,
+                    resultItemName: null,
+                    failed: true,
+                    inventory: user.inventory
+                });
+            }
+        }
 
         // Add result item to inventory only if it's a real shop item
         if (recipe.resultItemId) {
@@ -178,7 +217,6 @@ router.post('/craft', isAuthenticated, sanitizeBody, async (req, res) => {
             const resultItem = await Item.findById(resultId);
             resultItemDisplayName = resultItem ? resultItem.name : resultItemDisplayName;
         }
-        // If no resultItemId, the item is a "story" or "custom" item – just deduct ingredients & log
 
         user.markModified('inventory');
         await user.save();
@@ -187,7 +225,7 @@ router.post('/craft', isAuthenticated, sanitizeBody, async (req, res) => {
         await updateQuestProgress(user._id, 'craft_potion');
 
         res.json({
-            message: `Successfully crafted ${resultItemDisplayName}!`,
+            message: `Successfully crafted ${resultItemDisplayName}!${craftSafetyMsg}`,
             resultItemName: resultItemDisplayName,
             inventory: user.inventory
         });
@@ -198,3 +236,4 @@ router.post('/craft', isAuthenticated, sanitizeBody, async (req, res) => {
 });
 
 module.exports = router;
+

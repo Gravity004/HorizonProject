@@ -43,7 +43,17 @@ router.post('/buy', isAuthenticated, sanitizeBody, async (req, res) => {
         if (!item) return res.status(404).json({ message: 'Item not found' });
 
         const user = await User.findById(req.user.id);
-        const totalCost = item.price * quantity;
+        let unitPrice = item.price;
+        let bonusMessages = [];
+
+        // ── Divination buff: shop_discount (10% off) ──────────────────────────
+        if (user.dailyDivination && user.dailyDivination.buffType === 'shop_discount' &&
+            user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
+            unitPrice = Math.floor(unitPrice * 0.9);
+            bonusMessages.push('🔮 Divination discount applied (-10%)');
+        }
+
+        const totalCost = unitPrice * quantity;
 
         if (user.balance < totalCost) {
             return res.status(400).json({ message: 'Insufficient funds' });
@@ -51,11 +61,25 @@ router.post('/buy', isAuthenticated, sanitizeBody, async (req, res) => {
 
         user.balance -= totalCost;
 
+        let finalQuantity = quantity;
+
+        // ── Active pet buff: Owl shop_bonus_chance (10% free item) ───────────
+        if (user.activePetId) {
+            const activePet = user.pets.find(p => p._id.toString() === user.activePetId.toString());
+            if (activePet) {
+                const bonusBuff = activePet.buffs.find(b => b.target === 'shop_bonus_chance');
+                if (bonusBuff && Math.random() * 100 < bonusBuff.value) {
+                    finalQuantity += 1;
+                    bonusMessages.push(`🦉 ${activePet.name} brought you an extra ${item.name} as a gift!`);
+                }
+            }
+        }
+
         const existingItemIndex = user.inventory.findIndex(i => i.itemId.toString() === itemId);
         if (existingItemIndex > -1) {
-            user.inventory[existingItemIndex].quantity += quantity;
+            user.inventory[existingItemIndex].quantity += finalQuantity;
         } else {
-            user.inventory.push({ itemId, quantity });
+            user.inventory.push({ itemId, quantity: finalQuantity });
         }
 
         user.markModified('inventory');
@@ -80,7 +104,11 @@ router.post('/buy', isAuthenticated, sanitizeBody, async (req, res) => {
         const { updateQuestProgress } = require('../utils/quest');
         await updateQuestProgress(user._id, 'buy_item');
 
-        res.json({ message: 'Purchase successful', balance: user.balance, inventory: user.inventory });
+        const msg = bonusMessages.length > 0
+            ? `Purchase successful! ${bonusMessages.join(' ')}`
+            : 'Purchase successful';
+
+        res.json({ message: msg, balance: user.balance, inventory: user.inventory, bonusMessages });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

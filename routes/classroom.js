@@ -150,10 +150,25 @@ router.post('/herbs/harvest', isAuthenticated, sanitizeBody, async (req, res) =>
 
         // Give herb item if linked
         let harvestedName = plot.seedName ? plot.seedName.replace(' Seed', '').replace(' Seeds', '') : 'Herb';
+        let bonusMsg = '';
         if (plot.herbItemId) {
+            let harvestQty = 1;
+
+            // ── Active pet buff: Toad herb_double_chance ───────────────────
+            if (user.activePetId) {
+                const activePet = user.pets.find(p => p._id.toString() === user.activePetId.toString());
+                if (activePet) {
+                    const doubleBuff = activePet.buffs.find(b => b.target === 'herb_double_chance');
+                    if (doubleBuff && Math.random() * 100 < doubleBuff.value) {
+                        harvestQty = 2;
+                        bonusMsg = ` 🐸 ${activePet.name}'s blessing doubled your harvest!`;
+                    }
+                }
+            }
+
             const existingIdx = user.inventory.findIndex(i => i.itemId.toString() === plot.herbItemId.toString());
-            if (existingIdx > -1) user.inventory[existingIdx].quantity += 1;
-            else user.inventory.push({ itemId: plot.herbItemId, quantity: 1 });
+            if (existingIdx > -1) user.inventory[existingIdx].quantity += harvestQty;
+            else user.inventory.push({ itemId: plot.herbItemId, quantity: harvestQty });
             user.markModified('inventory');
             await user.save();
             const herbItem = await Item.findById(plot.herbItemId);
@@ -166,7 +181,7 @@ router.post('/herbs/harvest', isAuthenticated, sanitizeBody, async (req, res) =>
             details: { herb: harvestedName, slot }
         });
 
-        res.json({ message: `Harvested ${harvestedName}!`, harvestedName });
+        res.json({ message: `Harvested ${harvestedName}!${bonusMsg}`, harvestedName });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

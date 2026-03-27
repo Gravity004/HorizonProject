@@ -1742,6 +1742,22 @@ window.claimQuest = async function(questId) {
 // PETS & INCUBATOR
 // ═══════════════════════════════════════════════
 let currentPetsData = null;
+let incubatorCountdownInterval = null;
+let curseQuestInterval = null;
+
+const SPECIES_EMOJI = {
+    owl: '🦉', toad: '🐸', puffskein: '🐾', kneazle: '🐱',
+    niffler: '🦡', seal: '🦭', hippogriff: '🦅', thestral: '🌑',
+    dragon: '🐉', qilin: '🦌'
+};
+
+const BUFF_LABELS = {
+    shop_bonus_chance: '🛍️ โอกาสได้ของฟรีเมื่อซื้อของ',
+    herb_double_chance: '🌿 โอกาสเก็บสมุนไพร x2',
+    craft_safety: '⚗️ เพิ่มโอกาสสำเร็จการคราฟต์',
+    heal_chance: '💊 โอกาสฮีล HP อัตโนมัติ',
+    max_hp: '❤️ HP สูงสุดเพิ่มขึ้น',
+};
 
 async function fetchPets() {
     try {
@@ -1754,48 +1770,76 @@ async function fetchPets() {
     } catch (error) {
         console.error('Failed to fetch pets data', error);
     }
+    // Also load divination status when entering pets tab
+    fetchDivinationStatus();
 }
 
 function renderIncubator(incubator) {
     const container = document.getElementById('incubatorContainer');
     if (!container) return;
+    if (incubatorCountdownInterval) { clearInterval(incubatorCountdownInterval); incubatorCountdownInterval = null; }
 
     if (!incubator || !incubator.eggItemId) {
         container.innerHTML = `
-            <div style="opacity:0.5; margin: 2rem 0;">
-                <img src="assets/images/placeholder_item.png" style="width:80px; filter:grayscale(1);">
-                <p style="color:#a89070; margin-top:1rem;">Incubator is empty.<br>Place a magic egg from your inventory.</p>
+            <div style="opacity:0.6; margin: 2rem 0; text-align:center;">
+                <div style="font-size:3rem; margin-bottom:1rem;">🥚</div>
+                <p style="color:#a89070; margin-top:0.5rem;">ตู้ฟักไข่ว่างเปล่า<br><small>วางไข่ปริศนาจาก Inventory เพื่อเริ่มฟัก</small></p>
             </div>
         `;
         return;
     }
 
-    const { eggName, eggImage, warmedDays, requiredDays, isReadyToHatch, lastWarmedDate } = incubator;
-    const isWarmedToday = lastWarmedDate ? (new Date(lastWarmedDate).toDateString() === new Date().toDateString()) : false;
+    const { eggName, eggImage, hatchAt, isReadyToHatch } = incubator;
 
-    let actionBtn = '';
-    
-    if (isReadyToHatch) {
-        actionBtn = `<button class="conjure-btn" style="margin-top:1rem; animation: pulse 1.5s infinite;" onclick="hatchEgg()">✨ Hatch Egg! ✨</button>`;
-    } else if (isWarmedToday) {
-        actionBtn = `<button class="conjure-btn" style="margin-top:1rem; opacity:0.5; cursor:not-allowed;" disabled>🔥 Warmed Today</button>`;
-    } else {
-        actionBtn = `<button class="conjure-btn" style="margin-top:1rem;" onclick="warmEgg()">🔥 Give Warmth</button>`;
+    function updateTimerDisplay() {
+        const timerEl = document.getElementById('incubatorTimer');
+        if (!timerEl) return;
+        if (isReadyToHatch || !hatchAt) {
+            timerEl.textContent = '✨ พร้อมฟักแล้ว!';
+            timerEl.style.color = '#d4af37';
+            return;
+        }
+        const remaining = new Date(hatchAt) - new Date();
+        if (remaining <= 0) {
+            timerEl.textContent = '✨ พร้อมฟักแล้ว!';
+            timerEl.style.color = '#d4af37';
+            fetchPets(); // refresh to flip isReadyToHatch
+            return;
+        }
+        const hh = Math.floor(remaining / 3600000).toString().padStart(2, '0');
+        const mm = Math.floor((remaining % 3600000) / 60000).toString().padStart(2, '0');
+        const ss = Math.floor((remaining % 60000) / 1000).toString().padStart(2, '0');
+        timerEl.textContent = `⏳ ${hh}:${mm}:${ss} เหลืออยู่`;
     }
 
-    const progressPct = Math.min(100, (warmedDays / requiredDays) * 100);
+    const totalMs = 72 * 3600 * 1000;
+    const remainMs = Math.max(0, new Date(hatchAt) - new Date());
+    const elapsedPct = Math.min(100, ((totalMs - remainMs) / totalMs) * 100);
 
     container.innerHTML = `
-        <img src="${eggImage}" style="width: 100px; height: 100px; object-fit: contain; margin-bottom: 1rem; ${isReadyToHatch ? 'animation: wiggle 0.5s infinite;' : ''}">
-        <h4 style="color:#d4af37; margin:0 0 0.5rem 0; font-family:'Cinzel', serif;">${eggName}</h4>
-        
-        <div class="quest-bar-bg" style="margin-bottom: 0.5rem;">
-            <div class="quest-bar-fill" style="width: ${progressPct}%; background: linear-gradient(90deg, #d44b37, #f5a623);"></div>
+        <div style="text-align:center;">
+            <img src="${eggImage || 'assets/images/items/mystery_egg.png'}" 
+                 style="width:100px; height:100px; object-fit:contain; margin-bottom:1rem; ${isReadyToHatch ? 'animation: wiggle 0.5s infinite;' : 'animation: float 3s ease-in-out infinite;'}"
+                 onerror="this.src='assets/images/placeholder_item.png'">
+            <h4 style="color:#d4af37; margin:0 0 0.5rem 0; font-family:'Cinzel', serif;">${eggName}</h4>
+            <div id="incubatorTimer" style="font-size:1rem; font-weight:bold; margin-bottom:0.75rem; color:#e0d0b0;"></div>
+            <div class="quest-bar-bg" style="margin-bottom:0.5rem;">
+                <div class="quest-bar-fill" style="width:${elapsedPct}%; background:linear-gradient(90deg,#d44b37,#f5a623);"></div>
+            </div>
+            <p style="color:#a89070; font-size:0.8rem; margin:0 0 1rem 0;">ความคืบหน้า: ${Math.floor(elapsedPct)}%</p>
+            <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+                ${isReadyToHatch
+                    ? `<button class="conjure-btn" style="animation:pulse 1.5s infinite;" onclick="hatchEgg()">🐣 ฟักไข่เดี๋ยวนี้!</button>`
+                    : `<button class="buy-spell-btn" onclick="boostIncubation()">⚗️ ใช้ Incubation Potion (-24hr)</button>`
+                }
+            </div>
         </div>
-        <p style="color:#a89070; font-size:0.85rem; margin-top:0;">Warmth: ${warmedDays} / ${requiredDays} Days</p>
-
-        ${actionBtn}
     `;
+
+    updateTimerDisplay();
+    if (!isReadyToHatch) {
+        incubatorCountdownInterval = setInterval(updateTimerDisplay, 1000);
+    }
 }
 
 function renderMyPets(pets, activePetId) {
@@ -1803,7 +1847,7 @@ function renderMyPets(pets, activePetId) {
     if (!container) return;
 
     if (!pets || pets.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#a89070; font-size:0.9rem;">You don\'t have any familiars yet.</p>';
+        container.innerHTML = '<p style="text-align:center; color:#a89070; font-size:0.9rem; padding:2rem 0;">ยังไม่มีสัตว์เลี้ยง ฟักไข่ปริศนาเพื่อพบกับผู้คู่หูของคุณ!</p>';
         updateActivePetDisplay(null);
         return;
     }
@@ -1811,22 +1855,71 @@ function renderMyPets(pets, activePetId) {
     const activePet = pets.find(p => p._id.toString() === (activePetId || '').toString());
     updateActivePetDisplay(activePet || null);
 
+    const today = new Date().toDateString();
     container.innerHTML = pets.map(pet => {
         const isActive = activePetId && activePetId.toString() === pet._id.toString();
-        const buffTexts = pet.buffs.map(b => `${b.target.replace(/_/g, ' ')} +${b.value}${b.target.includes('rate') ? '%' : ''}`).join(', ');
+        const species = pet.species || pet.petType || 'owl';
+        const emoji = SPECIES_EMOJI[species] || '🐾';
+        const buffLines = (pet.buffs || []).map(b => {
+            const label = BUFF_LABELS[b.target] || b.target.replace(/_/g, ' ');
+            return `<div style="font-size:0.78rem; color:#8ab4f8;">${label}: <strong>+${b.value}${b.target.includes('chance') || b.target.includes('safety') ? '%' : ' HP'}</strong></div>`;
+        }).join('');
+
+        const hungryPct = pet.hunger ?? 50;
+        const affectionPct = pet.affection ?? 0;
+        const affLvl = pet.affectionLevel || 1;
+        const affStars = '⭐'.repeat(affLvl) + '☆'.repeat(3 - affLvl);
+        const isFedToday = pet.lastFed && new Date(pet.lastFed).toDateString() === today;
+        const isPettedToday = pet.lastPetted && new Date(pet.lastPetted).toDateString() === today;
+
+        const rarityColors = { common:'#8ab4f8', rare:'#dd88ff', epic:'#ff9f40', legendary:'#ffd700' };
+        const rc = rarityColors[pet.rarity] || '#8ab4f8';
 
         return `
-            <div style="background:rgba(0,0,0,0.3); border:1px solid ${isActive ? '#d4af37' : '#554433'}; border-radius:8px; padding:1rem; display:flex; gap:1rem; align-items:center;">
-                <img src="${pet.image}" loading="lazy" style="width:64px; height:64px; object-fit:contain; border-radius:8px; background:rgba(255,255,255,0.05);">
-                <div style="flex:1;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4 style="margin:0; color:${isActive ? '#d4af37' : '#e0d0b0'}; font-family:'Cinzel', serif;">${pet.name}</h4>
-                        <span style="font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:4px; background:rgba(255,255,255,0.1); text-transform:uppercase;">${pet.rarity}</span>
+            <div style="background:rgba(0,0,0,0.35); border:1.5px solid ${isActive ? '#d4af37' : '#443322'}; border-radius:12px; padding:1rem; margin-bottom:0.75rem; position:relative; overflow:hidden; transition: border-color 0.3s;">
+                ${isActive ? '<div style="position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,#d4af37,#ffd700,#d4af37);"></div>' : ''}
+                <div style="display:flex; gap:1rem; align-items:flex-start;">
+                    <div style="text-align:center; min-width:80px;">
+                        <img src="${pet.image}" loading="lazy" 
+                             style="width:72px; height:72px; object-fit:contain; border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid ${rc}33;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                        <div style="display:none; font-size:2.5rem; line-height:72px;">${emoji}</div>
+                        <span style="font-size:0.7rem; color:${rc}; text-transform:uppercase; font-weight:bold;">${pet.rarity}</span>
                     </div>
-                    <p style="font-size:0.8rem; color:#8ab4f8; margin:0.3rem 0;">✨ ${buffTexts}</p>
-                    <button class="buy-spell-btn" style="margin-top:0.5rem; ${isActive ? 'background:#8b6914; color:#fff;' : ''}" onclick="toggleActivePet('${pet._id}', ${isActive})">
-                        ${isActive ? 'Unequip' : 'Equip'}
-                    </button>
+                    <div style="flex:1; min-width:0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                            <h4 style="margin:0; color:${isActive ? '#d4af37' : '#e0d0b0'}; font-family:'Cinzel', serif; font-size:0.95rem;">${emoji} ${pet.name}</h4>
+                            <span style="font-size:0.8rem;">${affStars}</span>
+                        </div>
+                        ${buffLines}
+                        <div style="margin-top:0.5rem;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#a89070; margin-bottom:2px;">
+                                <span>🍖 ความหิว</span><span>${hungryPct}/100</span>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.1); border-radius:4px; height:6px; margin-bottom:0.4rem;">
+                                <div style="width:${hungryPct}%; height:100%; background:linear-gradient(90deg,#ff6b35,#f7c59f); border-radius:4px;"></div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#a89070; margin-bottom:2px;">
+                                <span>💕 ความผูกพัน</span><span>${affectionPct}/100</span>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.1); border-radius:4px; height:6px;">
+                                <div style="width:${affectionPct}%; height:100%; background:linear-gradient(90deg,#ff69b4,#ff1493); border-radius:4px;"></div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.7rem;">
+                            <button class="buy-spell-btn" style="${isActive ? 'background:#8b6914;' : ''}" onclick="toggleActivePet('${pet._id}', ${isActive})">
+                                ${isActive ? '✦ Unequip' : '✦ Equip'}
+                            </button>
+                            <button class="buy-spell-btn" style="background:${isFedToday ? 'rgba(100,100,100,0.5)' : 'rgba(255,100,50,0.3)'}; ${isFedToday ? 'cursor:not-allowed;' : ''}"
+                                onclick="${isFedToday ? '' : `feedPet('${pet._id}')`}" ${isFedToday ? 'disabled' : ''}>
+                                🍖 ${isFedToday ? 'ให้อาหารแล้ว' : 'ให้อาหาร'}
+                            </button>
+                            <button class="buy-spell-btn" style="background:${isPettedToday ? 'rgba(100,100,100,0.5)' : 'rgba(255,105,180,0.3)'}; ${isPettedToday ? 'cursor:not-allowed;' : ''}"
+                                onclick="${isPettedToday ? '' : `patPet('${pet._id}')`}" ${isPettedToday ? 'disabled' : ''}>
+                                💖 ${isPettedToday ? 'ลูบหัวแล้ว' : 'ลูบหัว'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -1847,28 +1940,34 @@ function updateActivePetDisplay(activePet) {
     }
 
     display.style.display = 'flex';
-    img.src = activePet.image;
-    name.textContent = activePet.name;
-    const buffTexts = activePet.buffs.map(b => `${b.target.replace(/_/g, ' ')} +${b.value}${b.target.includes('rate') ? '%' : ''}`).join(', ');
-    buff.textContent = `✨ ${buffTexts}`;
+    if (img) { img.src = activePet.image; img.onerror = () => img.style.display = 'none'; }
+    if (name) name.textContent = activePet.name;
+    if (buff) {
+        buff.innerHTML = (activePet.buffs || []).map(b => {
+            const label = BUFF_LABELS[b.target] || b.target.replace(/_/g, ' ');
+            return `<span style="font-size:0.8rem; color:#8ab4f8;">${label} +${b.value}${b.target.includes('chance') || b.target.includes('safety') ? '%' : ''}</span>`;
+        }).join('<br>') || '✨ No active buffs';
+    }
 }
 
-
-async function warmEgg() {
-    try {
-        const res = await fetch('/api/pets/warm', { method: 'POST', credentials: 'include' });
-        const data = await res.json();
-        if (res.ok) {
-            spawnEffect('🔥', data.message);
-            currentPetsData.incubator = data.incubator;
-            renderIncubator(data.incubator);
-        } else {
-            spawnEffect('❌', data.message);
+// Boost incubation using Incubation Potion
+async function boostIncubation() {
+    showConfirm('Incubation Boost', 'ใช้ Incubation Potion เพื่อร่นเวลาฟัก 24 ชั่วโมง?', async () => {
+        try {
+            const res = await fetch('/api/pets/boost', { method: 'POST', credentials: 'include' });
+            const data = await res.json();
+            if (res.ok) {
+                spawnEffect('⚗️', data.message);
+                fetchInventory();
+                renderIncubator(data.incubator);
+            } else {
+                spawnEffect('❌', data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            spawnEffect('❌', 'Failed to boost incubation.');
         }
-    } catch (err) {
-        console.error(err);
-        spawnEffect('❌', 'Failed to warm egg.');
-    }
+    });
 }
 
 async function hatchEgg() {
@@ -1877,7 +1976,7 @@ async function hatchEgg() {
         const data = await res.json();
         if (res.ok) {
             spawnEffect('🐣', data.message);
-            fetchPets(); // Refresh everything
+            fetchPets();
         } else {
             spawnEffect('❌', data.message);
         }
@@ -1887,14 +1986,48 @@ async function hatchEgg() {
     }
 }
 
+async function feedPet(petId) {
+    try {
+        const res = await fetch('/api/pets/feed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ petId }), credentials: 'include'
+        });
+        const data = await res.json();
+        if (res.ok) {
+            spawnEffect('🍖', data.message);
+            fetchPets();
+            fetchInventory();
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) { spawnEffect('❌', 'Failed to feed pet.'); }
+}
+
+async function patPet(petId) {
+    try {
+        const res = await fetch('/api/pets/pat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ petId }), credentials: 'include'
+        });
+        const data = await res.json();
+        if (res.ok) {
+            spawnEffect('💖', data.message);
+            fetchPets();
+        } else {
+            spawnEffect('❌', data.message);
+        }
+    } catch (err) { spawnEffect('❌', 'Failed to pat pet.'); }
+}
+
 async function toggleActivePet(petId, currentlyActive) {
     try {
         const reqPetId = currentlyActive ? null : petId;
         const res = await fetch('/api/pets/equip', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ petId: reqPetId }),
-            credentials: 'include'
+            body: JSON.stringify({ petId: reqPetId }), credentials: 'include'
         });
         const data = await res.json();
         if (res.ok) {
@@ -1916,19 +2049,18 @@ async function toggleActivePet(petId, currentlyActive) {
 }
 
 async function startIncubating(itemId) {
-    showConfirm('Incubator', 'Place this egg in the incubator?', async () => {
+    showConfirm('Incubator', 'Place this egg in the incubator for 72 hours?', async () => {
         try {
             const res = await fetch('/api/pets/incubate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ itemId }),
-                credentials: 'include'
+                body: JSON.stringify({ itemId }), credentials: 'include'
             });
             const data = await res.json();
             if (res.ok) {
                 spawnEffect('🥚', data.message);
-                fetchInventory(); // remove from inventory array
-                switchNav('pets'); // Go to pets tab
+                fetchInventory();
+                switchNav('pets');
             } else {
                 spawnEffect('❌', data.message);
             }
@@ -1938,3 +2070,162 @@ async function startIncubating(itemId) {
         }
     });
 }
+
+// ═══════════════════════════════════════════════
+// DIVINATION TOWER
+// ═══════════════════════════════════════════════
+let currentDivinationData = null;
+
+async function fetchDivinationStatus() {
+    try {
+        const res = await fetch('/api/divination/status', { credentials: 'include' });
+        if (res.ok) {
+            currentDivinationData = await res.json();
+            renderDivination(currentDivinationData);
+        }
+    } catch (err) {
+        console.error('Failed to fetch divination status', err);
+    }
+}
+
+function renderDivination(data) {
+    const container = document.getElementById('divinationContainer');
+    if (!container) return;
+    if (curseQuestInterval) { clearInterval(curseQuestInterval); curseQuestInterval = null; }
+
+    const { canDraw, currentReading, curseQuest, buffType } = data || {};
+
+    let curseHTML = '';
+    if (curseQuest && curseQuest.isActive && !curseQuest.isCleansed) {
+        const deadline = new Date(curseQuest.deadlineAt);
+        const penalty = curseQuest.penaltyGalleons;
+        curseHTML = `
+            <div style="background:rgba(180,0,0,0.2); border:1.5px solid #aa3333; border-radius:10px; padding:1rem; margin-bottom:1rem;">
+                <div style="font-size:1.3rem; text-align:center;">☠️ คำสาปร้าย!</div>
+                <p style="color:#ff7070; text-align:center; margin:0.3rem 0; font-size:0.9rem;">ต้มยา Cleansing Potion ก่อนเวลาหมด หรือเสีย <strong>${penalty}G</strong></p>
+                <div id="curseTimer" style="text-align:center; font-size:1.1rem; font-weight:bold; color:#ff4444; margin:0.5rem 0;"></div>
+                <div style="text-align:center;">
+                    <button class="conjure-btn" style="background:linear-gradient(135deg,#7a0000,#aa1111);" onclick="cleanseCurse()">🧪 ใช้ Cleansing Potion</button>
+                </div>
+            </div>
+        `;
+        // Start countdown
+        function updateCurseTimer() {
+            const timerEl = document.getElementById('curseTimer');
+            if (!timerEl) return;
+            const remaining = deadline - new Date();
+            if (remaining <= 0) {
+                timerEl.textContent = '⏰ เวลาหมดแล้ว! ถูกหักเงินแล้ว';
+                clearInterval(curseQuestInterval);
+                return;
+            }
+            const mm = Math.floor(remaining / 60000).toString().padStart(2, '0');
+            const ss = Math.floor((remaining % 60000) / 1000).toString().padStart(2, '0');
+            timerEl.textContent = `⏳ ${mm}:${ss} เหลือ`;
+        }
+        updateCurseTimer();
+        curseQuestInterval = setInterval(updateCurseTimer, 1000);
+    }
+
+    let readingHTML = '';
+    if (currentReading) {
+        const isOmen = currentReading.isOmen;
+        const bgColor = isOmen ? 'rgba(100,0,0,0.3)' : 'rgba(0,80,40,0.3)';
+        const borderColor = isOmen ? '#aa3333' : '#33aa66';
+        readingHTML = `
+            <div style="background:${bgColor}; border:1.5px solid ${borderColor}; border-radius:10px; padding:1rem; margin-bottom:1rem; text-align:center; animation: fadeIn 0.5s ease;">
+                <div style="font-size:2.5rem; margin-bottom:0.3rem;">${currentReading.emoji || '🔮'}</div>
+                <h4 style="color:${isOmen ? '#ff7070' : '#7dff9f'}; margin:0 0 0.3rem 0; font-family:'Cinzel',serif;">${currentReading.buffName || currentReading.symbol}</h4>
+                <p style="color:#e0d0b0; font-size:0.85rem; margin:0;">${currentReading.desc || ''}</p>
+            </div>
+        `;
+    }
+
+    const readingTypeLabel = { tea_leaves: '☕ กากชา', tarot: '🃏 ไพ่ทาโรต์' };
+
+    container.innerHTML = `
+        <div style="text-align:center; margin-bottom:1.5rem;">
+            <div style="font-size:4rem; animation: float 3s ease-in-out infinite;">🔮</div>
+            <h3 style="font-family:'Cinzel',serif; color:#d4af37; margin:0.5rem 0 0.2rem 0;">หอคอยพยากรณ์</h3>
+            <p style="color:#a89070; font-size:0.85rem; margin:0;">ปรึกษาดวงชะตาประจำวัน — ดีหรือร้ายขึ้นอยู่กับดวง!</p>
+        </div>
+
+        ${curseHTML}
+        ${readingHTML}
+
+        ${canDraw ? `
+        <div style="background:rgba(0,0,0,0.3); border:1px solid #443322; border-radius:10px; padding:1rem; margin-bottom:1rem;">
+            <p style="color:#a89070; font-size:0.85rem; margin:0 0 0.5rem 0; text-align:center;">เลือกวิธีพยากรณ์:</p>
+            <div style="display:flex; gap:0.5rem; justify-content:center; margin-bottom:1rem;">
+                <button class="buy-spell-btn" id="divineTea" onclick="setReadingType('tea_leaves')" style="flex:1;">☕ กากชา</button>
+                <button class="buy-spell-btn" id="divineTarot" onclick="setReadingType('tarot')" style="flex:1;">🃏 ไพ่ทาโรต์</button>
+            </div>
+            <button class="conjure-btn" id="drawReadingBtn" style="width:100%; animation:pulse 2s infinite;" onclick="drawReading()">
+                ✨ ดูดวง ✨
+            </button>
+        </div>
+        ` : `
+        <div style="text-align:center; color:#a89070; padding:1rem; border:1px dashed #443322; border-radius:10px; margin-bottom:1rem;">
+            <p style="margin:0; font-size:0.9rem;">⌛ ดวงชะตาได้แจ้งแล้วสำหรับวันนี้<br><small>ล้างแท่นและรอจนถึงเที่ยงคืน</small></p>
+        </div>
+        `}
+    `;
+}
+
+let selectedReadingType = 'tea_leaves';
+window.setReadingType = function(type) {
+    selectedReadingType = type;
+    ['divineTea', 'divineTarot'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.style.background = '';
+    });
+    const activeId = type === 'tea_leaves' ? 'divineTea' : 'divineTarot';
+    const activeBtn = document.getElementById(activeId);
+    if (activeBtn) activeBtn.style.background = 'rgba(212,175,55,0.3)';
+};
+
+window.drawReading = async function() {
+    const btn = document.getElementById('drawReadingBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '🔮 กำลังพยากรณ์...'; }
+
+    try {
+        const res = await fetch('/api/divination/draw', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ readingType: selectedReadingType }),
+            credentials: 'include'
+        });
+        const data = await res.json();
+        if (res.ok) {
+            const emoji = data.reading?.emoji || '🔮';
+            const isOmen = data.reading?.isOmen;
+            spawnEffect(emoji, data.message.substring(0, 60));
+            await fetchDivinationStatus();
+            if (isOmen) spawnEffect('⚠️', 'ลางร้าย! รีบต้ม Cleansing Potion!');
+        } else {
+            spawnEffect('❌', data.message);
+            if (btn) { btn.disabled = false; btn.textContent = '✨ ดูดวง ✨'; }
+        }
+    } catch (err) {
+        spawnEffect('❌', 'Crystal ball error.');
+        if (btn) { btn.disabled = false; btn.textContent = '✨ ดูดวง ✨'; }
+    }
+};
+
+window.cleanseCurse = async function() {
+    showConfirm('ล้างคำสาป', 'ใช้ Cleansing Potion เพื่อล้างคำสาปใช่ไหม?', async () => {
+        try {
+            const res = await fetch('/api/divination/cleanse', { method: 'POST', credentials: 'include' });
+            const data = await res.json();
+            if (res.ok) {
+                spawnEffect('✨', data.message);
+                fetchDivinationStatus();
+            } else {
+                spawnEffect('❌', data.message);
+            }
+        } catch (err) {
+            spawnEffect('❌', 'Cleansing failed.');
+        }
+    });
+};
+
