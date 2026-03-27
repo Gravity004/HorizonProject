@@ -782,20 +782,55 @@
             <!-- SHOP SECTION -->
             <section id="shop" class="magic-section active">
                 <div class="section-header">
-                    <h2>Shop</h2>
+                    <h2 style="color: #d4af37; font-family: 'Cinzel', serif; text-shadow: 0 0 10px rgba(212,175,55,0.3);">Shop</h2>
                     <div id="adminControls" class="admin-panel hidden">
                         <button class="admin-btn" onclick="openAdminModal()">+ Stock New Item</button>
                     </div>
                 </div>
                 
                 <div class="shop-filters" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-                    <div class="shop-category-tabs" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
-                        <button class="plot-btn shop-tab active" onclick="filterShop('all', this)">All</button>
-                        <button class="plot-btn shop-tab" onclick="filterShop('material', this)">Materials</button>
-                        <button class="plot-btn shop-tab" onclick="filterShop('food', this)">Food</button>
-                        <button class="plot-btn shop-tab" onclick="filterShop('potion', this)">Potions</button>
-                        <button class="plot-btn shop-tab" onclick="filterShop('equipment', this)">Equipment</button>
-                        <button class="plot-btn shop-tab" onclick="filterShop('seed', this)">Seeds</button>
+                    <style>
+                        .shop-category-tabs {
+                            display: flex; gap: 0.8rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;
+                        }
+                        .shop-category-tabs::-webkit-scrollbar { display: none; }
+                        .shop-category-tabs .shop-tab {
+                            background: rgba(0,0,0,0.6);
+                            border: 1px solid rgba(212,175,55,0.3);
+                            color: #a89070;
+                            padding: 0.6rem 1.2rem;
+                            border-radius: 20px;
+                            font-family: 'Cinzel', serif;
+                            font-size: 0.9rem;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            white-space: nowrap;
+                            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+                            letter-spacing: 1px;
+                        }
+                        .shop-category-tabs .shop-tab:hover {
+                            background: rgba(212,175,55,0.1);
+                            border-color: #d4af37;
+                            color: #f0e6c8;
+                            transform: translateY(-2px);
+                            box-shadow: 0 4px 10px rgba(212,175,55,0.2);
+                        }
+                        .shop-category-tabs .shop-tab.active {
+                            background: linear-gradient(135deg, #3a2200, #8b6914);
+                            border-color: #d4af37;
+                            color: #fff;
+                            box-shadow: 0 4px 15px rgba(212,175,55,0.4);
+                            transform: translateY(-2px);
+                        }
+                    </style>
+                    <div class="shop-category-tabs">
+                        <button class="shop-tab active" onclick="filterShop('all', this)">All</button>
+                        <button class="shop-tab" onclick="filterShop('material', this)">Materials</button>
+                        <button class="shop-tab" onclick="filterShop('food', this)">Food</button>
+                        <button class="shop-tab" onclick="filterShop('potion', this)">Potions</button>
+                        <button class="shop-tab" onclick="filterShop('equipment', this)">Equipment</button>
+                        <button class="shop-tab" onclick="filterShop('seed', this)">Seeds</button>
                     </div>
                     <div class="shop-search">
                         <input type="text" id="shopSearchInput" placeholder="Search items..." oninput="filterShopBySearch()" 
