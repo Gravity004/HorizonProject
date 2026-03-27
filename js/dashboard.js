@@ -2107,12 +2107,13 @@ function renderDivination(data) {
         const deadline = new Date(curseQuest.deadlineAt);
         const penalty = curseQuest.penaltyGalleons;
         curseHTML = `
-            <div style="background:rgba(180,0,0,0.2); border:1.5px solid #aa3333; border-radius:10px; padding:1rem; margin-bottom:1rem;">
-                <div style="font-size:1.3rem; text-align:center;">☠️ คำสาปร้าย!</div>
-                <p style="color:#ff7070; text-align:center; margin:0.3rem 0; font-size:0.9rem;">ต้มยา Cleansing Potion ก่อนเวลาหมด หรือเสีย <strong>${penalty}G</strong></p>
-                <div id="curseTimer" style="text-align:center; font-size:1.1rem; font-weight:bold; color:#ff4444; margin:0.5rem 0;"></div>
-                <div style="text-align:center;">
-                    <button class="conjure-btn" style="background:linear-gradient(135deg,#7a0000,#aa1111);" onclick="cleanseCurse()">🧪 ใช้ Cleansing Potion</button>
+            <div style="background: linear-gradient(145deg, rgba(80,10,10,0.8), rgba(30,5,5,0.95)); border: 1px solid #ff4444; border-radius: 16px; padding: 1.5rem; margin-bottom: 2.5rem; box-shadow: 0 0 30px rgba(255,0,0,0.25), inset 0 0 20px rgba(255,50,0,0.15); position: relative; overflow: hidden;">
+                <div style="font-size: 2.2rem; text-align: center; margin-bottom: 0.5rem; animation: float 3s infinite;">☠️</div>
+                <h3 style="color: #ff7070; text-align: center; margin: 0 0 0.5rem 0; font-family: 'Cinzel', serif; font-size: 1.4rem; letter-spacing: 2px;">The Grim's Curse</h3>
+                <p style="color: #e0d0b0; text-align: center; margin: 0 auto 1.2rem auto; font-size: 0.95rem; max-width: 400px; line-height: 1.5;">Brew and consume a Cleansing Potion before time runs out to avoid losing <strong>${penalty}G</strong>.</p>
+                <div id="curseTimer" style="text-align: center; font-size: 1.5rem; font-weight: bold; color: #ff6666; font-family: monospace; letter-spacing: 2px; margin-bottom: 1.2rem; text-shadow: 0 0 10px rgba(255,0,0,0.5);"></div>
+                <div style="text-align: center;">
+                    <button class="conjure-btn" style="background: linear-gradient(135deg, #7a0000, #aa1111); border: 1px solid #ff5555; padding: 0.8rem 2.5rem; font-size: 1.05rem; box-shadow: 0 0 20px rgba(255,0,0,0.4); border-radius: 8px; color: white; cursor: pointer; transition: 0.3s;" onclick="cleanseCurse()" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">🧪 Drink Cleansing Potion</button>
                 </div>
             </div>
         `;
@@ -2122,13 +2123,13 @@ function renderDivination(data) {
             if (!timerEl) return;
             const remaining = deadline - new Date();
             if (remaining <= 0) {
-                timerEl.textContent = '⏰ เวลาหมดแล้ว! ถูกหักเงินแล้ว';
+                timerEl.textContent = '⏰ Time Expired! Gold Deducted.';
                 clearInterval(curseQuestInterval);
                 return;
             }
             const mm = Math.floor(remaining / 60000).toString().padStart(2, '0');
             const ss = Math.floor((remaining % 60000) / 1000).toString().padStart(2, '0');
-            timerEl.textContent = `⏳ ${mm}:${ss} เหลือ`;
+            timerEl.textContent = `⏳ ${mm}:${ss} Remaining`;
         }
         updateCurseTimer();
         curseQuestInterval = setInterval(updateCurseTimer, 1000);
@@ -2137,45 +2138,49 @@ function renderDivination(data) {
     let readingHTML = '';
     if (currentReading) {
         const isOmen = currentReading.isOmen;
-        const bgColor = isOmen ? 'rgba(100,0,0,0.3)' : 'rgba(0,80,40,0.3)';
-        const borderColor = isOmen ? '#aa3333' : '#33aa66';
+        const borderColor = isOmen ? '#ff4444' : '#55aa77';
         readingHTML = `
-            <div style="background:${bgColor}; border:1.5px solid ${borderColor}; border-radius:10px; padding:1rem; margin-bottom:1rem; text-align:center; animation: fadeIn 0.5s ease;">
-                <div style="font-size:2.5rem; margin-bottom:0.3rem;">${currentReading.emoji || '🔮'}</div>
-                <h4 style="color:${isOmen ? '#ff7070' : '#7dff9f'}; margin:0 0 0.3rem 0; font-family:'Cinzel',serif;">${currentReading.buffName || currentReading.symbol}</h4>
-                <p style="color:#e0d0b0; font-size:0.85rem; margin:0;">${currentReading.desc || ''}</p>
+            <div style="background: linear-gradient(135deg, rgba(20,10,40,0.85), rgba(10,5,20,0.95)); border: 1px solid ${borderColor}; border-radius: 16px; padding: 2.5rem 1.5rem; margin-bottom: 2.5rem; text-align: center; animation: fadeIn 0.8s ease; box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 40px ${isOmen ? 'rgba(255,0,0,0.1)' : 'rgba(100,255,100,0.08)'}; position: relative;">
+                <div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 0 15px ${isOmen ? 'rgba(255,68,68,0.6)' : 'rgba(125,255,159,0.5)'}); animation: float 4s ease-in-out infinite;">${currentReading.emoji || '🔮'}</div>
+                <h3 style="color: ${isOmen ? '#ff7070' : '#7dff9f'}; margin: 0 0 0.8rem 0; font-family: 'Cinzel', serif; font-size: 1.6rem; letter-spacing: 2px; text-shadow: 0 0 15px ${isOmen ? 'rgba(255,0,0,0.4)' : 'rgba(0,255,0,0.3)'};">${currentReading.buffName || currentReading.symbol}</h3>
+                <p style="color: #e0d0b0; font-size: 1.05rem; line-height: 1.6; max-width: 500px; margin: 0 auto; font-style: italic;">"${currentReading.desc || ''}"</p>
             </div>
         `;
     }
 
-    const readingTypeLabel = { tea_leaves: '☕ กากชา', tarot: '🃏 ไพ่ทาโรต์' };
-
     container.innerHTML = `
-        <div style="text-align:center; margin-bottom:1.5rem;">
-            <div style="font-size:4rem; animation: float 3s ease-in-out infinite;">🔮</div>
-            <h3 style="font-family:'Cinzel',serif; color:#d4af37; margin:0.5rem 0 0.2rem 0;">หอคอยพยากรณ์</h3>
-            <p style="color:#a89070; font-size:0.85rem; margin:0;">ปรึกษาดวงชะตาประจำวัน — ดีหรือร้ายขึ้นอยู่กับดวง!</p>
-        </div>
+        <div class="divination-viewport" style="background: rgba(10, 5, 12, 0.75); backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid #4a3250; box-shadow: inset 0 0 60px rgba(138,43,226,0.05), 0 20px 50px rgba(0,0,0,0.7); padding: 3rem 2rem; max-width: 800px; margin: 0 auto; position: relative;">
+            
+            <div style="position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 300px; height: 150px; background: radial-gradient(ellipse, rgba(138,43,226,0.25), transparent 70%); filter: blur(40px); pointer-events: none;"></div>
 
-        ${curseHTML}
-        ${readingHTML}
-
-        ${canDraw ? `
-        <div style="background:rgba(0,0,0,0.3); border:1px solid #443322; border-radius:10px; padding:1rem; margin-bottom:1rem;">
-            <p style="color:#a89070; font-size:0.85rem; margin:0 0 0.5rem 0; text-align:center;">เลือกวิธีพยากรณ์:</p>
-            <div style="display:flex; gap:0.5rem; justify-content:center; margin-bottom:1rem;">
-                <button class="buy-spell-btn" id="divineTea" onclick="setReadingType('tea_leaves')" style="flex:1;">☕ กากชา</button>
-                <button class="buy-spell-btn" id="divineTarot" onclick="setReadingType('tarot')" style="flex:1;">🃏 ไพ่ทาโรต์</button>
+            <div style="text-align: center; margin-bottom: 2.5rem; position: relative; z-index: 2;">
+                <div style="font-size: 4.5rem; animation: float 4s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); margin-bottom: 0.5rem;">🔮</div>
+                <h2 style="font-family: 'Cinzel', serif; color: #d4af37; font-size: 2.2rem; margin: 0 0 0.5rem 0; text-shadow: 0 0 15px rgba(212,175,55,0.4); letter-spacing: 3px;">Divination Tower</h2>
+                <p style="color: #a89070; font-size: 1rem; margin: 0 auto; font-style: italic; max-width: 500px; line-height: 1.4;">Glimpse into the mists of time... but beware, for fate is fickle.</p>
             </div>
-            <button class="conjure-btn" id="drawReadingBtn" style="width:100%; animation:pulse 2s infinite;" onclick="drawReading()">
-                ✨ ดูดวง ✨
-            </button>
+
+            ${curseHTML}
+            ${readingHTML}
+
+            ${canDraw ? `
+            <div style="background: rgba(0,0,0,0.4); border: 1px solid #3a2230; border-radius: 16px; padding: 2rem; max-width: 500px; margin: 0 auto; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);">
+                <p style="color: #d4af37; font-size: 1rem; font-family: 'Cinzel', serif; text-align: center; margin: 0 0 1.5rem 0; letter-spacing: 1px;">Focus your mind and choose your medium:</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem;">
+                    <button class="plot-btn" id="divineTea" onclick="setReadingType('tea_leaves')" style="flex: 1; padding: 1rem; font-size: 1.1rem; border-radius: 12px; background: rgba(50,30,20,0.8); border: 1px solid #8b5010; color: #f0e6c8; cursor: pointer; transition: 0.2s;">☕ Tea Leaves</button>
+                    <button class="plot-btn" id="divineTarot" onclick="setReadingType('tarot')" style="flex: 1; padding: 1rem; font-size: 1.1rem; border-radius: 12px; background: rgba(20,20,40,0.8); border: 1px solid #4a3250; color: #f0e6c8; cursor: pointer; transition: 0.2s;">🃏 Tarot Cards</button>
+                </div>
+                <button class="conjure-btn" id="drawReadingBtn" style="width: 100%; font-size: 1.3rem; padding: 1rem; border-radius: 12px; background: linear-gradient(135deg, #4a1c6a, #8f34c8); box-shadow: 0 0 25px rgba(138,43,226,0.4); border: none; color: white; transition: all 0.3s; cursor: pointer;" onclick="drawReading()" onmouseover="this.style.boxShadow='0 0 35px rgba(138,43,226,0.6)'" onmouseout="this.style.boxShadow='0 0 25px rgba(138,43,226,0.4)'">
+                    ✨ Divinate ✨
+                </button>
+            </div>
+            ` : `
+            <div style="text-align: center; color: #a89070; padding: 2.5rem; background: rgba(0,0,0,0.4); border: 1px dashed #4a3250; border-radius: 16px; max-width: 500px; margin: 0 auto;">
+                <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.7; animation: float 3s infinite;">⏳</div>
+                <p style="margin: 0; font-size: 1.1rem; font-family: 'Cinzel', serif; color: #d4af37; letter-spacing: 1px;">The mists have cleared for today.</p>
+                <small style="display: block; margin-top: 0.5rem; opacity: 0.7;">Return at midnight for a new reading.</small>
+            </div>
+            `}
         </div>
-        ` : `
-        <div style="text-align:center; color:#a89070; padding:1rem; border:1px dashed #443322; border-radius:10px; margin-bottom:1rem;">
-            <p style="margin:0; font-size:0.9rem;">⌛ ดวงชะตาได้แจ้งแล้วสำหรับวันนี้<br><small>ล้างแท่นและรอจนถึงเที่ยงคืน</small></p>
-        </div>
-        `}
     `;
 }
 
