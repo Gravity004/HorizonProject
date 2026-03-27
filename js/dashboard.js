@@ -798,14 +798,13 @@ window.downloadReceipt = function () {
 // ═══════════════════════════════════════════════
 async function fetchInventory() {
     try {
-        const r = await fetch('/auth/me', { credentials: 'include' });
-        const data = await r.json();
-        if (!r.ok || !data.authenticated) {
-            // session หมดหรือถูกเตะออก
-            if (data?.redirect) window.location.href = data.redirect;
+        const r = await fetch('/api/users/me/inventory', { credentials: 'include' });
+        if (!r.ok) {
+            if (r.status === 401) window.location.href = '/?error=access_denied';
             return;
         }
-        currentUser = data.user;
+        const data = await r.json();
+        currentUser.inventory = data.inventory;
         renderInventory();
     } catch (err) { console.error('Inventory fetch failed', err); }
 }
@@ -1793,7 +1792,11 @@ function renderIncubator(incubator) {
 
     function updateTimerDisplay() {
         const timerEl = document.getElementById('incubatorTimer');
-        if (!timerEl) return;
+        if (!timerEl) {
+            // Timer element gone — stop interval to prevent memory leak
+            if (incubatorCountdownInterval) { clearInterval(incubatorCountdownInterval); incubatorCountdownInterval = null; }
+            return;
+        }
         if (isReadyToHatch || !hatchAt) {
             timerEl.textContent = '✨ พร้อมฟักแล้ว!';
             timerEl.style.color = '#d4af37';
@@ -1801,9 +1804,13 @@ function renderIncubator(incubator) {
         }
         const remaining = new Date(hatchAt) - new Date();
         if (remaining <= 0) {
+            // Stop the interval so it doesn't keep firing
+            if (incubatorCountdownInterval) { clearInterval(incubatorCountdownInterval); incubatorCountdownInterval = null; }
             timerEl.textContent = '✨ พร้อมฟักแล้ว!';
             timerEl.style.color = '#d4af37';
-            fetchPets(); // refresh to flip isReadyToHatch
+            // Show hatch button by re-rendering — NOT calling fetchPets() in a loop
+            const btnWrap = document.querySelector('#incubatorContainer .inc-btn-wrap');
+            if (btnWrap) btnWrap.innerHTML = `<button class="conjure-btn" style="animation:pulse 1.5s infinite;" onclick="hatchEgg()">🐣 ฟักไข่เดี๋ยวนี้!</button>`;
             return;
         }
         const hh = Math.floor(remaining / 3600000).toString().padStart(2, '0');
@@ -1827,7 +1834,7 @@ function renderIncubator(incubator) {
                 <div class="quest-bar-fill" style="width:${elapsedPct}%; background:linear-gradient(90deg,#d44b37,#f5a623);"></div>
             </div>
             <p style="color:#a89070; font-size:0.8rem; margin:0 0 1rem 0;">ความคืบหน้า: ${Math.floor(elapsedPct)}%</p>
-            <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+            <div class="inc-btn-wrap" style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
                 ${isReadyToHatch
                     ? `<button class="conjure-btn" style="animation:pulse 1.5s infinite;" onclick="hatchEgg()">🐣 ฟักไข่เดี๋ยวนี้!</button>`
                     : `<button class="buy-spell-btn" onclick="boostIncubation()">⚗️ ใช้ Incubation Potion (-24hr)</button>`
@@ -1881,10 +1888,10 @@ function renderMyPets(pets, activePetId) {
                 <div style="display:flex; gap:1rem; align-items:flex-start;">
                     <div style="text-align:center; min-width:80px;">
                         <img src="${pet.image}" loading="lazy" 
-                             style="width:72px; height:72px; object-fit:contain; border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid ${rc}33;"
+                             style="width:72px; height:72px; object-fit:contain; border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid ${rc}33; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 8px ${rc}80);"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
-                        <div style="display:none; font-size:2.5rem; line-height:72px;">${emoji}</div>
-                        <span style="font-size:0.7rem; color:${rc}; text-transform:uppercase; font-weight:bold;">${pet.rarity}</span>
+                        <div style="display:none; font-size:2.5rem; line-height:72px; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 8px ${rc}80);">${emoji}</div>
+                        <span style="font-size:0.7rem; color:${rc}; text-transform:uppercase; font-weight:bold; display:block; margin-top:5px;">${pet.rarity}</span>
                     </div>
                     <div style="flex:1; min-width:0;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">

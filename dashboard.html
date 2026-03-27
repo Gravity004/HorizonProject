@@ -912,46 +912,97 @@
 
             <!-- PETS SECTION -->
             <section id="pets" class="magic-section">
-                <h2>🦉 Magical Familiars & Incubator</h2>
-                
-                <div class="pets-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
-                    
-                    <!-- Incubator Panel -->
-                    <div class="incubator-panel parchment" style="padding: 1.5rem; border-radius: 12px; text-align: center; position: relative;">
-                        <h3 style="color:#d4af37; font-family:'Cinzel', serif; margin-top:0;">Incubator</h3>
-                        <div id="incubatorContainer">
-                            <p style="color:#a89070;">Loading Incubator...</p>
+                <style>
+                #pets.magic-section { background: linear-gradient(180deg, #120601 0%, #2d1005 50%, #1a0803 100%) !important; }
+                .fireplace-room { text-align: center; margin: 0 auto 1.5rem auto; }
+                .fireplace-hearth {
+                    display: inline-block; position: relative; width: 240px; height: 150px;
+                    background: linear-gradient(180deg, #0d0402, #3d1a08);
+                    border-radius: 10px 10px 0 0; border: 3px solid #7b4010; overflow: hidden; vertical-align: bottom;
+                    box-shadow: inset 0 0 40px rgba(255,70,0,0.3), 0 0 80px rgba(255,110,0,0.22), 0 0 200px rgba(255,50,0,0.1);
+                }
+                .fire-glow {
+                    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 180px; height: 90px; border-radius: 50%;
+                    background: radial-gradient(ellipse at 50% 100%, rgba(255,150,0,0.75) 0%, rgba(255,60,0,0.35) 50%, transparent 100%);
+                    animation: glowPulse 1.5s ease-in-out infinite alternate;
+                }
+                @keyframes glowPulse { from { opacity:0.7; transform:translateX(-50%) scaleX(0.88); } to { opacity:1; transform:translateX(-50%) scaleX(1.16); } }
+                .fire-base { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; gap: 3px; align-items: flex-end; }
+                .flame { border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%; transform-origin: bottom center; }
+                .f1 { width:26px; height:58px; background:linear-gradient(0deg,#ff6600,#ffdd00,#fff); animation: flicker 0.5s ease-in-out infinite alternate; }
+                .f2 { width:30px; height:80px; background:linear-gradient(0deg,#ff3300,#ff9900,#ffee00); animation: flicker 0.65s ease-in-out infinite alternate; animation-delay:0.1s; }
+                .f3 { width:34px; height:112px; background:linear-gradient(0deg,#cc1100,#ff5500,#ffcc00,#fff8d0); animation: flicker 0.55s ease-in-out infinite alternate; animation-delay:0.2s; }
+                .f4 { width:28px; height:84px; background:linear-gradient(0deg,#dd2200,#ff8800,#ffdd00); animation: flicker 0.62s ease-in-out infinite alternate; animation-delay:0.05s; }
+                .f5 { width:22px; height:62px; background:linear-gradient(0deg,#bb1100,#ff6600,#ffbb00); animation: flicker 0.48s ease-in-out infinite alternate; animation-delay:0.15s; }
+                @keyframes flicker {
+                    0%   { transform: scaleX(1)    scaleY(1)    rotate(-2deg); }
+                    50%  { transform: scaleX(0.83) scaleY(1.07) rotate(1.5deg); }
+                    100% { transform: scaleX(1.12) scaleY(0.94) rotate(-1deg); }
+                }
+                .ember { position: absolute; font-size:0.65rem; opacity:0; bottom:0; animation: emberRise 2.5s ease-out infinite; }
+                .e1 { left:25%; animation-delay:0s;   animation-duration:2s;   }
+                .e2 { left:52%; animation-delay:0.9s; animation-duration:2.8s; }
+                .e3 { left:73%; animation-delay:1.6s; animation-duration:2.2s; }
+                @keyframes emberRise {
+                    0%   { opacity:1; transform:translateX(0) scale(1);   bottom:5px;   }
+                    100% { opacity:0; transform:translateX(20px) scale(0.2); bottom:155px; }
+                }
+                .fireplace-mantle {
+                    font-family:'Cinzel',serif; font-size:0.95rem; color:#d4af37; letter-spacing:3px;
+                    padding:0.35rem 2rem; border-top:2px solid #8b5010;
+                    background:linear-gradient(90deg,transparent,rgba(212,175,55,0.12),transparent);
+                    text-shadow:0 0 12px rgba(212,175,55,0.5);
+                }
+                .pets-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+                @media (max-width:768px) { .pets-grid { grid-template-columns:1fr; } }
+                .pets-panel {
+                    background:linear-gradient(145deg,rgba(40,15,5,0.97),rgba(18,7,2,0.99));
+                    border:1px solid rgba(150,70,20,0.55); border-radius:12px; padding:1.25rem; position:relative;
+                    box-shadow:0 6px 24px rgba(0,0,0,0.6),inset 0 0 20px rgba(200,80,10,0.03);
+                }
+                .pets-panel::before {
+                    content:''; position:absolute; top:0; left:0; right:0; height:2px; border-radius:12px 12px 0 0;
+                    background:linear-gradient(90deg,transparent,#d4af37,transparent);
+                }
+                .pets-panel-title {
+                    font-family:'Cinzel',serif; color:#d4af37; font-size:0.88rem; letter-spacing:2px;
+                    text-transform:uppercase; margin:0 0 1rem 0; padding-bottom:0.5rem;
+                    border-bottom:1px solid rgba(150,70,20,0.4);
+                }
+                </style>
+
+                <div class="fireplace-room">
+                    <div class="fireplace-hearth">
+                        <div class="fire-glow"></div>
+                        <div class="fire-base">
+                            <div class="flame f1"></div>
+                            <div class="flame f2"></div>
+                            <div class="flame f3"></div>
+                            <div class="flame f4"></div>
+                            <div class="flame f5"></div>
                         </div>
+                        <div class="ember e1">✨</div>
+                        <div class="ember e2">🔥</div>
+                        <div class="ember e3">✨</div>
                     </div>
-                    
-                    <!-- My Pets Panel -->
-                    <div class="my-pets-panel parchment" style="padding: 1.5rem; border-radius: 12px;">
-                        <h3 style="color:#d4af37; font-family:'Cinzel', serif; margin-top:0;">My Familiars</h3>
-                        <div id="petsListContainer" class="scroll-content" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px;">
-                            <p style="text-align:center; color:#a89070; font-size:0.9rem;">You don't have any pets yet.</p>
-                        </div>
+                    <div class="fireplace-mantle">🦉 Familiar's Hearth 🦉</div>
+                </div>
+
+                <div class="pets-grid">
+                    <div class="pets-panel">
+                        <h3 class="pets-panel-title">🥚 Incubator</h3>
+                        <div id="incubatorContainer"></div>
                     </div>
+                    <div class="pets-panel">
+                        <h3 class="pets-panel-title">🐾 My Familiars</h3>
+                        <div id="petsListContainer" style="display:flex;flex-direction:column;gap:0.75rem;max-height:480px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#5a3010 transparent;"></div>
                     </div>
                 </div>
             </section>
 
             <!-- DIVINATION TOWER SECTION -->
             <section id="divination" class="magic-section">
-                <h2>🔮 Divination Tower</h2>
-                <div style="text-align:center; padding: 2rem;">
-                    <p style="color:#a89070; font-size:1.1rem; margin-bottom: 2rem;">
-                        Peer into the crystal ball and discover your daily fate. The stars shift every midnight.
-                    </p>
-                    <div id="divinationCrystalBall" style="margin: 0 auto 2rem; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffffff, #91cbed, #0c2b5e); box-shadow: 0 0 40px #91cbed, inset 0 0 40px #ffffff; animation: float 4s ease-in-out infinite, pulse 3s infinite; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative;" onclick="drawDivination()">
-                        <span id="crystalBallText" style="position: absolute; color: rgba(255,255,255,0.8); font-size: 0.9rem; pointer-events: none; text-shadow: 0 0 5px rgba(0,0,0,0.8);">Gaze...</span>
-                    </div>
-
-                    <div id="divinationResult" class="parchment" style="display: none; max-width: 400px; margin: 0 auto; padding: 2rem; border-radius: 12px; border: 1px solid #d4af37; box-shadow: 0 0 20px rgba(212,175,55,0.2);">
-                        <div id="divinationIcon" style="font-size: 3rem; margin-bottom: 1rem; animation: float 3s infinite;">✨</div>
-                        <h3 id="divinationBuffName" style="color: #d4af37; font-family: 'Cinzel', serif; font-size: 1.5rem; margin-top: 0;">Buff Name</h3>
-                        <p id="divinationBuffDesc" style="color: #6a8caf; font-size: 0.95rem; margin-bottom: 0;">Buff Description</p>
-                    </div>
-                </div>
+                <div id="divinationContainer"></div>
             </section>
 
             <!-- ADMIN SECTION -->

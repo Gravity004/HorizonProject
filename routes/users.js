@@ -3,6 +3,19 @@ const router = express.Router();
 const User = require('../models/User');
 const Config = require('../models/Config');
 
+// Lightweight: get current user's inventory only (avoids calling /auth/me repeatedly)
+router.get('/me/inventory', async (req, res) => {
+    if (!req.user || !req.user.id) return res.status(401).json({ message: 'Unauthorized' });
+    try {
+        const user = await User.findById(req.user.id)
+            .select('inventory')
+            .populate('inventory.itemId', 'name image type rarity');
+        res.json({ inventory: user.inventory || [] });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Get all users by house (for house roster)
 router.get('/house/:houseName', async (req, res) => {
     const houseName = req.params.houseName.toLowerCase();
