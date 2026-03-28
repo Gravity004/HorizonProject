@@ -179,6 +179,7 @@ window.switchNav = function (tabId) {
     }
     if (tabId === 'mailbox') fetchMailbox();
     if (tabId === 'pets') fetchPets();
+    if (tabId === 'divination') fetchDivinationStatus();
 }
 
 // ═══════════════════════════════════════════════
