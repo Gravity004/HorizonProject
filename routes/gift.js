@@ -114,21 +114,23 @@ router.post('/claim', isAuthenticated, sanitizeBody, async (req, res) => {
 
         const recipient = await User.findById(req.user.id);
 
-        // Add item to recipient inventory
-        const existingItemIndex = recipient.inventory.findIndex(i => i.itemId.toString() === gift.itemId._id.toString());
-        if (existingItemIndex > -1) {
-            recipient.inventory[existingItemIndex].quantity += gift.quantity;
-        } else {
-            recipient.inventory.push({ itemId: gift.itemId._id, quantity: gift.quantity });
+        // Handle gifts with or without actual items
+        if (gift.itemId && gift.quantity > 0) {
+            const existingItemIndex = recipient.inventory.findIndex(i => i.itemId.toString() === gift.itemId._id.toString());
+            if (existingItemIndex > -1) {
+                recipient.inventory[existingItemIndex].quantity += gift.quantity;
+            } else {
+                recipient.inventory.push({ itemId: gift.itemId._id, quantity: gift.quantity });
+            }
+            recipient.markModified('inventory');
+            await recipient.save();
         }
-        
-        recipient.markModified('inventory');
-        await recipient.save();
 
         gift.isClaimed = true;
         await gift.save();
 
-        res.json({ message: `Claimed ${gift.quantity}x ${gift.itemId.name}!`, inventory: recipient.inventory });
+        const claimMsg = gift.itemId ? `Claimed ${gift.quantity}x ${gift.itemId.name}!` : `Marked note as read.`;
+        res.json({ message: claimMsg, inventory: recipient.inventory });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

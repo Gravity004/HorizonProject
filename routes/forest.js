@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Item = require('../models/Item');
-const { isAuthenticated } = require('../middleware/auth');
+const { isAuthenticated, isNotDetained } = require('../middleware/auth');
 const { sanitizeBody } = require('../middleware/sanitize');
 
 // Seed to randomize forest opening times daily
@@ -52,18 +52,20 @@ router.get('/status', isAuthenticated, async (req, res) => {
                 await config.save();
 
                 // Send mail to all users asynchronously
-                User.find().select('_id username').then(allUsers => {
-                    const gifts = allUsers.map(u => ({
-                        senderId: user._id, // Set system or current user as sender? Let's use generic System logic but schema requires ObjectId. Use a placeholder or bypass.
-                        senderName: 'SYSTEM',
-                        recipientId: u._id,
-                        recipientName: u.username,
-                        itemId: null, // Note: Schema might require itemId. We'll find a generic item or make it optional.
-                        quantity: 0,
-                        message: '🌿 The Himmapan Forest is now open! It will only remain open for 1 hour. Hurry and explore!',
-                        isClaimed: false
-                    }));
-                    Gift.insertMany(gifts).catch(console.error);
+                Item.findOne({ name: 'Parchment Letter' }).then(letterItem => {
+                    User.find().select('_id username').then(allUsers => {
+                        const gifts = allUsers.map(u => ({
+                            senderId: user._id,
+                            senderName: 'SYSTEM',
+                            recipientId: u._id,
+                            recipientName: u.username,
+                            itemId: letterItem ? letterItem._id : null, 
+                            quantity: 0,
+                            message: '🌿 The Himmapan Forest is now open! It will only remain open for 1 hour. Hurry and explore!',
+                            isClaimed: false
+                        }));
+                        Gift.insertMany(gifts).catch(console.error);
+                    }).catch(console.error);
                 }).catch(console.error);
             }
         } catch (e) {
@@ -77,7 +79,7 @@ router.get('/status', isAuthenticated, async (req, res) => {
     });
 });
 
-router.post('/gather', isAuthenticated, sanitizeBody, async (req, res) => {
+router.post('/gather', isAuthenticated, isNotDetained, sanitizeBody, async (req, res) => {
     try {
         const window = getDailyForestWindow();
         const now = new Date();

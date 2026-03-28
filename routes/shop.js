@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const Item = require('../models/Item');
 const User = require('../models/User');
-const { isAuthenticated, hasRole } = require('../middleware/auth');
+const { isAuthenticated, hasRole, isNotDetained } = require('../middleware/auth');
 const { sanitizeBody } = require('../middleware/sanitize');
 
 // Multer config for image uploads
@@ -35,7 +35,7 @@ router.get('/items', async (req, res) => {
 });
 
 // Buy item
-router.post('/buy', isAuthenticated, sanitizeBody, async (req, res) => {
+router.post('/buy', isAuthenticated, isNotDetained, sanitizeBody, async (req, res) => {
     const { itemId, quantity } = req.body;
 
     try {
@@ -115,7 +115,7 @@ router.post('/buy', isAuthenticated, sanitizeBody, async (req, res) => {
 });
 
 // Use/Consume item from inventory
-router.post('/use', isAuthenticated, sanitizeBody, async (req, res) => {
+router.post('/use', isAuthenticated, isNotDetained, sanitizeBody, async (req, res) => {
     const { itemId, targetUsername } = req.body;
 
     try {

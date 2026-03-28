@@ -261,13 +261,15 @@
 }
 
 .activity-card {
-    background: linear-gradient(135deg, rgba(20, 10, 30, 0.8), rgba(30, 0, 50, 0.8));
-    border: 2px solid rgba(212, 175, 55, 0.3);
+    background: linear-gradient(135deg, rgba(35, 15, 55, 0.9), rgba(25, 5, 40, 0.95));
+    border: 2px solid rgba(212, 175, 55, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.05);
     border-radius: 15px;
     padding: 2rem;
     cursor: pointer;
-    transition: all 0.4s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
+    overflow: hidden;
 }
 
 .activity-card::after {
@@ -295,8 +297,18 @@
 }
 
 .activity-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.activity-icon img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4));
 }
 
 .activity-title {
@@ -779,6 +791,15 @@
     .chapter-container,
     .textbook-grid {
         grid-template-columns: 1fr;
+    }
+
+    .activity-card {
+        padding: 1.5rem;
+    }
+    
+    .activity-icon {
+        height: 70px;
+        margin-bottom: 1rem;
     }
 
     .content-modal-container {

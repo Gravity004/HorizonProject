@@ -1827,7 +1827,7 @@ function renderIncubator(incubator) {
 
     container.innerHTML = `
         <div style="text-align:center;">
-            <img src="${eggImage || 'assets/images/items/mystery_egg.png'}" 
+            <img src="${eggImage || 'assets/images/picitem/Egg.png'}" 
                  style="width:100px; height:100px; object-fit:contain; margin-bottom:1rem; ${isReadyToHatch ? 'animation: wiggle 0.5s infinite;' : 'animation: float 3s ease-in-out infinite;'}"
                  onerror="this.src='assets/images/placeholder_item.png'">
             <h4 style="color:#d4af37; margin:0 0 0.5rem 0; font-family:'Cinzel', serif;">${eggName}</h4>

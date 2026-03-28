@@ -700,7 +700,7 @@ function initializeActivityCards() {
         const card = document.createElement('div');
         card.className = 'activity-card';
         card.innerHTML = `
-            <div class="activity-icon"><img src="assets/images/Eternity1.png" style="width:100%; height:100%; object-fit:contain;" alt="Activity Icon"></div>
+            <div class="activity-icon"><img src="assets/images/Eternity1.png" alt="Activity Icon"></div>
             <h3 class="activity-title">${activity.title}</h3>
             <p class="activity-preview">${activity.preview}</p>
             <div class="activity-date">📅 ${activity.date}</div>

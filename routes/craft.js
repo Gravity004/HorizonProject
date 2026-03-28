@@ -3,7 +3,7 @@ const router = express.Router();
 const Recipe = require('../models/Recipe');
 const User = require('../models/User');
 const Item = require('../models/Item');
-const { isAuthenticated, hasRole } = require('../middleware/auth');
+const { isAuthenticated, hasRole, isNotDetained } = require('../middleware/auth');
 const { sanitizeBody } = require('../middleware/sanitize');
 
 // Get all recipes (populated with item details)
@@ -56,7 +56,7 @@ router.delete('/recipes/:id', isAuthenticated, hasRole(['admin', 'professor']), 
 });
 
 // Craft Item
-router.post('/craft', isAuthenticated, sanitizeBody, async (req, res) => {
+router.post('/craft', isAuthenticated, isNotDetained, sanitizeBody, async (req, res) => {
     const { recipeId } = req.body;
 
     try {

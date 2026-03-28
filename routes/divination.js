@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const { isAuthenticated } = require('../middleware/auth');
+const { isAuthenticated, isNotDetained } = require('../middleware/auth');
 
 // ─── Reading Tables ──────────────────────────────────────────────────────────
 
@@ -104,7 +104,7 @@ router.get('/status', isAuthenticated, async (req, res) => {
 });
 
 // POST /api/divination/draw
-router.post('/draw', isAuthenticated, async (req, res) => {
+router.post('/draw', isAuthenticated, isNotDetained, async (req, res) => {
     try {
         const { readingType } = req.body; // 'tea_leaves' | 'tarot'
         const user = await User.findById(req.user._id);
@@ -158,7 +158,7 @@ router.post('/draw', isAuthenticated, async (req, res) => {
 });
 
 // POST /api/divination/cleanse — use Cleansing Potion to remove curse
-router.post('/cleanse', isAuthenticated, async (req, res) => {
+router.post('/cleanse', isAuthenticated, isNotDetained, async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
 

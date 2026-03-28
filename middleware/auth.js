@@ -145,4 +145,25 @@ const checkGuildMembership = async (req, res, next) => {
     }
 };
 
-module.exports = { isAuthenticated, hasRole, checkGuildMembership };
+const isNotDetained = async (req, res, next) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Unauthorized' });
+    try {
+        const user = await User.findById(req.user.id);
+        if (user.isDetained && user.detentionEndDate && new Date() < new Date(user.detentionEndDate)) {
+            return res.status(403).json({ 
+                message: `You are currently in detention until ${new Date(user.detentionEndDate).toLocaleString('th-TH')}. Reason: ${user.detentionReason || 'Rule violation'}` 
+            });
+        }
+        // If detention time has passed, clear it
+        if (user.isDetained && user.detentionEndDate && new Date() >= new Date(user.detentionEndDate)) {
+            user.isDetained = false;
+            user.detentionEndDate = null;
+            await user.save();
+        }
+        next();
+    } catch (err) {
+        res.status(500).json({ message: 'Server error checking detention status.' });
+    }
+};
+
+module.exports = { isAuthenticated, hasRole, checkGuildMembership, isNotDetained };
