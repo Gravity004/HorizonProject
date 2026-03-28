@@ -44,7 +44,7 @@ async function run() {
         const mysteryEgg = await ensureItem(
             'Mystery Egg', 'egg', 'common', 1000,
             'ไข่ปริศนา — วางในตู้ฟักและรอ 72 ชั่วโมง เพื่อฟักสัตว์เลี้ยงเวทมนตร์ผู้คู่หูของคุณ!',
-            'assets/images/items/mystery_egg.png'
+            '/assets/images/picitem/Egg.png'
         );
 
         // Basic Pet Feed: Daily food for pets

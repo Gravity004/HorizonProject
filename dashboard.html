@@ -968,15 +968,18 @@
                 <style>
                     #divination {
                         background: radial-gradient(circle at center, rgba(30,15,45,0.9), rgba(10,5,15,0.98));
+                        overflow: hidden;
                     }
-                    .divination-rose-frame {
+                    .divination-3d-showcase {
                         position: absolute;
                         top: 0; left: 0; right: 0; bottom: 0;
-                        background: url('assets/images/purple_roses_frame.png') center/cover no-repeat;
-                        pointer-events: none;
                         z-index: 10;
-                        opacity: 0.85;
-                        mix-blend-mode: screen;
+                        pointer-events: none;
+                    }
+                    #divinationCanvas {
+                        width: 100%;
+                        height: 100%;
+                        display: block;
                     }
                     .divination-content-wrapper {
                         position: relative;
@@ -986,9 +989,12 @@
                         display: flex;
                         flex-direction: column;
                         align-items: center;
+                        background: radial-gradient(circle at center, transparent 0%, rgba(10,5,20,0.6) 100%);
                     }
                 </style>
-                <div class="divination-rose-frame"></div>
+                <div class="divination-3d-showcase">
+                    <canvas id="divinationCanvas"></canvas>
+                </div>
                 <div class="divination-content-wrapper">
                     <div id="divinationContainer" style="width: 100%; max-width: 800px;"></div>
                 </div>
@@ -1371,6 +1377,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/pets3d.js"></script>
+    <script src="js/divination3d.js"></script>
 </body>
 
 </html>
