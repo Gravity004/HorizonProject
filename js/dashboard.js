@@ -1931,24 +1931,24 @@ function renderMyPets(pets, activePetId) {
                                 <div style="width:${affectionPct}%; height:100%; background:linear-gradient(90deg,#ff69b4,#ff1493); border-radius:4px;"></div>
                             </div>
                         </div>
-                        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.7rem;">
-                            <button class="buy-spell-btn" style="${isActive ? 'background:#8b6914;' : ''}" onclick="toggleActivePet('${pet._id}', ${isActive})">
-                                ${isActive ? '✦ Unequip' : '✦ Equip'}
-                            </button>
-                            <button class="buy-spell-btn" style="background:${isFedToday ? 'rgba(100,100,100,0.5)' : 'rgba(255,100,50,0.3)'}; ${isFedToday ? 'cursor:not-allowed;' : ''}"
-                                onclick="${isFedToday ? '' : `feedPet('${pet._id}')`}" ${isFedToday ? 'disabled' : ''}>
-                                🍖 ${isFedToday ? 'ให้อาหารแล้ว' : 'ให้อาหาร'}
-                            </button>
-                            <button class="buy-spell-btn" style="background:${isPettedToday ? 'rgba(100,100,100,0.5)' : 'rgba(255,105,180,0.3)'}; ${isPettedToday ? 'cursor:not-allowed;' : ''}"
-                                onclick="${isPettedToday ? '' : `patPet('${pet._id}')`}" ${isPettedToday ? 'disabled' : ''}>
-                                💖 ${isPettedToday ? 'ลูบหัวแล้ว' : 'ลูบหัว'}
-                            </button>
-                            <button class="buy-spell-btn" style="background:rgba(120,50,200,0.3)"
-                                onclick="transferPetPrompt('${pet._id}')">
-                                🦉 ส่ง(โอน)
-                            </button>
-                        </div>
                     </div>
+                </div>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:1rem; padding-top:1rem; border-top:1px dashed rgba(255,255,255,0.1);">
+                    <button class="buy-spell-btn" style="${isActive ? 'background:linear-gradient(45deg, #8b6914, #d4af37); color:#000;' : ''}" onclick="toggleActivePet('${pet._id}', ${isActive})">
+                        ${isActive ? '✦ ถอดออก (Unequip)' : '✦ สวมใส่ (Equip)'}
+                    </button>
+                    <button class="buy-spell-btn" style="background:${isFedToday ? 'rgba(100,100,100,0.5)' : 'linear-gradient(45deg, rgba(255,100,50,0.4), rgba(255,150,50,0.2))'}; ${isFedToday ? 'cursor:not-allowed; opacity:0.6;' : ''}"
+                        onclick="${isFedToday ? '' : `feedPet('${pet._id}')`}" ${isFedToday ? 'disabled' : ''}>
+                        🍖 ${isFedToday ? 'ให้อาหารแล้ว' : 'ให้อาหาร (Feed)'}
+                    </button>
+                    <button class="buy-spell-btn" style="background:${isPettedToday ? 'rgba(100,100,100,0.5)' : 'linear-gradient(45deg, rgba(255,105,180,0.4), rgba(255,20,147,0.2))'}; ${isPettedToday ? 'cursor:not-allowed; opacity:0.6;' : ''}"
+                        onclick="${isPettedToday ? '' : `patPet('${pet._id}')`}" ${isPettedToday ? 'disabled' : ''}>
+                        💖 ${isPettedToday ? 'ลูบหัวแล้ว' : 'ลูบหัว (Pat)'}
+                    </button>
+                    <button class="buy-spell-btn" style="background:linear-gradient(45deg, rgba(120,50,200,0.4), rgba(150,80,250,0.2));"
+                        onclick="transferPetPrompt('${pet._id}')">
+                        🦉 ส่งให้เพื่อน (Transfer)
+                    </button>
                 </div>
             </div>
         `;
