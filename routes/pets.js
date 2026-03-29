@@ -88,6 +88,10 @@ router.post('/incubate', ensureAuth, async (req, res) => {
         const { itemId } = req.body;
         const user = await User.findById(req.user._id);
 
+        if (user.pets && user.pets.length >= 3) {
+            return res.status(400).json({ message: 'You already have the maximum number of familiars (3).' });
+        }
+
         if (user.incubator && user.incubator.eggItemId) {
             return res.status(400).json({ message: 'Incubator is already occupied!' });
         }
@@ -394,6 +398,59 @@ router.get('/active-buff', ensureAuth, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+// 9. Transfer pet to another user
+router.post('/transfer', ensureAuth, async (req, res) => {
+    try {
+        const { petId, recipientUsername } = req.body;
+        if (!petId || !recipientUsername) {
+            return res.status(400).json({ message: 'Pet ID and recipient username are required.' });
+        }
+
+        const sender = await User.findById(req.user._id);
+        const recipient = await User.findOne({ username: { $regex: new RegExp(`^${recipientUsername}$`, 'i') } });
+
+        if (!recipient) {
+            return res.status(404).json({ message: 'Recipient not found.' });
+        }
+        if (sender._id.toString() === recipient._id.toString()) {
+            return res.status(400).json({ message: 'You cannot transfer a pet to yourself.' });
+        }
+        if (recipient.pets && recipient.pets.length >= 3) {
+            return res.status(400).json({ message: `${recipient.username} already has the maximum number of familiars (3).` });
+        }
+
+        const petIndex = sender.pets.findIndex(p => p._id.toString() === petId);
+        if (petIndex === -1) {
+            return res.status(400).json({ message: 'Pet not found in your collection.' });
+        }
+
+        const petToTransfer = sender.pets[petIndex];
+
+        // Unequip if active
+        if (sender.activePetId && sender.activePetId.toString() === petId) {
+            sender.activePetId = null;
+            // Recalculate max health without this pet
+            let newMaxHp = 100;
+            sender.maxHealth = newMaxHp;
+            if (sender.health > sender.maxHealth) sender.health = sender.maxHealth;
+        }
+
+        // Remove from sender
+        sender.pets.splice(petIndex, 1);
+        
+        // Add to recipient
+        recipient.pets.push(petToTransfer);
+
+        await sender.save();
+        await recipient.save();
+
+        res.json({ message: `🦉 Successfully transferred ${petToTransfer.name} to ${recipient.username}!` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error transferring pet.' });
     }
 });
 

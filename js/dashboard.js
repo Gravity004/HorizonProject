@@ -1943,6 +1943,10 @@ function renderMyPets(pets, activePetId) {
                                 onclick="${isPettedToday ? '' : `patPet('${pet._id}')`}" ${isPettedToday ? 'disabled' : ''}>
                                 💖 ${isPettedToday ? 'ลูบหัวแล้ว' : 'ลูบหัว'}
                             </button>
+                            <button class="buy-spell-btn" style="background:rgba(120,50,200,0.3)"
+                                onclick="transferPetPrompt('${pet._id}')">
+                                🦉 ส่ง(โอน)
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2079,6 +2083,30 @@ async function toggleActivePet(petId, currentlyActive) {
         console.error(err);
         spawnEffect('❌', 'Failed to change active pet.');
     }
+}
+
+window.transferPetPrompt = function(petId) {
+    const toUser = prompt('กรอกชื่อ Discord (Username) ของผู้รับ\n*คำเตือน สัตว์เลี้ยงจะถูกลบออกจากบัญชีคุณทันที*:');
+    if (!toUser) return;
+    showConfirm('โอนสัตว์เลี้ยง', `แน่ใจหรือไม่ที่จะส่งสัตว์เลี้ยงตัวนี้ให้ ${toUser}?`, async () => {
+        try {
+            const res = await fetch('/api/pets/transfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ petId, recipientUsername: toUser }), credentials: 'include'
+            });
+            const data = await res.json();
+            if (res.ok) {
+                spawnEffect('🦉', data.message);
+                fetchPets();
+            } else {
+                spawnEffect('❌', data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            spawnEffect('❌', 'Failed to transfer pet.');
+        }
+    });
 }
 
 async function startIncubating(itemId) {
