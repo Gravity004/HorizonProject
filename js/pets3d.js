@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════
 let pet3DScene, pet3DCamera, pet3DRenderer, pet3DMixer, pet3DModel;
 let pet3DInitialized = false;
+let currentLoadedSpecies = null;
 
 function initPet3D() {
     if (pet3DInitialized) return;
@@ -59,42 +60,8 @@ function initPet3D() {
     plane.receiveShadow = true;
     pet3DScene.add(plane);
 
-    // Load Pet Model
-    const loader = new THREE.GLTFLoader();
-    loader.load(
-        'assets/models/pet.glb',
-        (gltf) => {
-            pet3DModel = gltf.scene;
-            pet3DModel.position.set(0, 0, 0); // Might need adjustment based on glb
-            
-            // Recompute normals to ensure proper shading just in case
-            pet3DModel.traverse((child) => {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    if (child.material) {
-                        child.material.side = THREE.DoubleSide;
-                    }
-                }
-            });
-
-            // Make the flamingo slightly smaller and center it if needed
-            pet3DModel.scale.set(0.015, 0.015, 0.015);
-            pet3DModel.position.y = 1;
-
-            pet3DScene.add(pet3DModel);
-
-            if (gltf.animations && gltf.animations.length) {
-                pet3DMixer = new THREE.AnimationMixer(pet3DModel);
-                const action = pet3DMixer.clipAction(gltf.animations[0]);
-                action.play();
-            }
-        },
-        undefined,
-        (error) => {
-            console.error('An error happened loading pet 3D model: ', error);
-        }
-    );
+    // Start with default model
+    window.updatePet3DModel('pet');
 
     const clock = new THREE.Clock();
     function animatePet3D() {
@@ -138,3 +105,73 @@ document.addEventListener('DOMContentLoaded', () => {
         petsSectionObs.observe(petsSec, { attributes: true, attributeFilter: ['class'] });
     }
 });
+
+window.updatePet3DModel = function(species) {
+    if (!pet3DInitialized || !pet3DScene) return;
+    
+    // Normalize species string
+    const targetSpecies = species ? species.toLowerCase() : 'pet';
+    if (currentLoadedSpecies === targetSpecies) return; // Already loaded
+
+    // Clean up old model if it exists
+    if (pet3DModel) {
+        pet3DScene.remove(pet3DModel);
+        if (pet3DModel.geometry) pet3DModel.geometry.dispose();
+        if (pet3DModel.material) pet3DModel.material.dispose();
+        pet3DModel = null;
+    }
+    if (pet3DMixer) {
+        pet3DMixer.stopAllAction();
+        pet3DMixer = null;
+    }
+
+    currentLoadedSpecies = targetSpecies;
+
+    const loader = new THREE.GLTFLoader();
+    const loadModel = (modelPath) => {
+        return new Promise((resolve, reject) => {
+            loader.load(modelPath, resolve, undefined, reject);
+        });
+    };
+
+    const targetUrl = `assets/models/${targetSpecies}.glb`;
+    const fallbackUrl = `assets/models/pet.glb`;
+
+    // Try loading specific model, fallback to default if failed
+    loadModel(targetUrl)
+        .catch(() => {
+            console.log(`Specific model for ${targetSpecies} not found, using default pet.`);
+            return loadModel(fallbackUrl);
+        })
+        .then((gltf) => {
+            if (!gltf) return;
+            pet3DModel = gltf.scene;
+            pet3DModel.position.set(0, 0, 0);
+            
+            pet3DModel.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    if (child.material) {
+                        child.material.side = THREE.DoubleSide;
+                    }
+                }
+            });
+
+            // Make it slightly smaller and center it
+            pet3DModel.scale.set(0.015, 0.015, 0.015);
+            pet3DModel.position.y = 1;
+
+            pet3DScene.add(pet3DModel);
+
+            if (gltf.animations && gltf.animations.length) {
+                pet3DMixer = new THREE.AnimationMixer(pet3DModel);
+                const action = pet3DMixer.clipAction(gltf.animations[0]);
+                action.play();
+            }
+        })
+        .catch(error => {
+            console.error('Failed to load any pet 3D model:', error);
+            currentLoadedSpecies = null;
+        });
+};

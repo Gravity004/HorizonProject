@@ -175,14 +175,15 @@ router.get('/faculty', async (req, res) => {
             facultyConfig = new Config({
                 key: 'faculty_members',
                 value: [
-                    { name: 'Prof. Richard Moore', subject: 'Aweth', image: 'assets/images/ProfRichard.png' },
-                    { name: 'Prof. Mathal', subject: 'Charms', image: 'assets/images/Mathal.png' },
-                    { name: 'Prof. King Zadkiel Winchester', subject: 'Faculty Member', image: 'assets/images/King Zadkiel Winchester.png' },
-                    { name: 'Prof. Navin White Rosier', subject: 'Astronomy', image: 'assets/images/Navin White Rosier.png' },
-                    { name: 'Prof. Tulphat Narintrapakdee', subject: 'Faculty Member', image: 'assets/images/Tulphat Narintrapakdee.png' },
-                    { name: 'Prof. Sofia McQueen', subject: 'Herblology', image: 'assets/images/Sofia McQueen.png' },
-                    { name: 'Prof. ScarDKillz', subject: 'Faculty Member', image: 'assets/images/ScarDKillz.png' },
-                    { name: 'Sir. Ngong Ngaeng', subject: 'Faculty Member', image: 'assets/images/Ngong Ngaeng.png' }
+                    { name: 'Prof. Richard Moore', subject: 'Aweth', image: 'assets/images/Prof/Prof.Richard.png' },
+                    { name: 'Prof. Mathal', subject: 'Charms', image: 'assets/images/Prof/Prof.Mathal.png' },
+                    { name: 'Prof. King Zadkiel Winchester', subject: 'Faculty Member', image: 'assets/images/Prof/Prof.King.png' },
+                    { name: 'Prof. Navin White Rosier', subject: 'Astronomy', image: 'assets/images/Prof/Prof. Navin White Rosier.png' },
+                    { name: 'Prof. Tulphat Narintrapakdee', subject: 'Faculty Member', image: 'assets/images/Prof/Prof. Tulphat Narintrapakdee.png' },
+                    { name: 'Prof. Sofia McQueen', subject: 'Herblology', image: 'assets/images/Prof/Prof. Sofia McQueen.png' },
+                    { name: 'Prof. ScarDKillz', subject: 'Faculty Member', image: 'assets/images/Prof/Prof. ScarDKillz.png' },
+                    { name: 'Sir. Ngong Ngaeng', subject: 'Faculty Member', image: 'assets/images/Prof/Sir. Ngong Ngaeng.png' },
+                    { name: 'Prof. Mary Greengrass', subject: 'Faculty Member', image: 'assets/images/Prof/Prof.Mary Greengrass.png' }
                 ]
             });
             await facultyConfig.save();
@@ -235,7 +236,7 @@ router.post('/admin/detain', isAuthenticated, hasRole(['admin', 'professor']), s
 
         // Calculate end date
         const endDate = new Date(Date.now() + mins * 60000);
-        
+
         target.isDetained = true;
         target.detentionEndDate = endDate;
         target.detentionReason = reason || 'Violation of school rules';

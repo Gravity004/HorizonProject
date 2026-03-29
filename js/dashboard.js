@@ -56,6 +56,14 @@ async function checkAuth() {
                 document.getElementById('detentionOverlay').style.display = 'flex';
                 document.getElementById('detentionReasonDisplay').textContent = currentUser.detentionReason || "Rule Violation";
                 
+                // Show initial minutes remaining
+                const minutesEl = document.getElementById('detentionMinutesDisplay');
+                const updateMinutes = () => {
+                    const minsLeft = Math.ceil((end - new Date()) / 60000);
+                    if (minutesEl) minutesEl.textContent = `คุณถูกล็อคเป็นเวลา ${minsLeft} นาที`;
+                };
+                updateMinutes();
+
                 const timerEl = document.getElementById('detentionTimer');
                 const interval = setInterval(() => {
                     const now = new Date();
@@ -69,6 +77,7 @@ async function checkAuth() {
                     const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
                     const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
                     timerEl.textContent = `${h}:${m}:${s}`;
+                    updateMinutes();
                 }, 1000);
                 return; // Block loading dashboard features
             }
@@ -830,9 +839,16 @@ function renderInventory() {
         const id = item?._id || slot.itemId;
         
         const isEgg = name.toLowerCase().includes('egg') || name.toLowerCase().includes('ไข่');
-        let useBtn = `<button class="use-item-btn" onclick="useItem('${id}', '${name}')">Use</button>`;
+        const isSpecialUse = name === 'Amortentia Potion' || name === 'Name Change Card' || name === 'บัตรเปลี่ยนชื่อ';
+        const isUsable = (type === 'food' || type === 'potion') && !isEgg;
+        
+        let actionButtons = '';
         if (isEgg) {
-            useBtn = `<button class="use-item-btn" style="background:var(--magical-glow); color:#000;" onclick="startIncubating('${id}')">Incubate</button>`;
+            actionButtons = `<button class="use-item-btn" style="background:var(--magical-glow); color:#000; font-size:0.7rem;" onclick="startIncubating('${id}')">🥚 Incubate</button><button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>`;
+        } else if (isUsable || isSpecialUse) {
+            actionButtons = `<button class="use-item-btn" onclick="useItem('${id}', '${name}')">Use</button><button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>`;
+        } else {
+            actionButtons = `<button class="gift-item-btn" style="width:100%;" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">🎁 Gift</button>`;
         }
         
         return `
@@ -843,8 +859,7 @@ function renderInventory() {
                     <strong>${name}</strong>
                     <small>${type}</small>
                     <div class="inv-actions">
-                        ${useBtn}
-                        <button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>
+                        ${actionButtons}
                     </div>
                 </div>
             </div>
@@ -1946,6 +1961,9 @@ function updateActivePetDisplay(activePet) {
 
     if (!activePet) {
         display.style.display = 'none';
+        if (typeof window.updatePet3DModel === 'function') {
+            window.updatePet3DModel(null); // Fallback to default
+        }
         return;
     }
 
@@ -1957,6 +1975,11 @@ function updateActivePetDisplay(activePet) {
             const label = BUFF_LABELS[b.target] || b.target.replace(/_/g, ' ');
             return `<span style="font-size:0.8rem; color:#8ab4f8;">${label} +${b.value}${b.target.includes('chance') || b.target.includes('safety') ? '%' : ''}</span>`;
         }).join('<br>') || '✨ No active buffs';
+    }
+
+    // Update 3D Model dynamically based on species
+    if (typeof window.updatePet3DModel === 'function') {
+        window.updatePet3DModel(activePet.species);
     }
 }
 

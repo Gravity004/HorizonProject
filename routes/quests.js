@@ -10,13 +10,33 @@ const QUEST_TYPES = [
     { type: 'send_gift', target: 1, label: 'ส่งของขวัญให้เพื่อน 1 ครั้ง', rng: () => ({ target: 1 }) }
 ];
 
-function isNewDay(date) {
+function isNewQuestPeriod(date) {
     if (!date) return true;
     const now = new Date();
-    // Compare year, month, date
-    return now.getFullYear() !== date.getFullYear() || 
-           now.getMonth() !== date.getMonth() || 
-           now.getDate() !== date.getDate();
+    // Convert to Thailand time (UTC+7)
+    const TH_OFFSET = 7 * 60; // minutes
+    const nowTH = new Date(now.getTime() + TH_OFFSET * 60000);
+    const dateTH = new Date(date.getTime() + TH_OFFSET * 60000);
+
+    // Determine the last 8:00 AM Thailand boundary before now
+    function getResetBoundary(dt) {
+        const y = dt.getUTCFullYear();
+        const mo = dt.getUTCMonth();
+        const d = dt.getUTCDate();
+        const h = dt.getUTCHours();
+        // 8 AM TH = 8 AM UTC+7 = 1 AM UTC (hour 1 in UTC)
+        if (h >= 1) {
+            return new Date(Date.UTC(y, mo, d, 1, 0, 0, 0));
+        } else {
+            // before 1 AM UTC = before 8 AM TH => previous day's 8 AM TH
+            const prev = new Date(Date.UTC(y, mo, d - 1, 1, 0, 0, 0));
+            return prev;
+        }
+    }
+
+    const nowBoundary = getResetBoundary(now);
+    const dateBoundary = getResetBoundary(date);
+    return nowBoundary > dateBoundary;
 }
 
 function generateQuests() {
@@ -27,7 +47,7 @@ function generateQuests() {
     return selected.map(q => {
         const specs = q.rng();
         const rewardType = Math.random() > 0.5 ? 'galleons' : 'material';
-        const rewardAmount = rewardType === 'galleons' ? (50 + Math.floor(Math.random() * 50)) : 1; // 50-100G or 1 material
+        const rewardAmount = rewardType === 'galleons' ? Math.floor(10 + Math.random() * 41) : 1; // 10-50G or 1 material
         return {
             questType: q.type,
             target: specs.target,
@@ -45,7 +65,7 @@ router.get('/', isAuthenticated, async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
         
-        if (isNewDay(user.lastQuestReset)) {
+        if (isNewQuestPeriod(user.lastQuestReset)) {
             user.dailyQuests = generateQuests();
             user.lastQuestReset = new Date();
             await user.save();
