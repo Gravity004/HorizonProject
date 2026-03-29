@@ -13,30 +13,28 @@ const QUEST_TYPES = [
 function isNewQuestPeriod(date) {
     if (!date) return true;
     const now = new Date();
-    // Convert to Thailand time (UTC+7)
-    const TH_OFFSET = 7 * 60; // minutes
-    const nowTH = new Date(now.getTime() + TH_OFFSET * 60000);
-    const dateTH = new Date(date.getTime() + TH_OFFSET * 60000);
-
-    // Determine the last 8:00 AM Thailand boundary before now
+    
+    // Determine the last 8:00 AM Thailand boundary before the target Date
+    // Thai time = UTC+7, so 8:00 AM TH = 01:00 AM UTC.
     function getResetBoundary(dt) {
         const y = dt.getUTCFullYear();
         const mo = dt.getUTCMonth();
         const d = dt.getUTCDate();
         const h = dt.getUTCHours();
-        // 8 AM TH = 8 AM UTC+7 = 1 AM UTC (hour 1 in UTC)
-        if (h >= 1) {
-            return new Date(Date.UTC(y, mo, d, 1, 0, 0, 0));
-        } else {
-            // before 1 AM UTC = before 8 AM TH => previous day's 8 AM TH
-            const prev = new Date(Date.UTC(y, mo, d - 1, 1, 0, 0, 0));
-            return prev;
+        
+        let boundary = new Date(Date.UTC(y, mo, d, 1, 0, 0, 0));
+        // If the current hour is before 01:00 UTC, the reset was yesterday at 01:00 UTC
+        if (h < 1) {
+            boundary = new Date(Date.UTC(y, mo, d - 1, 1, 0, 0, 0));
         }
+        return boundary;
     }
 
     const nowBoundary = getResetBoundary(now);
-    const dateBoundary = getResetBoundary(date);
-    return nowBoundary > dateBoundary;
+    const lastBoundary = getResetBoundary(date);
+    
+    // It's a new period if the current time's boundary is greater than the date's boundary
+    return nowBoundary.getTime() > lastBoundary.getTime();
 }
 
 function generateQuests() {
@@ -47,7 +45,8 @@ function generateQuests() {
     return selected.map(q => {
         const specs = q.rng();
         const rewardType = Math.random() > 0.5 ? 'galleons' : 'material';
-        const rewardAmount = rewardType === 'galleons' ? Math.floor(10 + Math.random() * 41) : 1; // 10-50G or 1 material
+        // Enforce max 50 Galleons limit strictly: Math.floor(rng * 41) is [0, 40] -> + 10 = [10, 50]
+        const rewardAmount = rewardType === 'galleons' ? Math.floor(10 + Math.random() * 41) : 1; 
         return {
             questType: q.type,
             target: specs.target,
@@ -55,7 +54,7 @@ function generateQuests() {
             isCompleted: false,
             isClaimed: false,
             rewardType,
-            rewardAmount
+            rewardAmount: Math.min(rewardAmount, 50) // Absolute cap at 50
         };
     });
 }

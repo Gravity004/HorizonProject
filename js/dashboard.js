@@ -56,11 +56,11 @@ async function checkAuth() {
                 document.getElementById('detentionOverlay').style.display = 'flex';
                 document.getElementById('detentionReasonDisplay').textContent = currentUser.detentionReason || "Rule Violation";
                 
-                // Show initial minutes remaining
                 const minutesEl = document.getElementById('detentionMinutesDisplay');
                 const updateMinutes = () => {
-                    const minsLeft = Math.ceil((end - new Date()) / 60000);
-                    if (minutesEl) minutesEl.textContent = `คุณถูกล็อคเป็นเวลา ${minsLeft} นาที`;
+                    const secsLeft = Math.ceil((end - new Date()) / 1000);
+                    const minsLeft = Math.ceil(secsLeft / 60);
+                    if (minutesEl) minutesEl.textContent = `คุณถูกกักบริเวณ (ประเมินเวลาคงเหลือ: ${minsLeft} นาที)`;
                 };
                 updateMinutes();
 
@@ -844,7 +844,7 @@ function renderInventory() {
         
         let actionButtons = '';
         if (isEgg) {
-            actionButtons = `<button class="use-item-btn" style="background:var(--magical-glow); color:#000; font-size:0.7rem;" onclick="startIncubating('${id}')">🥚 Incubate</button><button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>`;
+            actionButtons = `<button class="use-item-btn" onclick="startIncubating('${id}')">Use (ฟักไข่)</button><button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>`;
         } else if (isUsable || isSpecialUse) {
             actionButtons = `<button class="use-item-btn" onclick="useItem('${id}', '${name}')">Use</button><button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>`;
         } else {

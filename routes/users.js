@@ -170,22 +170,29 @@ router.post('/boosters', isAuthenticated, hasRole(['admin', 'professor']), sanit
 // Get Faculty Members
 router.get('/faculty', async (req, res) => {
     try {
+        const defaultFaculty = [
+            { name: 'Prof. Richard Moore', subject: 'Aweth', image: 'assets/images/Prof/Prof.Richard.png' },
+            { name: 'Prof. Mathal', subject: 'Charms', image: 'assets/images/Prof/Prof.Mathal.png' },
+            { name: 'Prof. King Zadkiel Winchester', subject: 'Faculty Member', image: 'assets/images/Prof/Prof.King.png' },
+            { name: 'Prof. Navin White Rosier', subject: 'Astronomy', image: 'assets/images/Prof/Prof. Navin White Rosier.png' },
+            { name: 'Prof. Tulphat Narintrapakdee', subject: 'Faculty Member', image: 'assets/images/Prof/Prof. Tulphat Narintrapakdee.png' },
+            { name: 'Prof. Sofia McQueen', subject: 'Herblology', image: 'assets/images/Prof/Prof. Sofia McQueen.png' },
+            { name: 'Prof. ScarDKillz', subject: 'Faculty Member', image: 'assets/images/Prof/Prof. ScarDKillz.png' },
+            { name: 'Sir. Ngong Ngaeng', subject: 'Faculty Member', image: 'assets/images/Prof/Sir. Ngong Ngaeng.png' },
+            { name: 'Prof. Mary Greengrass', subject: 'Faculty Member', image: 'assets/images/Prof/Prof.Mary Greengrass.png' }
+        ];
+
         let facultyConfig = await Config.findOne({ key: 'faculty_members' });
         if (!facultyConfig) {
             facultyConfig = new Config({
                 key: 'faculty_members',
-                value: [
-                    { name: 'Prof. Richard Moore', subject: 'Aweth', image: 'assets/images/Prof/Prof.Richard.png' },
-                    { name: 'Prof. Mathal', subject: 'Charms', image: 'assets/images/Prof/Prof.Mathal.png' },
-                    { name: 'Prof. King Zadkiel Winchester', subject: 'Faculty Member', image: 'assets/images/Prof/Prof.King.png' },
-                    { name: 'Prof. Navin White Rosier', subject: 'Astronomy', image: 'assets/images/Prof/Prof. Navin White Rosier.png' },
-                    { name: 'Prof. Tulphat Narintrapakdee', subject: 'Faculty Member', image: 'assets/images/Prof/Prof. Tulphat Narintrapakdee.png' },
-                    { name: 'Prof. Sofia McQueen', subject: 'Herblology', image: 'assets/images/Prof/Prof. Sofia McQueen.png' },
-                    { name: 'Prof. ScarDKillz', subject: 'Faculty Member', image: 'assets/images/Prof/Prof. ScarDKillz.png' },
-                    { name: 'Sir. Ngong Ngaeng', subject: 'Faculty Member', image: 'assets/images/Prof/Sir. Ngong Ngaeng.png' },
-                    { name: 'Prof. Mary Greengrass', subject: 'Faculty Member', image: 'assets/images/Prof/Prof.Mary Greengrass.png' }
-                ]
+                value: defaultFaculty
             });
+            await facultyConfig.save();
+        } else {
+            // Auto-update db to ensure latest faculty list (like Mary Greengrass) is applied
+            facultyConfig.value = defaultFaculty;
+            facultyConfig.markModified('value');
             await facultyConfig.save();
         }
         res.json(facultyConfig.value);

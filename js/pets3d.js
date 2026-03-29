@@ -69,6 +69,17 @@ function initPet3D() {
         if (pet3DScene.parent !== null || document.getElementById('pets').classList.contains('active')) {
             const delta = clock.getDelta();
             if (pet3DMixer) pet3DMixer.update(delta);
+            
+            if (pet3DModel && pet3DModel.userData && pet3DModel.userData.isProcedural) {
+                pet3DModel.userData.time += delta;
+                const t = pet3DModel.userData.time;
+                pet3DModel.position.y = 1.2 + Math.sin(t * 2) * 0.15;
+                if (pet3DModel.userData.points) {
+                    pet3DModel.userData.points.rotation.y += delta * 0.5;
+                    pet3DModel.userData.points.rotation.x += delta * 0.2;
+                }
+            }
+
             controls.update();
             pet3DRenderer.render(pet3DScene, pet3DCamera);
         }
@@ -135,14 +146,9 @@ window.updatePet3DModel = function(species) {
     };
 
     const targetUrl = `assets/models/${targetSpecies}.glb`;
-    const fallbackUrl = `assets/models/pet.glb`;
 
-    // Try loading specific model, fallback to default if failed
+    // Try loading specific model, fallback to procedural magic aura if failed
     loadModel(targetUrl)
-        .catch(() => {
-            console.log(`Specific model for ${targetSpecies} not found, using default pet.`);
-            return loadModel(fallbackUrl);
-        })
         .then((gltf) => {
             if (!gltf) return;
             pet3DModel = gltf.scene;
@@ -170,8 +176,64 @@ window.updatePet3DModel = function(species) {
                 action.play();
             }
         })
-        .catch(error => {
-            console.error('Failed to load any pet 3D model:', error);
-            currentLoadedSpecies = null;
+        .catch(() => {
+            console.log(`Specific model for ${targetSpecies} not found, generating procedural magical aura.`);
+            
+            pet3DModel = new THREE.Group();
+            
+            // Magical color based on species mapping
+            const colorMap = {
+                'owl': 0xdddddd,
+                'toad': 0x44aa44,
+                'puffskein': 0xffaacc,
+                'kneazle': 0xdd8833,
+                'seal': 0x88ccff,
+                'niffler': 0xffdd44,
+                'hippogriff': 0xaabbcc,
+                'thestral': 0x442266,
+                'dragon': 0xff3333,
+                'qilin': 0x44ffaa
+            };
+            const speciesColor = colorMap[targetSpecies] || 0xd4af37;
+            
+            // Sphere base
+            const geo = new THREE.SphereGeometry(1.0, 32, 32);
+            const mat = new THREE.MeshPhysicalMaterial({
+                color: speciesColor,
+                emissive: speciesColor,
+                emissiveIntensity: 0.6,
+                transparent: true,
+                opacity: 0.6,
+                roughness: 0.2,
+                transmission: 0.8,
+                thickness: 0.5
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.castShadow = true;
+            
+            // Surrounding magic particles
+            const pGeo = new THREE.BufferGeometry();
+            const pCount = 300;
+            const pOpts = new Float32Array(pCount * 3);
+            for(let i=0; i<pCount*3; i++) {
+                pOpts[i] = (Math.random() - 0.5) * 3.5;
+            }
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pOpts, 3));
+            const pMat = new THREE.PointsMaterial({
+                color: speciesColor,
+                size: 0.08,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+            const points = new THREE.Points(pGeo, pMat);
+            
+            pet3DModel.add(mesh);
+            pet3DModel.add(points);
+            
+            pet3DModel.position.set(0, 1.2, 0);
+            pet3DModel.userData = { isProcedural: true, points: points, time: 0 };
+            
+            pet3DScene.add(pet3DModel);
         });
 };
