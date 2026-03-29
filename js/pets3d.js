@@ -73,7 +73,18 @@ function initPet3D() {
             if (pet3DModel && pet3DModel.userData && pet3DModel.userData.isProcedural) {
                 pet3DModel.userData.time += delta;
                 const t = pet3DModel.userData.time;
-                pet3DModel.position.y = 1.2 + Math.sin(t * 2) * 0.15;
+                const baseY = pet3DModel.userData.baseY !== undefined ? pet3DModel.userData.baseY : 1.2;
+                const bob = pet3DModel.userData.bobFactor !== undefined ? pet3DModel.userData.bobFactor : 0.15;
+                pet3DModel.position.y = baseY + Math.sin(t * 2) * bob;
+                
+                // Add slight rotation or flapping if needed based on species
+                if (pet3DModel.userData.isWinged && pet3DModel.userData.wings) {
+                    pet3DModel.userData.wings.forEach((wing, idx) => {
+                        const dir = idx === 0 ? 1 : -1;
+                        wing.rotation.z = Math.sin(t * 5) * 0.3 * dir;
+                    });
+                }
+
                 if (pet3DModel.userData.points) {
                     pet3DModel.userData.points.rotation.y += delta * 0.5;
                     pet3DModel.userData.points.rotation.x += delta * 0.2;
@@ -177,62 +188,265 @@ window.updatePet3DModel = function(species) {
             }
         })
         .catch(() => {
-            console.log(`Specific model for ${targetSpecies} not found, generating procedural magical aura.`);
+            console.log(`Specific model for ${targetSpecies} not found, generating procedural model.`);
             
             pet3DModel = new THREE.Group();
             
-            // Magical color based on species mapping
             const colorMap = {
-                'owl': 0xdddddd,
-                'toad': 0x44aa44,
-                'puffskein': 0xffaacc,
-                'kneazle': 0xdd8833,
-                'seal': 0x88ccff,
-                'niffler': 0xffdd44,
-                'hippogriff': 0xaabbcc,
-                'thestral': 0x442266,
-                'dragon': 0xff3333,
-                'qilin': 0x44ffaa
+                'owl': 0x8B4513,      // SaddleBrown
+                'toad': 0x2E8B57,     // SeaGreen
+                'puffskein': 0xFFB6C1,// LightPink
+                'kneazle': 0xD2691E,  // Chocolate
+                'seal': 0xADD8E6,     // LightBlue
+                'niffler': 0x111111,  // Black with gold
+                'hippogriff': 0xA9A9A9, // DarkGray
+                'thestral': 0x2F4F4F, // DarkSlateGray
+                'dragon': 0x8B0000,   // DarkRed
+                'qilin': 0xFFD700     // Gold
             };
             const speciesColor = colorMap[targetSpecies] || 0xd4af37;
             
-            // Sphere base
-            const geo = new THREE.SphereGeometry(1.0, 32, 32);
-            const mat = new THREE.MeshPhysicalMaterial({
-                color: speciesColor,
-                emissive: speciesColor,
-                emissiveIntensity: 0.6,
-                transparent: true,
-                opacity: 0.6,
-                roughness: 0.2,
-                transmission: 0.8,
-                thickness: 0.5
-            });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.castShadow = true;
+            // Materials
+            const mainMat = new THREE.MeshStandardMaterial({ color: speciesColor, roughness: 0.7, metalness: 0.1 });
+            const eyeMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.8 });
+            const detailMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.7 });
+            const goldMat = new THREE.MeshStandardMaterial({ color: 0xFFD700, roughness: 0.3, metalness: 0.8 });
             
+            const wings = [];
+
+            if (targetSpecies === 'owl') {
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.2, 16), mainMat);
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 16), mainMat);
+                head.position.y = 0.8;
+                const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.12), eyeMat);
+                eyeL.position.set(-0.25, 0.9, 0.5);
+                const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.12), eyeMat);
+                eyeR.position.set(0.25, 0.9, 0.5);
+                const beak = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.3), goldMat);
+                beak.rotation.x = Math.PI / 2;
+                beak.position.set(0, 0.75, 0.6);
+                
+                const wingL = new THREE.Group();
+                const wingMeshL = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.8), mainMat);
+                wingMeshL.position.set(0, -0.4, 0);
+                wingL.add(wingMeshL);
+                wingL.position.set(-0.7, 0.4, 0);
+                
+                const wingR = new THREE.Group();
+                const wingMeshR = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.8), mainMat);
+                wingMeshR.position.set(0, -0.4, 0);
+                wingR.add(wingMeshR);
+                wingR.position.set(0.7, 0.4, 0);
+
+                wings.push(wingL, wingR);
+                pet3DModel.add(body, head, eyeL, eyeR, beak, wingL, wingR);
+            } 
+            else if (targetSpecies === 'toad') {
+                const body = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), mainMat);
+                body.scale.set(1, 0.6, 1.2);
+                const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.2), mainMat);
+                eyeL.position.set(-0.35, 0.5, 0.6);
+                const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.2), mainMat);
+                eyeR.position.set(0.35, 0.5, 0.6);
+                const pupilL = new THREE.Mesh(new THREE.SphereGeometry(0.08), eyeMat);
+                pupilL.position.set(-0.35, 0.55, 0.75);
+                const pupilR = new THREE.Mesh(new THREE.SphereGeometry(0.08), eyeMat);
+                pupilR.position.set(0.35, 0.55, 0.75);
+                pet3DModel.add(body, eyeL, eyeR, pupilL, pupilR);
+            }
+            else if (targetSpecies === 'puffskein') {
+                const body = new THREE.Mesh(new THREE.IcosahedronGeometry(0.8, 2), mainMat);
+                const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.1), eyeMat);
+                eyeL.position.set(-0.25, 0.15, 0.75);
+                const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.1), eyeMat);
+                eyeR.position.set(0.25, 0.15, 0.75);
+                const tongue = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.4), new THREE.MeshStandardMaterial({color: 0xff4444}));
+                tongue.rotation.x = Math.PI / 2;
+                tongue.position.set(0, -0.1, 0.9);
+                pet3DModel.add(body, eyeL, eyeR, tongue);
+            }
+            else if (targetSpecies === 'kneazle') {
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 1.4), mainMat);
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), mainMat);
+                head.position.set(0, 0.4, 0.8);
+                const earL = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.4), mainMat);
+                earL.position.set(-0.2, 0.8, 0.8);
+                const earR = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.4), mainMat);
+                earR.position.set(0.2, 0.8, 0.8);
+                const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.2), mainMat);
+                tail.rotation.x = -Math.PI / 4;
+                tail.position.set(0, 0.4, -0.8);
+                const tuft = new THREE.Mesh(new THREE.SphereGeometry(0.15), detailMat);
+                tuft.position.set(0, 0.8, -1.2);
+                pet3DModel.add(body, head, earL, earR, tail, tuft);
+            }
+            else if (targetSpecies === 'seal') {
+                const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1.2, 4, 16), mainMat);
+                body.rotation.x = Math.PI / 2;
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.5), mainMat);
+                head.position.set(0, 0.2, 0.9);
+                const flipperL = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.1, 0.3), mainMat);
+                flipperL.position.set(-0.5, -0.3, 0.4);
+                flipperL.rotation.y = -Math.PI / 4;
+                const flipperR = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.1, 0.3), mainMat);
+                flipperR.position.set(0.5, -0.3, 0.4);
+                flipperR.rotation.y = Math.PI / 4;
+                const nose = new THREE.Mesh(new THREE.SphereGeometry(0.1), eyeMat);
+                nose.position.set(0, 0.2, 1.35);
+                pet3DModel.add(body, head, flipperL, flipperR, nose);
+            }
+            else if (targetSpecies === 'niffler') {
+                const body = new THREE.Mesh(new THREE.SphereGeometry(0.7), mainMat);
+                body.scale.set(1, 1.2, 1);
+                const snout = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.5), detailMat);
+                snout.rotation.x = Math.PI / 2;
+                snout.position.set(0, 0.2, 0.8);
+                const coin = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.04), goldMat);
+                coin.rotation.x = Math.PI / 2;
+                coin.rotation.z = Math.PI / 4;
+                coin.position.set(0, 0.1, 1.1);
+                pet3DModel.add(body, snout, coin);
+            }
+            else if (targetSpecies === 'hippogriff') {
+                const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.6, 1.2), mainMat);
+                body.rotation.x = Math.PI / 2;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.7), detailMat);
+                head.position.set(0, 0.7, 0.8);
+                const beak = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.5), goldMat);
+                beak.rotation.x = Math.PI / 2;
+                beak.position.set(0, 0.7, 1.2);
+                
+                const wingL = new THREE.Group();
+                const wMeshL = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.1, 0.8), detailMat);
+                wMeshL.position.set(-0.75, 0, 0);
+                wingL.add(wMeshL);
+                wingL.position.set(-0.6, 0.4, 0);
+                
+                const wingR = new THREE.Group();
+                const wMeshR = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.1, 0.8), detailMat);
+                wMeshR.position.set(0.75, 0, 0);
+                wingR.add(wMeshR);
+                wingR.position.set(0.6, 0.4, 0);
+
+                wings.push(wingL, wingR);
+                pet3DModel.add(body, head, beak, wingL, wingR);
+            }
+            else if (targetSpecies === 'thestral') {
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 1.6), mainMat);
+                body.rotation.x = Math.PI / 2;
+                const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.25, 0.8), mainMat);
+                neck.rotation.x = Math.PI / 4;
+                neck.position.set(0, 0.6, 0.8);
+                const head = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7), mainMat);
+                head.rotation.x = Math.PI / 2;
+                head.position.set(0, 0.9, 1.1);
+                
+                const wingMat = new THREE.MeshStandardMaterial({color: 0x111111, side: THREE.DoubleSide, transparent: true, opacity: 0.8});
+                
+                const wingL = new THREE.Group();
+                const wMeshL = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.2), wingMat);
+                wMeshL.rotation.x = Math.PI / 2;
+                wMeshL.position.set(-0.75, 0, 0);
+                wingL.add(wMeshL);
+                wingL.position.set(-0.3, 0.4, 0);
+                
+                const wingR = new THREE.Group();
+                const wMeshR = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.2), wingMat);
+                wMeshR.rotation.x = Math.PI / 2;
+                wMeshR.position.set(0.75, 0, 0);
+                wingR.add(wMeshR);
+                wingR.position.set(0.3, 0.4, 0);
+
+                wings.push(wingL, wingR);
+                pet3DModel.add(body, neck, head, wingL, wingR);
+            }
+            else if (targetSpecies === 'dragon') {
+                const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.6, 1.6), mainMat);
+                body.rotation.x = Math.PI / 2;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 1.0), mainMat);
+                head.position.set(0, 0.4, 1.2);
+                const tail = new THREE.Mesh(new THREE.ConeGeometry(0.3, 1.6), mainMat);
+                tail.rotation.x = -Math.PI / 2;
+                tail.position.set(0, 0, -1.6);
+                
+                const wingL = new THREE.Group();
+                const wMeshL = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.5), mainMat);
+                wMeshL.material.side = THREE.DoubleSide;
+                wMeshL.rotation.x = Math.PI / 2;
+                wMeshL.position.set(-1.0, 0, 0);
+                wingL.add(wMeshL);
+                wingL.position.set(-0.6, 0.5, 0);
+                
+                const wingR = new THREE.Group();
+                const wMeshR = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.5), mainMat);
+                wMeshR.material.side = THREE.DoubleSide;
+                wMeshR.rotation.x = Math.PI / 2;
+                wMeshR.position.set(1.0, 0, 0);
+                wingR.add(wMeshR);
+                wingR.position.set(0.6, 0.5, 0);
+
+                wings.push(wingL, wingR);
+                pet3DModel.add(body, head, tail, wingL, wingR);
+            }
+            else if (targetSpecies === 'qilin') {
+                const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1.2), mainMat);
+                body.rotation.x = Math.PI / 2;
+                const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.25, 1.0), mainMat);
+                neck.position.set(0, 0.8, 0.6);
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.4, 0.6), mainMat);
+                head.position.set(0, 1.3, 0.8);
+                const antlerL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5), goldMat);
+                antlerL.rotation.z = Math.PI / 6;
+                antlerL.position.set(-0.15, 1.6, 0.6);
+                const antlerR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5), goldMat);
+                antlerR.rotation.z = -Math.PI / 6;
+                antlerR.position.set(0.15, 1.6, 0.6);
+                pet3DModel.add(body, neck, head, antlerL, antlerR);
+            }
+            else {
+                // Default magic orb
+                const geo = new THREE.SphereGeometry(0.8, 32, 32);
+                const mat = new THREE.MeshPhysicalMaterial({
+                    color: speciesColor, emissive: speciesColor, emissiveIntensity: 0.6,
+                    transparent: true, opacity: 0.6, roughness: 0.2, transmission: 0.8, thickness: 0.5
+                });
+                pet3DModel.add(new THREE.Mesh(geo, mat));
+            }
+
+            // Enable shadows for all parts
+            pet3DModel.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+
             // Surrounding magic particles
+            const pColor = targetSpecies === 'niffler' ? 0xFFD700 : speciesColor;
             const pGeo = new THREE.BufferGeometry();
-            const pCount = 300;
+            const pCount = 200;
             const pOpts = new Float32Array(pCount * 3);
             for(let i=0; i<pCount*3; i++) {
-                pOpts[i] = (Math.random() - 0.5) * 3.5;
+                pOpts[i] = (Math.random() - 0.5) * 3.0;
             }
             pGeo.setAttribute('position', new THREE.BufferAttribute(pOpts, 3));
             const pMat = new THREE.PointsMaterial({
-                color: speciesColor,
-                size: 0.08,
-                transparent: true,
-                opacity: 0.8,
-                blending: THREE.AdditiveBlending
+                color: pColor, size: 0.06, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending
             });
             const points = new THREE.Points(pGeo, pMat);
-            
-            pet3DModel.add(mesh);
             pet3DModel.add(points);
             
-            pet3DModel.position.set(0, 1.2, 0);
-            pet3DModel.userData = { isProcedural: true, points: points, time: 0 };
+            // Setup animation data
+            pet3DModel.userData = { 
+                isProcedural: true, 
+                points: points, 
+                time: 0,
+                baseY: (targetSpecies === 'owl' || targetSpecies === 'dragon' || targetSpecies === 'hippogriff' || targetSpecies === 'thestral') ? 1.5 : 0.5,
+                bobFactor: (targetSpecies === 'toad' || targetSpecies === 'puffskein') ? 0.3 : 0.1,
+                isWinged: wings.length > 0,
+                wings: wings
+            };
+            pet3DModel.position.y = pet3DModel.userData.baseY;
             
             pet3DScene.add(pet3DModel);
         });
