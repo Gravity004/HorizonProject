@@ -1446,6 +1446,24 @@
         </div>
     </div>
 
+    <!-- Transfer Pet Modal -->
+    <div id="transferPetModal" class="amortentia-overlay">
+        <div class="amortentia-box" style="background: linear-gradient(145deg, #1a1005, #2d1e0d); border: 1px solid #8b6914; box-shadow: 0 0 30px rgba(212,175,55,0.15), inset 0 0 20px rgba(212,175,55,0.05);">
+            <div class="amortentia-title" style="color: #d4af37; text-shadow: 0 0 20px rgba(212,175,55,0.7); letter-spacing: 2px; font-size: 1.3rem;">🦉 Transfer Familiar</div>
+            <div class="amortentia-subtitle" style="color: rgba(212,175,55,0.6);">&#10022; Send via Owl Post &#10022;</div>
+            <p style="color:rgba(220,200,180,0.8); font-size:0.85rem; margin-bottom:1.5rem; line-height:1.6;">
+                Enter the Discord username of the recipient.<br>
+                <span style="color:#f56a6a; font-weight:bold;">Warning: The familiar will be permanently removed from your care!</span>
+            </p>
+            <input type="hidden" id="transferPetId">
+            <input type="text" id="transferPetTargetInput" class="amortentia-input" style="border-color: rgba(212,175,55,0.4); color: #f0e6c8; outline: none;" placeholder="Recipient username..." onfocus="this.style.borderColor='#d4af37'; this.style.boxShadow='0 0 15px rgba(212,175,55,0.3)';" onblur="this.style.borderColor='rgba(212,175,55,0.4)'; this.style.boxShadow='none';">
+            <div class="amortentia-btns">
+                <button class="amortentia-cancel" style="border-color: rgba(212,175,55,0.3); color: rgba(212,175,55,0.7);" onmouseover="this.style.borderColor='#d4af37'; this.style.color='#d4af37';" onmouseout="this.style.borderColor='rgba(212,175,55,0.3)'; this.style.color='rgba(212,175,55,0.7)';" onclick="closeTransferPetModal()">Cancel</button>
+                <button class="amortentia-cast" style="background: linear-gradient(135deg, #8b6914, #d4af37); color: #000; box-shadow: 0 6px 20px rgba(212,175,55,0.3); text-shadow: none;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 25px rgba(212,175,55,0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(212,175,55,0.3)';" onclick="submitTransferPet()">Transfer</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit Item Modal (Admin) -->
     <div id="editItemModal" class="modal">
         <div class="modal-content parchment">

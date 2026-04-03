@@ -2086,8 +2086,26 @@ async function toggleActivePet(petId, currentlyActive) {
 }
 
 window.transferPetPrompt = function(petId) {
-    const toUser = prompt('กรอกชื่อ Discord (Username) ของผู้รับ\n*คำเตือน สัตว์เลี้ยงจะถูกลบออกจากบัญชีคุณทันที*:');
-    if (!toUser) return;
+    document.getElementById('transferPetId').value = petId;
+    document.getElementById('transferPetTargetInput').value = '';
+    document.getElementById('transferPetModal').classList.add('active');
+}
+
+window.closeTransferPetModal = function() {
+    document.getElementById('transferPetModal').classList.remove('active');
+}
+
+window.submitTransferPet = function() {
+    const petId = document.getElementById('transferPetId').value;
+    const toUser = document.getElementById('transferPetTargetInput').value.trim();
+    
+    if (!toUser) {
+        spawnEffect('❌', 'Please enter a recipient username.');
+        return;
+    }
+    
+    closeTransferPetModal();
+    
     showConfirm('โอนสัตว์เลี้ยง', `แน่ใจหรือไม่ที่จะส่งสัตว์เลี้ยงตัวนี้ให้ ${toUser}?`, async () => {
         try {
             const res = await fetch('/api/pets/transfer', {
