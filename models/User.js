@@ -42,6 +42,9 @@ const userSchema = new mongoose.Schema({
         potionBoostHours: { type: Number, default: 0 },   // total hours skipped via Incubation Potion
         isReadyToHatch: { type: Boolean, default: false }
     },
+    // ─── Forest ───
+    lastForestGatherDate: { type: Date, default: null },
+    forestGatherCount: { type: Number, default: 0 },
     // ─── Pets ───
     pets: [{
         name: { type: String },

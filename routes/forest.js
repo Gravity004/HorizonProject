@@ -73,9 +73,31 @@ router.get('/status', isAuthenticated, async (req, res) => {
         }
     }
     
+    let maxGathers = 1;
+    if (user.dailyDivination && user.dailyDivination.buffType === 'extra_forest_entry' && (!user.dailyDivination.expiryDate || new Date(user.dailyDivination.expiryDate) > now)) {
+        maxGathers = 2;
+    }
+    
+    let gathersToday = user.forestGatherCount || 0;
+    if (user.lastForestGatherDate) {
+        const lastGather = new Date(user.lastForestGatherDate);
+        const thLastGather = new Date(lastGather.getTime() + (7 * 60 * 60 * 1000));
+        if (
+            thLastGather.getUTCFullYear() !== thTime.getUTCFullYear() ||
+            thLastGather.getUTCMonth() !== thTime.getUTCMonth() ||
+            thLastGather.getUTCDate() !== thTime.getUTCDate()
+        ) {
+            gathersToday = 0;
+        }
+    } else {
+        gathersToday = 0;
+    }
+
     res.json({
         isOpen,
-        hint: `The forest shifts around hour ${window.startHour}:00 TH Time.`
+        hint: `The forest shifts around hour ${window.startHour}:00 TH Time.`,
+        gathersToday,
+        maxGathers
     });
 });
 
@@ -95,6 +117,12 @@ router.post('/gather', isAuthenticated, isNotDetained, sanitizeBody, async (req,
         }
 
         // 2. Has user gathered today? Count based on 00:00 TH Time
+        let maxGathers = 1;
+        if (user.dailyDivination && user.dailyDivination.buffType === 'extra_forest_entry' && (!user.dailyDivination.expiryDate || new Date(user.dailyDivination.expiryDate) > now)) {
+            maxGathers = 2;
+        }
+
+        let gathersToday = user.forestGatherCount || 0;
         if (!isAdmin && user.lastForestGatherDate) {
             const lastGather = new Date(user.lastForestGatherDate);
             const thLastGather = new Date(lastGather.getTime() + (7 * 60 * 60 * 1000));
@@ -104,9 +132,20 @@ router.post('/gather', isAuthenticated, isNotDetained, sanitizeBody, async (req,
                 thLastGather.getUTCMonth() === thTime.getUTCMonth() &&
                 thLastGather.getUTCDate() === thTime.getUTCDate()
             ) {
-                return res.status(400).json({ message: 'You have already explored the forest today. Rest and return tomorrow.' });
+                if (gathersToday >= maxGathers) {
+                    return res.status(400).json({ message: 'You have explored the maximum number of times today. Rest and return tomorrow.' });
+                }
+            } else {
+                gathersToday = 0;
             }
+        } else if (!isAdmin) {
+            gathersToday = 0;
         }
+
+        // Increment count and set date right before saving (done later in code)
+        user.forestGatherCount = gathersToday + 1;
+        user.lastForestGatherDate = now;
+
 
         // 3. Roll for rarity drop
         // Base Probabilities: Common 55%, Uncommon 25%, Rare 15%, Legendary 5%
@@ -158,7 +197,7 @@ router.post('/gather', isAuthenticated, isNotDetained, sanitizeBody, async (req,
             user.inventory.push({ itemId: randomItem._id, quantity: quantityGained });
         }
 
-        user.lastForestGatherDate = now;
+        // user.lastForestGatherDate = now; // Now handled above
         user.markModified('inventory');
         await user.save();
 

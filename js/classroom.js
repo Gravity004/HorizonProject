@@ -22,7 +22,7 @@ async function initClassroom() {
             return;
         }
         user = authData.user;
-        
+
         userGoldEl.textContent = user.balance;
 
         // Show Admin Logs tab if admin/professor
@@ -45,9 +45,9 @@ async function initClassroom() {
 async function renderInventoryPanel() {
     const container = document.getElementById('classroomSidebarInventory');
     if (!container) return; // Feature added to HTML next
-    
+
     container.innerHTML = '<p style="color:#a89070; text-align:center;">Loading...</p>';
-    
+
     try {
         const res = await fetch('/auth/me', { credentials: 'include' });
         if (res.ok) {
@@ -56,11 +56,11 @@ async function renderInventoryPanel() {
                 user.inventory = authData.user.inventory;
             }
         }
-    } catch(e) {}
+    } catch (e) { }
 
     const inv = user.inventory || [];
     container.innerHTML = '';
-    
+
     if (inv.length === 0) {
         container.innerHTML = '<p style="color:#777; font-size: 0.8rem; text-align:center;">กระเป๋าว่างเปล่า</p>';
         return;
@@ -68,11 +68,11 @@ async function renderInventoryPanel() {
 
     inv.forEach(slot => {
         if (!slot.itemId || slot.quantity <= 0) return;
-        
+
         let item = slot.itemId;
         let img = 'assets/images/item.png';
         let name = 'Unknown Item';
-        
+
         if (typeof item === 'object') {
             img = item.image || img;
             name = item.name || name;
@@ -668,9 +668,9 @@ async function loadShopCategory(category, btnEl) {
         document.querySelectorAll('.shop-tab').forEach(b => b.classList.remove('active'));
         btnEl.classList.add('active');
     }
-    
+
     currentShopCategory = category;
-    
+
     try {
         const res = await fetch(`/api/shop/items?type=${category}`, { credentials: 'include' });
         allShopItems = await res.json();
@@ -684,23 +684,23 @@ function filterShopItems() {
     const searchVal = document.getElementById('shopSearchFilter').value.toLowerCase();
     const container = document.getElementById('seedShopContainer');
     container.innerHTML = '';
-    
+
     const filtered = allShopItems.filter(item => item.name.toLowerCase().includes(searchVal));
-    
+
     if (filtered.length === 0) {
         container.innerHTML = '<p style="color:#a89070; text-align:center;">No items found.</p>';
         return;
     }
-    
+
     filtered.forEach(item => {
         const div = document.createElement('div');
         div.className = 'seed-item';
-        
+
         // Show grow time for seeds, nothing for regular food/equip (or describe effects)
         let extraInfo = '';
         if (item.type === 'seed') extraInfo = `Grow Time: ${item.effects?.growHours || 48}h`;
         else if (item.description) extraInfo = `<span style="font-size:0.65rem; color:#888;">${item.description.slice(0, 30)}...</span>`;
-        
+
         div.innerHTML = `
             <img src="${item.image || 'assets/images/item.png'}" alt="${item.name}" loading="lazy">
             <div class="seed-info">
@@ -747,7 +747,7 @@ async function openPlantModal(slot) {
     const container = document.getElementById('inventorySeedsContainer');
     container.innerHTML = '<p style="color:#a89070; text-align:center;">Loading inventory...</p>';
     modal.classList.add('active');
-    
+
     // Refresh inventory
     try {
         const userRes = await fetch('/auth/me', { credentials: 'include' });
@@ -758,11 +758,11 @@ async function openPlantModal(slot) {
             }
         }
     } catch (e) { console.error('Error refreshing inventory', e); }
-    
+
     userInventory = user.inventory || [];
-    
+
     container.innerHTML = '';
-    
+
     // Filter inventory for seeds // checking if itemId is populated
     const seedsInInv = userInventory.filter(i => {
         if (!i.itemId) return false;
@@ -770,7 +770,7 @@ async function openPlantModal(slot) {
         if (typeof i.itemId === 'object') return i.itemId.type === 'seed' && i.quantity > 0;
         return false;
     });
-    
+
     if (seedsInInv.length === 0) {
         container.innerHTML = `<p style="color:#f56a6a; text-align:center; margin-top: 1rem;">You don't have any seeds! Buy some from The Spore & Seed shop panel.</p>`;
     } else {
@@ -864,11 +864,11 @@ async function harvestPlant(slot) {
 //  CHARMS ROOM (Canvas & Gesture Recognition)
 // ----------------------------------------------------
 const SPELLS = [
-    { id: 'lumos', name: 'Lumos', patternDesc: 'Draw a straight line up (1 segment)' },
-    { id: 'wingardium', name: 'Wingardium Leviosa', patternDesc: 'Swish and flick (Curve right, then flick up)' },
-    { id: 'accio', name: 'Accio', patternDesc: 'A semi-circle arch towards yourself' },
-    { id: 'expecto', name: 'Expecto Patronum', patternDesc: 'A large protective circle' },
-    { id: 'expelliarmus', name: 'Expelliarmus', patternDesc: 'A sharp zigzag (down-right, up-right)' }
+    { id: 'lumos', name: 'Lumos', patternDesc: '-' },
+    { id: 'wingardium', name: 'Wingardium Leviosa', patternDesc: '-' },
+    { id: 'accio', name: 'Accio', patternDesc: '-' },
+    { id: 'expecto', name: 'Expecto Patronum', patternDesc: '-' },
+    { id: 'expelliarmus', name: 'Expelliarmus', patternDesc: '-' }
 ];
 let activeSpell = null;
 let canvas, ctx;
@@ -1066,15 +1066,15 @@ let currentLogPage = 1;
 
 async function loadAdminLogs(page = 1) {
     if (!user || (!user.roles?.includes('admin') && !user.roles?.includes('professor'))) return;
-    
+
     currentLogPage = page;
     const roomFilter = document.getElementById('adminLogRoomFilter').value;
     const userFilter = document.getElementById('adminLogUserFilter')?.value.trim();
-    
+
     let url = `/api/classroom/admin/logs?page=${page}&limit=20`;
     if (roomFilter) url += `&room=${roomFilter}`;
     if (userFilter) url += `&username=${encodeURIComponent(userFilter)}`;
-    
+
     try {
         const res = await fetch(url);
         const data = await res.json();
