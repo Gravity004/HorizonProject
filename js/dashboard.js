@@ -839,8 +839,9 @@ function renderInventory() {
         const id = item?._id || slot.itemId;
         
         const isEgg = name.toLowerCase().includes('egg') || name.toLowerCase().includes('ไข่');
+        const isPetFood = name.toLowerCase().includes('feed') || name.toLowerCase().includes('อาหารสัตว์') || (item?.description || '').includes('สัตว์');
         const isSpecialUse = name === 'Amortentia Potion' || name === 'Name Change Card' || name === 'บัตรเปลี่ยนชื่อ';
-        const isUsable = (type === 'food' || type === 'potion') && !isEgg;
+        const isUsable = (type === 'food' || type === 'potion') && !isEgg && !isPetFood;
         
         let actionButtons = '';
         if (isEgg) {

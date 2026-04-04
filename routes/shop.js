@@ -126,80 +126,85 @@ router.post('/use', isAuthenticated, isNotDetained, sanitizeBody, async (req, re
             return res.status(400).json({ message: 'Item not in inventory' });
         }
 
+        const item = await Item.findById(itemId);
+        if (!item) return res.status(404).json({ message: 'Item not found' });
+
+        let healAmount = 0;
+        let healthMsg = '';
+
+        const isPetFood = item.name.toLowerCase().includes('feed') || item.name.toLowerCase().includes('อาหารสัตว์') || (item.description && item.description.includes('สัตว์'));
+        if (isPetFood) {
+            return res.status(400).json({ message: 'This item is meant for familiars! You cannot consume it.' });
+        }
+
+        if (item.name === 'Amortentia Potion') {
+            if (!targetUsername) return res.status(400).json({ message: 'Target username is required for Love Potion!' });
+
+            const target = await User.findOne({ username: targetUsername });
+            if (!target) return res.status(404).json({ message: 'Target user not found' });
+
+            const isAdmin = target.roles && (target.roles.includes('admin') || target.roles.includes('professor'));
+
+            slot.quantity -= 1;
+            if (slot.quantity <= 0) {
+                user.inventory = user.inventory.filter(i => i.itemId.toString() !== itemId);
+            }
+            user.markModified('inventory');
+            await user.save();
+
+            if (!isAdmin) {
+                target.activeEffects = target.activeEffects || [];
+                target.activeEffects = target.activeEffects.filter(e => e.effectId !== 'love_potion');
+
+                target.activeEffects.push({
+                    effectId: 'love_potion',
+                    casterId: user._id,
+                    casterName: user.username,
+                    expiresAt: new Date(Date.now() + 60 * 60 * 1000) // 1 hr
+                });
+
+                target.markModified('activeEffects');
+                await target.save();
+
+                const Gift = require('../models/Gift');
+                const gift = new Gift({
+                    senderId: user._id,
+                    senderName: 'System',
+                    recipientId: target._id,
+                    recipientName: target.username,
+                    itemId: item._id,
+                    quantity: 0,
+                    message: `คุณถูกใช้คาถา Amortentia Potion (น้ำยาลุ่มหลง) เป็นเวลา 1 ชั่วโมง! การกระทำถัดไปในธนาคารหรือการส่งของของคุณอาจถูกครอบงำ...`,
+                    isClaimed: false
+                });
+                await gift.save();
+
+                return res.json({
+                    message: `Love potion successfully cast on ${target.username}!`,
+                    itemName: item.name,
+                    inventory: user.inventory
+                });
+            } else {
+                return res.json({
+                    message: `You consumed the potion, but ${target.username} is immune!`,
+                    itemName: item.name,
+                    inventory: user.inventory
+                });
+            }
+        }
+
         slot.quantity -= 1;
         if (slot.quantity <= 0) {
             user.inventory = user.inventory.filter(i => i.itemId.toString() !== itemId);
         }
 
-        const item = await Item.findById(itemId);
-        let healAmount = 0;
-        let healthMsg = '';
+        if (item.name === 'ชาอัญชัน') healAmount = 10;
+        else if (item.name === 'ต้มยำ') healAmount = 50;
+        else if (item.type === 'food') healAmount = 25;
 
-        if (item) {
-            if (item.name === 'Amortentia Potion') {
-                if (!targetUsername) return res.status(400).json({ message: 'Target username is required for Love Potion!' });
-
-                const target = await User.findOne({ username: targetUsername });
-                if (!target) return res.status(404).json({ message: 'Target user not found' });
-
-                const isAdmin = target.roles && (target.roles.includes('admin') || target.roles.includes('professor'));
-
-                slot.quantity -= 1;
-                if (slot.quantity <= 0) {
-                    user.inventory = user.inventory.filter(i => i.itemId.toString() !== itemId);
-                }
-                user.markModified('inventory');
-                await user.save();
-
-                if (!isAdmin) {
-                    target.activeEffects = target.activeEffects || [];
-                    target.activeEffects = target.activeEffects.filter(e => e.effectId !== 'love_potion');
-
-                    target.activeEffects.push({
-                        effectId: 'love_potion',
-                        casterId: user._id,
-                        casterName: user.username,
-                        expiresAt: new Date(Date.now() + 60 * 60 * 1000) // 1 hr
-                    });
-
-                    target.markModified('activeEffects');
-                    await target.save();
-
-                    const Gift = require('../models/Gift');
-                    const gift = new Gift({
-                        senderId: user._id,
-                        senderName: 'System',
-                        recipientId: target._id,
-                        recipientName: target.username,
-                        itemId: item._id,
-                        quantity: 0,
-                        message: `คุณถูกใช้คาถา Amortentia Potion (น้ำยาลุ่มหลง) เป็นเวลา 1 ชั่วโมง! การกระทำถัดไปในธนาคารหรือการส่งของของคุณอาจถูกครอบงำ...`,
-                        isClaimed: false
-                    });
-                    await gift.save();
-
-                    return res.json({
-                        message: `Love potion successfully cast on ${target.username}!`,
-                        itemName: item.name,
-                        inventory: user.inventory
-                    });
-                } else {
-                    return res.json({
-                        message: `You consumed the potion, but ${target.username} is immune!`,
-                        itemName: item.name,
-                        inventory: user.inventory
-                    });
-                }
-            }
-
-            if (item.name === 'ชาอัญชัน') healAmount = 10;
-            else if (item.name === 'ต้มยำ') healAmount = 50;
-            else if (item.type === 'food') healAmount = 25;
-
-            if (healAmount > 0) {
-                user.health = Math.min(user.maxHealth, user.health + healAmount);
-                healthMsg = ` (Restored +${healAmount} HP)`;
-            }
+        if (healAmount > 0) {
+            user.health = Math.min(user.maxHealth, user.health + healAmount);
+            healthMsg = ` (Restored +${healAmount} HP)`;
         }
 
         user.markModified('inventory');

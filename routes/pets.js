@@ -305,18 +305,30 @@ router.post('/feed', ensureAuth, async (req, res) => {
         const pet = user.pets.find(p => p._id.toString() === petId);
         if (!pet) return res.status(404).json({ message: 'Pet not found.' });
 
-        // Consume Basic Pet Feed
-        const feedItem = await Item.findOne({ name: 'Basic Pet Feed' });
-        if (!feedItem) return res.status(400).json({ message: 'Basic Pet Feed does not exist in the item database.' });
+        // Get all items in user's inventory to find available pet food
+        const invItemIds = user.inventory.map(i => i.itemId);
+        const invItems = await Item.find({ _id: { $in: invItemIds } });
 
-        const feedSlot = user.inventory.find(i => i.itemId.toString() === feedItem._id.toString());
-        if (!feedSlot || feedSlot.quantity < 1) {
-            return res.status(400).json({ message: 'You do not have Basic Pet Feed in your inventory. Buy some from the shop!' });
+        let consumedItemId = null;
+        for (const item of invItems) {
+            const isPetFood = item.name.toLowerCase().includes('feed') || item.name.toLowerCase().includes('อาหารสัตว์') || (item.description && item.description.includes('สัตว์'));
+            if (isPetFood) {
+                const slot = user.inventory.find(i => i.itemId.toString() === item._id.toString());
+                if (slot && slot.quantity > 0) {
+                    consumedItemId = item._id.toString();
+                    break;
+                }
+            }
         }
 
+        if (!consumedItemId) {
+            return res.status(400).json({ message: 'You do not have any pet food in your inventory. Buy some from the shop!' });
+        }
+
+        const feedSlot = user.inventory.find(i => i.itemId.toString() === consumedItemId);
         feedSlot.quantity -= 1;
         if (feedSlot.quantity <= 0) {
-            user.inventory = user.inventory.filter(i => i.itemId.toString() !== feedItem._id.toString());
+            user.inventory = user.inventory.filter(i => i.itemId.toString() !== consumedItemId);
         }
 
         // Restore hunger
