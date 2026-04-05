@@ -91,8 +91,16 @@ router.post('/claim', isAuthenticated, async (req, res) => {
         // Give reward
         let rewardMsg = '';
         if (quest.rewardType === 'galleons') {
-            user.balance += quest.rewardAmount;
-            rewardMsg = `ได้รับ ${quest.rewardAmount} Galleons!`;
+            let finalGalleons = quest.rewardAmount;
+            
+            // ── Divination buff ────────────────────────────────────────────────────────
+            if (user.dailyDivination && user.dailyDivination.buffType === 'bonus_income_20' &&
+                user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
+                finalGalleons = Math.floor(finalGalleons * 1.2);
+            }
+
+            user.balance += finalGalleons;
+            rewardMsg = `ได้รับ ${finalGalleons} Galleons!`;
         } else if (quest.rewardType === 'material') {
             const Item = require('../models/Item');
             // Give a random common/rare material

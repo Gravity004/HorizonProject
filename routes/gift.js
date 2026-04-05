@@ -116,11 +116,22 @@ router.post('/claim', isAuthenticated, sanitizeBody, async (req, res) => {
 
         // Handle gifts with or without actual items
         if (gift.itemId && gift.quantity > 0) {
+            let finalQuantity = gift.quantity;
+
+            // ── Divination buff: gift_bonus ──────────────────────────────────
+            if (recipient.dailyDivination && recipient.dailyDivination.buffType === 'gift_bonus' &&
+                recipient.dailyDivination.expiryDate && new Date() < new Date(recipient.dailyDivination.expiryDate)) {
+                // ONLY apply to system-sent items to prevent duplication loop exploits between friends
+                if (gift.senderName === 'SYSTEM' || gift.senderName === 'Rachata School of Wizardry') {
+                    finalQuantity = Math.ceil(finalQuantity * 1.2);
+                }
+            }
+
             const existingItemIndex = recipient.inventory.findIndex(i => i.itemId.toString() === gift.itemId._id.toString());
             if (existingItemIndex > -1) {
-                recipient.inventory[existingItemIndex].quantity += gift.quantity;
+                recipient.inventory[existingItemIndex].quantity += finalQuantity;
             } else {
-                recipient.inventory.push({ itemId: gift.itemId._id, quantity: gift.quantity });
+                recipient.inventory.push({ itemId: gift.itemId._id, quantity: finalQuantity });
             }
             recipient.markModified('inventory');
             await recipient.save();

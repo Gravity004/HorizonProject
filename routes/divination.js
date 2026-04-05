@@ -137,6 +137,12 @@ router.post('/draw', isAuthenticated, isNotDetained, async (req, res) => {
                 penaltyGalleons: 50,
                 isCleansed: false
             };
+
+            // Immediate HP penalty for grim/tower
+            if (reading.buffType === 'omen_grim' || reading.buffType === 'omen_tower') {
+                user.health = Math.max(0, (user.health || user.maxHealth || 100) - 30);
+                reading.desc += ' (HP ของคุณลดลง 30 หน่วยทันที!)';
+            }
         } else {
             // Clear any old curse quest if good omen drawn
             user.curseQuest = { isActive: false, isCleansed: false, deadlineAt: null, penaltyGalleons: 50, questType: 'craft_cleansing_potion' };

@@ -163,9 +163,20 @@ router.post('/gather', isAuthenticated, isNotDetained, sanitizeBody, async (req,
             }
         }
 
-        const legThreshold = 5 + legBonus;
-        const rareThreshold = 20 + rareBonus;
-        const uncommonThreshold = 45 + Math.floor(rareBonus / 2);
+        let legThreshold = 5 + legBonus;
+        let rareThreshold = 20 + rareBonus;
+        let uncommonThreshold = 45 + Math.floor(rareBonus / 2);
+
+        let dropPenalty = 0;
+        if (user.dailyDivination && user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
+            if (user.dailyDivination.buffType === 'omen_storm' || user.dailyDivination.buffType === 'omen_moon') {
+                dropPenalty = 15;
+            }
+        }
+
+        legThreshold = Math.max(0, legThreshold - dropPenalty);
+        rareThreshold = Math.max(0, rareThreshold - dropPenalty);
+        uncommonThreshold = Math.max(0, uncommonThreshold - dropPenalty);
 
         const roll = Math.random() * 100;
         let selectedRarity = 'common';

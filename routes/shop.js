@@ -46,11 +46,15 @@ router.post('/buy', isAuthenticated, isNotDetained, sanitizeBody, async (req, re
         let unitPrice = item.price;
         let bonusMessages = [];
 
-        // ── Divination buff: shop_discount (10% off) ──────────────────────────
-        if (user.dailyDivination && user.dailyDivination.buffType === 'shop_discount' &&
-            user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
-            unitPrice = Math.floor(unitPrice * 0.9);
-            bonusMessages.push('🔮 Divination discount applied (-10%)');
+        // ── Divination buff: shop_discount (10% off) & bad omens (+10% price) ──────────
+        if (user.dailyDivination && user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
+            if (user.dailyDivination.buffType === 'shop_discount') {
+                unitPrice = Math.floor(unitPrice * 0.9);
+                bonusMessages.push('🔮 Divination discount applied (-10%)');
+            } else if (user.dailyDivination.buffType === 'omen_broken' || user.dailyDivination.buffType === 'omen_devil') {
+                unitPrice = Math.ceil(unitPrice * 1.1);
+                bonusMessages.push('👿 Omen penalty applied (+10% cost)');
+            }
         }
 
         const totalCost = unitPrice * quantity;

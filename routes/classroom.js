@@ -54,7 +54,14 @@ router.post('/herbs/plant', isAuthenticated, sanitizeBody, async (req, res) => {
         user.markModified('inventory');
         await user.save();
 
-        const growHours = (seedItem.effects && seedItem.effects.growHours) ? seedItem.effects.growHours : 48;
+        let growHours = (seedItem.effects && seedItem.effects.growHours) ? seedItem.effects.growHours : 48;
+        
+        // ── Divination buff: herb_boost (-30% grow time) ───────────────────
+        if (user.dailyDivination && user.dailyDivination.buffType === 'herb_boost' &&
+            user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
+            growHours = growHours * 0.7;
+        }
+
         const waterIntervalHours = (seedItem.effects && seedItem.effects.waterIntervalHours) ? seedItem.effects.waterIntervalHours : 24;
         const now = new Date();
         const harvestAt = new Date(now.getTime() + growHours * 3600 * 1000);
@@ -163,6 +170,15 @@ router.post('/herbs/harvest', isAuthenticated, sanitizeBody, async (req, res) =>
                         harvestQty = 2;
                         bonusMsg = ` 🐸 ${activePet.name}'s blessing doubled your harvest!`;
                     }
+                }
+            }
+
+            // ── Divination buff: herb_double_chance (+20% chance) ───────────
+            if (harvestQty === 1 && user.dailyDivination && user.dailyDivination.buffType === 'herb_double_chance' &&
+                user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
+                if (Math.random() * 100 < 20) {
+                    harvestQty = 2;
+                    bonusMsg = ` 🌟 The Harvest doubled your yield!`;
                 }
             }
 

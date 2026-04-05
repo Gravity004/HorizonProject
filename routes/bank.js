@@ -69,7 +69,17 @@ router.post('/daily', isAuthenticated, sanitizeBody, async (req, res) => {
         }
 
         // Calculate reward (0 to 100 Galleons)
-        const reward = Math.floor(Math.random() * 101);
+        let reward = Math.floor(Math.random() * 101);
+
+        // ── Divination buff ────────────────────────────────────────────────────────
+        if (user.dailyDivination && user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
+            if (user.dailyDivination.buffType === 'bonus_daily_reward') {
+                const bonus = user.dailyDivination.readingType === 'tarot' ? 150 : 100;
+                reward += bonus;
+            } else if (user.dailyDivination.buffType === 'bonus_income_20') {
+                reward = Math.floor(reward * 1.2);
+            }
+        }
 
         user.balance += reward;
         user.lastDailyReward = now;

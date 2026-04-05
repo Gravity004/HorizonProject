@@ -176,16 +176,26 @@ router.post('/craft', isAuthenticated, isNotDetained, sanitizeBody, async (req, 
             }
         }
 
-        // ── Divination debuff: omen_snake (craft failure +20%) ─────────────
+        // ── Divination buff/debuff: craft_bonus (+10/15%), omen_snake (-20%), omen_fool (-15%) ─────────────
         let omenPenalty = 0;
-        if (user.dailyDivination && user.dailyDivination.buffType === 'omen_snake' &&
-            user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
-            omenPenalty = 20;
+        let divinationBonus = 0;
+        let divinationMsg = '';
+        if (user.dailyDivination && user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
+            if (user.dailyDivination.buffType === 'omen_snake') {
+                omenPenalty = 20;
+                divinationMsg = ' 🐍 The Serpent\'s Hex made this harder.';
+            } else if (user.dailyDivination.buffType === 'omen_fool') {
+                omenPenalty = 15;
+                divinationMsg = ' 🃏 The Fool\'s haste made this riskier.';
+            } else if (user.dailyDivination.buffType === 'craft_bonus') {
+                divinationBonus = user.dailyDivination.readingType === 'tarot' ? 15 : 10;
+                divinationMsg = ` ✨ Divination favor increased success (+${divinationBonus}%)!`;
+            }
         }
 
         // Apply recipe success rate with pet/omen modifiers
         if (recipe.successRate && recipe.successRate < 100) {
-            const effectiveRate = Math.min(100, recipe.successRate + craftSafetyBonus - omenPenalty);
+            const effectiveRate = Math.min(100, recipe.successRate + craftSafetyBonus + divinationBonus - omenPenalty);
             if (Math.random() * 100 > effectiveRate) {
                 // Craft failed — still deduct ingredients, just no result
                 user.markModified('inventory');
@@ -193,7 +203,7 @@ router.post('/craft', isAuthenticated, isNotDetained, sanitizeBody, async (req, 
                 const { updateQuestProgress } = require('../utils/quest');
                 await updateQuestProgress(user._id, 'craft_potion');
                 return res.status(200).json({
-                    message: `The cauldron bubbles and smokes... ${resultItemDisplayName} failed to materialize. Better luck next time!${omenPenalty > 0 ? ' 🐍 The Serpent\'s Hex made this harder.' : ''}`,
+                    message: `The cauldron bubbles and smokes... ${resultItemDisplayName} failed to materialize. Better luck next time!${divinationMsg ? divinationMsg : ''}`,
                     resultItemName: null,
                     failed: true,
                     inventory: user.inventory
@@ -225,7 +235,7 @@ router.post('/craft', isAuthenticated, isNotDetained, sanitizeBody, async (req, 
         await updateQuestProgress(user._id, 'craft_potion');
 
         res.json({
-            message: `Successfully crafted ${resultItemDisplayName}!${craftSafetyMsg}`,
+            message: `Successfully crafted ${resultItemDisplayName}!${craftSafetyMsg}${divinationBonus > 0 ? divinationMsg : ''}`,
             resultItemName: resultItemDisplayName,
             inventory: user.inventory
         });
