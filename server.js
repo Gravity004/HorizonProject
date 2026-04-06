@@ -101,10 +101,12 @@ app.use(passport?.initialize());
 app.use(passport?.session());
 
 // Static Files
+// assets (images): 7 days — new items always have new filenames, so adding images is always safe
+// js/css: 1 day — files change on deploy, keep short to avoid stale code
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'assets/images/Eternity1.png')));
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-app.use('/css', express.static(path.join(__dirname, 'css')));
-app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/assets', express.static(path.join(__dirname, 'assets'), { maxAge: '7d', etag: true }));
+app.use('/css',    express.static(path.join(__dirname, 'css'),    { maxAge: '1d', etag: true }));
+app.use('/js',     express.static(path.join(__dirname, 'js'),     { maxAge: '1d', etag: true }));
 
 // Serve root HTML files
 app.get(['/', '/index.html'], (req, res) => {

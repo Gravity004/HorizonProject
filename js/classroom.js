@@ -44,21 +44,12 @@ async function initClassroom() {
 // ----------------------------------------------------
 async function renderInventoryPanel() {
     const container = document.getElementById('classroomSidebarInventory');
-    if (!container) return; // Feature added to HTML next
+    if (!container) return;
 
     container.innerHTML = '<p style="color:#a89070; text-align:center;">Loading...</p>';
 
-    try {
-        const res = await fetch('/auth/me', { credentials: 'include' });
-        if (res.ok) {
-            const authData = await res.json();
-            if (authData.user && authData.user.inventory) {
-                user.inventory = authData.user.inventory;
-            }
-        }
-    } catch (e) { }
-
-    const inv = user.inventory || [];
+    // Reuse already-loaded user object (avoid extra /auth/me call)
+    const inv = user?.inventory || [];
     container.innerHTML = '';
 
     if (inv.length === 0) {
@@ -748,17 +739,7 @@ async function openPlantModal(slot) {
     container.innerHTML = '<p style="color:#a89070; text-align:center;">Loading inventory...</p>';
     modal.classList.add('active');
 
-    // Refresh inventory
-    try {
-        const userRes = await fetch('/auth/me', { credentials: 'include' });
-        if (userRes.ok) {
-            const authData = await userRes.json();
-            if (authData.user && authData.user.inventory) {
-                user.inventory = authData.user.inventory;
-            }
-        }
-    } catch (e) { console.error('Error refreshing inventory', e); }
-
+    // Reuse already-loaded user inventory (avoid extra /auth/me call)
     userInventory = user.inventory || [];
 
     container.innerHTML = '';
