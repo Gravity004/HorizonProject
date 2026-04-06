@@ -248,12 +248,33 @@ function renderShop(items) {
     if (!container) return;
     const isAdmin = currentUser.roles.includes('admin') || currentUser.roles.includes('professor');
 
+    let isBuffed = false;
+    let isCursed = false;
+
+    if (currentUser?.dailyDivination?.expiryDate && new Date() < new Date(currentUser.dailyDivination.expiryDate)) {
+        const buffType = currentUser.dailyDivination.buffType;
+        if (buffType === 'shop_discount') isBuffed = true;
+        else if (buffType === 'omen_broken' || buffType === 'omen_devil') isCursed = true;
+    }
+
     if (!items.length) {
         container.innerHTML = '<p class="empty-msg">No items match your criteria.</p>';
         return;
     }
 
-    container.innerHTML = items.map(item => `
+    container.innerHTML = items.map(item => {
+        let displayPrice = item.price;
+        let priceHtml = `🪙 ${item.price} G`;
+
+        if (isBuffed) {
+            displayPrice = Math.floor(item.price * 0.9);
+            priceHtml = `<span style="text-decoration: line-through; opacity: 0.6; font-size: 0.9em;">🪙 ${item.price} G</span> <span style="color: #6af56a;">🪙 ${displayPrice} G</span>`;
+        } else if (isCursed) {
+            displayPrice = Math.ceil(item.price * 1.1);
+            priceHtml = `<span style="text-decoration: line-through; opacity: 0.6; font-size: 0.9em;">🪙 ${item.price} G</span> <span style="color: #ff6b6b;">🪙 ${displayPrice} G</span>`;
+        }
+
+        return `
         <div class="magic-card item-rarity-${item.rarity || 'common'}">
             ${isAdmin ? `<button class="delete-btn" style="right:2.7rem;background:#2a3d2a;color:#6af56a;border-color:#3d5c3d;" title="Edit Item" onclick="openEditItemModal('${item._id}')">✎</button><button class="delete-btn" title="Remove Item" onclick="deleteItem('${item._id}')">×</button>` : ''}
             <div class="card-image">
@@ -266,14 +287,15 @@ function renderShop(items) {
                     <span class="item-type type-${item.type}">${item.type}</span>
                     <span class="item-rarity-tag rarity-${item.rarity || 'common'}">${(item.rarity || 'common').toUpperCase()}</span>
                 </div>
-                <div class="price-tag">🪙 ${item.price} G</div>
+                <div class="price-tag">${priceHtml}</div>
                 <div class="card-buy-row">
                     <input type="number" id="qty-${item._id}" class="buy-qty-input" min="1" value="1" title="Quantity">
                     <button class="buy-spell-btn" onclick="buyItem('${item._id}')">Acquire</button>
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 window.deleteItem = async function (itemId) {
@@ -290,7 +312,19 @@ window.buyItem = async function (itemId) {
     const item = currentItems.find(i => i._id === itemId);
     const qtyInput = document.getElementById(`qty-${itemId}`);
     const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
-    showConfirm('Acquire Item', `Buy ${qty}x "${item?.name}" for ${(item?.price || 0) * qty}G?`, async () => {
+    
+    let unitPrice = item?.price || 0;
+    if (currentUser?.dailyDivination?.expiryDate && new Date() < new Date(currentUser.dailyDivination.expiryDate)) {
+        const buffType = currentUser.dailyDivination.buffType;
+        if (buffType === 'shop_discount') {
+            unitPrice = Math.floor(unitPrice * 0.9);
+        } else if (buffType === 'omen_broken' || buffType === 'omen_devil') {
+            unitPrice = Math.ceil(unitPrice * 1.1);
+        }
+    }
+    const totalCost = unitPrice * qty;
+
+    showConfirm('Acquire Item', `Buy ${qty}x "${item?.name}" for ${totalCost}G?`, async () => {
         try {
             const r = await fetch('/api/shop/buy', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
