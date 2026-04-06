@@ -85,7 +85,8 @@ router.get('/me', checkGuildMembership, async (req, res) => {
                 house: user.house,
                 health: user.health || 100,
                 maxHealth: user.maxHealth || 100,
-                inventory: user.inventory
+                inventory: user.inventory,
+                dailyDivination: user.dailyDivination || null
             }
         });
     } catch (err) {
@@ -100,7 +101,8 @@ router.get('/me', checkGuildMembership, async (req, res) => {
                 house: req.user.house,
                 health: req.user.health || 100,
                 maxHealth: req.user.maxHealth || 100,
-                inventory: req.user.inventory || []
+                inventory: req.user.inventory || [],
+                dailyDivination: req.user.dailyDivination || null
             }
         });
     }
