@@ -864,11 +864,14 @@ async function harvestPlant(slot) {
 //  CHARMS ROOM (Canvas & Gesture Recognition)
 // ----------------------------------------------------
 const SPELLS = [
-    { id: 'lumos', name: 'Lumos', patternDesc: '-' },
-    { id: 'wingardium', name: 'Wingardium Leviosa', patternDesc: '-' },
-    { id: 'accio', name: 'Accio', patternDesc: '-' },
-    { id: 'expecto', name: 'Expecto Patronum', patternDesc: '-' },
-    { id: 'expelliarmus', name: 'Expelliarmus', patternDesc: '-' }
+    { id: 'lumos', name: 'Lumos', },
+    { id: 'nox', name: 'Nox', },
+    { id: 'wingardium', name: 'Wingardium Leviosa', },
+    { id: 'accio', name: 'Accio', },
+    { id: 'expecto', name: 'Expecto Patronum', },
+    { id: 'expelliarmus', name: 'Expelliarmus', },
+    { id: 'confundo', name: 'Confundo', },
+    { id: 'imperio', name: 'Imperio', },
 ];
 let activeSpell = null;
 let canvas, ctx;
@@ -1013,6 +1016,8 @@ async function submitCastSpell() {
 
     if (activeSpell === 'lumos') {
         success = (dy < -50 && Math.abs(dx) < 100); // mostly up
+    } else if (activeSpell === 'nox') {
+        success = (dy > 30 && path.length < 30 && Math.abs(dx) < 80); // short flick down
     } else if (activeSpell === 'wingardium') {
         success = (dx > 50 && path.length > 10); // curve right and down/up
     } else if (activeSpell === 'accio') {
@@ -1021,6 +1026,13 @@ async function submitCastSpell() {
         success = (path.length > 30); // Needs a long path (circle)
     } else if (activeSpell === 'expelliarmus') {
         success = (Math.abs(dx) > 50 && path.length > 15); // Zigzag needs length
+    } else if (activeSpell === 'confundo') {
+        // Overlapping circles: path is long & end point close to start
+        const distFromStart = Math.sqrt(dx * dx + dy * dy);
+        success = (path.length > 40 && distFromStart < 80); // looping path
+    } else if (activeSpell === 'imperio') {
+        // Long horizontal stroke then slight dip
+        success = (Math.abs(dx) > 80 && dy > 10 && dy < 80 && path.length > 15);
     }
 
     // Add small random chance to fail even if pattern roughly matches for realism
