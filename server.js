@@ -63,34 +63,42 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// ── MongoDB connection — single pool, capped for M0 free tier ──────────────
+const mongoClientPromise = mongoose.connect(process.env.MONGODB_URI, {
+    maxPoolSize: 5,               // M0 allows ~500 total; 5 per instance is safe on Vercel
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+}).then(m => {
+    console.log('MongoDB Connected');
+    return m.connection.getClient();
+}).catch(err => {
+    console.error('MongoDB connection error:', err);
+    throw err;
+});
+
 const MongoStore = require('connect-mongo');
 
-// Session Setup
+// Session Setup — MongoStore reuses the SAME connection (no second pool)
 app.use(session({
     secret: process.env.SESSION_SECRET || 'secret',
     resave: false,
     saveUninitialized: false,
-    store: (process.env.MONGODB_URI) ? MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI,
+    store: process.env.MONGODB_URI ? MongoStore.create({
+        clientPromise: mongoClientPromise,
         collectionName: 'sessions',
         ttl: 14 * 24 * 60 * 60 // 14 days
     }) : undefined,
     cookie: {
-        httpOnly: true,                          // JS cannot read the cookie
+        httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 14 * 24 * 60 * 60 * 1000        // 14 days
+        maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
     }
 }));
 
 // Passport Middleware
 app.use(passport?.initialize());
 app.use(passport?.session());
-
-// Database Connection
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.log(err));
 
 // Static Files
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'assets/images/Eternity1.png')));
