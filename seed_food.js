@@ -15,7 +15,7 @@ const run = async () => {
                 type: 'food',
                 rarity: 'common',
                 price: 15,
-                image: 'assets/images/potions/Butterfly Pea Tea.png'
+                image: 'assets/images/potions/Butterfly_Pea_Flower_Tea.png'
             });
             await tea.save();
             console.log('✨ ชาอัญชัน successfully stocked to the shop!');
@@ -33,7 +33,7 @@ const run = async () => {
                 type: 'food',
                 rarity: 'rare',
                 price: 50,
-                image: 'assets/images/potions/Tom Yum.png'
+                image: 'assets/images/potions/Tom_Yum.png'
             });
             await tomYum.save();
             console.log('✨ ต้มยำ successfully stocked to the shop!');

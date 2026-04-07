@@ -59,14 +59,14 @@ async function run() {
         const incubationPotion = await ensureItem(
             'Incubation Potion', 'potion', 'rare', 0,
             'น้ำยาเร่งการฟัก — ใช้กับตู้ฟักเพื่อร่นเวลาฟักไข่ลง 24 ชั่วโมง (Craft Only)',
-            'assets/images/items/incubation_potion.png'
+            'assets/images/potions/Incubation_Potion.png'
         );
 
         // Cleansing Potion: craft-only, removes bad omen curse quest
         const cleansingPotion = await ensureItem(
             'Cleansing Potion', 'potion', 'uncommon', 0,
             'น้ำยาล้างสาป — ใช้เพื่อล้างคำสาปจากหอคอยพยากรณ์ก่อนที่เวลาจะหมด (Craft Only)',
-            'assets/images/items/cleansing_potion.png'
+            'assets/images/potions/Cleansing_Potion.png'
         );
 
         // ─── Ingredient References ─────────────────────────────────────────────

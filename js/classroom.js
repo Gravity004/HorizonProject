@@ -292,35 +292,35 @@ const POTION_RECIPES = [
     {
         name: 'Polyjuice Potion',
         desc: 'Allows the drinker to assume the form of someone else.',
-        img: 'assets/images/potion.png',
+        img: 'assets/images/potions/Polyjuice_Potion.png',
         reqs: ['Fluxweed', 'Knotgrass', 'Lacewing Flies', 'Horn of Bicorn'],
         gesture: 'circle'
     },
     {
         name: 'Veritaserum',
         desc: 'A powerful truth serum.',
-        img: 'assets/images/potion.png',
+        img: 'assets/images/potions/Veritaserum.png',
         reqs: ['Jobberknoll Feather', 'Syrup of Hellebore'],
         gesture: 'straight'
     },
     {
         name: 'Felix Felicis',
         desc: 'Liquid luck. Makes the drinker successful in all their endeavours.',
-        img: 'assets/images/potion.png',
+        img: 'assets/images/potions/Felix_Felicis.png',
         reqs: ['Ashwinder Egg', 'Squill Bulb', 'Murtlap Tentacle'],
         gesture: 'zigzag'
     },
     {
         name: 'Amortentia Potion',
         desc: 'The most powerful love potion in the world.',
-        img: 'assets/images/Amortentia.png',
+        img: 'assets/images/potions/Amortentia.png',
         reqs: ['Pearl Dust', 'Rose Petals', 'Peppermint'],
         gesture: 'heart'
     },
     {
         name: 'Wolfsbane Potion',
         desc: 'Relieves, but does not cure, the symptoms of lycanthropy.',
-        img: 'assets/images/potion.png',
+        img: 'assets/images/potions/Wolfsbane_Potion.png',
         reqs: ['Wolfsbane'],
         gesture: 'straight'
     }
@@ -845,14 +845,14 @@ async function harvestPlant(slot) {
 //  CHARMS ROOM (Canvas & Gesture Recognition)
 // ----------------------------------------------------
 const SPELLS = [
-    { id: 'lumos', name: 'Lumos', },
-    { id: 'nox', name: 'Nox', },
-    { id: 'wingardium', name: 'Wingardium Leviosa', },
-    { id: 'accio', name: 'Accio', },
-    { id: 'expecto', name: 'Expecto Patronum', },
-    { id: 'expelliarmus', name: 'Expelliarmus', },
-    { id: 'confundo', name: 'Confundo', },
-    { id: 'imperio', name: 'Imperio', },
+    { id: 'lumos', name: 'Lumos', patternDesc: 'Flick your wand upward in a single swift stroke.' },
+    { id: 'nox', name: 'Nox', patternDesc: 'A short downward flick to extinguish the light.' },
+    { id: 'wingardium', name: 'Wingardium Leviosa', patternDesc: 'Swish to the right with a gentle lift — swish and flick!' },
+    { id: 'accio', name: 'Accio', patternDesc: 'Draw a downward beckoning curve toward you.' },
+    { id: 'expecto', name: 'Expecto Patronum', patternDesc: 'Draw a large circular motion — channel your happiest memory.' },
+    { id: 'expelliarmus', name: 'Expelliarmus', patternDesc: 'A wide horizontal slash to disarm your opponent.' },
+    { id: 'confundo', name: 'Confundo', patternDesc: 'Draw overlapping loops to confuse the target.' },
+    { id: 'imperio', name: 'Imperio', patternDesc: 'A long horizontal sweep, ending with a dip downward.' },
 ];
 
 const PRACTICE_SPELLS = [
@@ -1094,13 +1094,13 @@ function renderCharmsPractice() {
 function checkPracticeAnswer(index, value, inputEl) {
     const spell = PRACTICE_SPELLS[index];
     const feedback = inputEl.nextElementSibling;
-    
+
     if (value.trim().toLowerCase() === spell.name.toLowerCase()) {
         inputEl.classList.remove('wrong');
         inputEl.classList.add('correct');
         feedback.style.color = '#6af56a';
         feedback.textContent = '✨ Perfect Cast!';
-        
+
         // Success sparkle effect (minimal)
         const rect = inputEl.getBoundingClientRect();
         showToast(`Advanced Incantation Mastered: ${spell.name}`, 'success');
