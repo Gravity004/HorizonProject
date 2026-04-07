@@ -11,56 +11,56 @@ const HERBS = [
         name: 'Mandrake Seeds',
         description: 'Seeds of the Mandrake (Mandragora). Its cry is fatal to anyone who hears it. Grows in 72 hours.',
         type: 'seed', price: 80, rarity: 'rare',
-        image: 'assets/images/seeds/mandrake.png',
+        image: 'assets/images/seeds/Mandrake Seeds.png',
         effects: { growHours: 72, waterIntervalHours: 24, herbItemName: 'Mandrake Root' }
     },
     {
         name: "Devil's Snare Seeds",
         description: "Seeds of Devil's Snare — a dark vine that tightens when it senses struggle. Grows in 48 hours.",
         type: 'seed', price: 60, rarity: 'rare',
-        image: 'assets/images/seeds/devils_snare.png',
+        image: 'assets/images/seeds/Devils Snare Seeds.png',
         effects: { growHours: 48, waterIntervalHours: 12, herbItemName: "Devil's Snare" }
     },
     {
         name: 'Venomous Tentacula Seeds',
         description: 'Seeds of the dangerous biting plant that spits venom. Grows in 96 hours.',
         type: 'seed', price: 100, rarity: 'epic',
-        image: 'assets/images/seeds/tentacula.png',
+        image: 'assets/images/seeds/Venomous Tentacula Seeds.png',
         effects: { growHours: 96, waterIntervalHours: 24, herbItemName: 'Venomous Tentacula Leaf' }
     },
     {
         name: 'Dittany Seeds',
         description: 'Dittany — a powerful healing herb. Essential for healing potions. Grows in 24 hours.',
         type: 'seed', price: 40, rarity: 'common',
-        image: 'assets/images/seeds/dittany.png',
+        image: 'assets/images/seeds/Dittany Seeds.png',
         effects: { growHours: 24, waterIntervalHours: 8, herbItemName: 'Dittany' }
     },
     {
         name: 'Fluxweed Seeds',
         description: 'Fluxweed — must be picked at full moon for Polyjuice Potion. Grows in 36 hours.',
         type: 'seed', price: 50, rarity: 'rare',
-        image: 'assets/images/seeds/fluxweed.png',
+        image: 'assets/images/seeds/Fluxweed Seeds.png',
         effects: { growHours: 36, waterIntervalHours: 12, herbItemName: 'Fluxweed' }
     },
     {
         name: 'Gillyweed Seeds',
         description: 'Gillyweed — consumed to breathe underwater and grow webbed feet temporarily. Grows in 48 hours.',
         type: 'seed', price: 70, rarity: 'rare',
-        image: 'assets/images/seeds/gillyweed.png',
+        image: 'assets/images/seeds/Gillyweed Seeds.png',
         effects: { growHours: 48, waterIntervalHours: 16, herbItemName: 'Gillyweed' }
     },
     {
         name: 'Wolfsbane Seeds',
         description: 'Wolfsbane — key ingredient of the Wolfsbane Potion, extremely dangerous to grow. Grows in 120 hours.',
         type: 'seed', price: 150, rarity: 'epic',
-        image: 'assets/images/seeds/wolfsbane.png',
+        image: 'assets/images/seeds/Wolfsbane Seeds.png',
         effects: { growHours: 120, waterIntervalHours: 24, herbItemName: 'Wolfsbane' }
     },
     {
         name: 'Puffapod Seeds',
         description: 'Seeds of the Puffapod — beautiful pink pods that explode into flowers when touched. Grows in 18 hours.',
         type: 'seed', price: 30, rarity: 'common',
-        image: 'assets/images/seeds/puffapod.png',
+        image: 'assets/images/seeds/Puffapod Seeds.png',
         effects: { growHours: 18, waterIntervalHours: 6, herbItemName: 'Puffapod' }
     }
 ];

@@ -854,6 +854,20 @@ const SPELLS = [
     { id: 'confundo', name: 'Confundo', },
     { id: 'imperio', name: 'Imperio', },
 ];
+
+const PRACTICE_SPELLS = [
+    { name: 'Piertotum Locomotor', display: 'P_ert_tum Locomo_or' },
+    { name: 'Locomotor Mortis', display: 'Locomo_or Mor_is' },
+    { name: 'Petrificus Totalus', display: 'Petri_icus Tot_lus' },
+    { name: 'Arania Exumai', display: 'Ara_ia Exu_ai' },
+    { name: 'Vera Verto', display: 'Ve_a Ve_to' },
+    { name: 'Homenum Revelio', display: 'Home_um Reve_io' },
+    { name: 'Meteolojinx Recanto', display: 'Meteo_ojinx Reca_to' },
+    { name: 'Protego Totalum', display: 'Prote_o Tota_um' },
+    { name: 'Salvavio Hexia', display: 'Salva_io He_ia' },
+    { name: 'Aparecium', display: '_pare__um' }
+];
+
 let activeSpell = null;
 let canvas, ctx;
 let drawing = false;
@@ -871,6 +885,8 @@ function loadCharms() {
         btn.onclick = () => selectSpell(spell.id, btn);
         listContainer.appendChild(btn);
     });
+
+    renderCharmsPractice();
 
     if (!canvas) {
         canvas = document.getElementById('spellCanvas');
@@ -1049,6 +1065,50 @@ async function submitCastSpell() {
         }
     } catch (err) {
         console.error('Charm casting failed', err);
+    }
+}
+
+function renderCharmsPractice() {
+    const container = document.getElementById('charmsPracticeContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    PRACTICE_SPELLS.forEach((spell, index) => {
+        const card = document.createElement('div');
+        card.className = 'practice-card';
+        card.innerHTML = `
+            <div class="practice-cloze">${spell.display}</div>
+            <div class="practice-input-wrap">
+                <input type="text" 
+                       class="practice-input" 
+                       placeholder="Type incantation..." 
+                       onkeyup="if(event.key==='Enter') checkPracticeAnswer(${index}, this.value, this)"
+                       oninput="this.classList.remove('wrong', 'correct')">
+                <div class="practice-feedback"></div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function checkPracticeAnswer(index, value, inputEl) {
+    const spell = PRACTICE_SPELLS[index];
+    const feedback = inputEl.nextElementSibling;
+    
+    if (value.trim().toLowerCase() === spell.name.toLowerCase()) {
+        inputEl.classList.remove('wrong');
+        inputEl.classList.add('correct');
+        feedback.style.color = '#6af56a';
+        feedback.textContent = '✨ Perfect Cast!';
+        
+        // Success sparkle effect (minimal)
+        const rect = inputEl.getBoundingClientRect();
+        showToast(`Advanced Incantation Mastered: ${spell.name}`, 'success');
+    } else {
+        inputEl.classList.remove('correct');
+        inputEl.classList.add('wrong');
+        feedback.style.color = '#f56a6a';
+        feedback.textContent = '💨 Not quite right...';
     }
 }
 

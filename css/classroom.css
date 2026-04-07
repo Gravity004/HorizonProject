@@ -554,3 +554,88 @@
 .log-table tr:hover {
     background: rgba(255,255,255,0.05);
 }
+
+/* Charms Practice Section */
+.charms-practice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.practice-card {
+    background: rgba(20, 25, 45, 0.6);
+    border: 1px solid rgba(138, 180, 248, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.practice-card:hover {
+    border-color: rgba(138, 180, 248, 0.5);
+    background: rgba(30, 40, 70, 0.7);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.practice-cloze {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: #8ab4f8;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(138, 180, 248, 0.3);
+}
+
+/* Specific styling for the underscores if needed, but simple text works too */
+.practice-input-wrap {
+    position: relative;
+}
+
+.practice-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #3a4a6e;
+    border-radius: 8px;
+    padding: 0.8rem;
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+    text-align: center;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.practice-input:focus {
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.05);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+.practice-input.correct {
+    border-color: #6af56a;
+    background: rgba(106, 245, 106, 0.1);
+    box-shadow: 0 0 15px rgba(106, 245, 106, 0.3);
+}
+
+.practice-input.wrong {
+    border-color: #f56a6a;
+    background: rgba(245, 106, 106, 0.1);
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.practice-feedback {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    min-height: 1rem;
+    transition: all 0.3s;
+}
+

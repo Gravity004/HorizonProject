@@ -172,23 +172,37 @@
                         style="color: #a8cdef; font-family: 'Cinzel', serif; border-bottom: 1px solid rgba(100,150,200,0.3); padding-bottom: 0.5rem;">
                         ✨ Charms Practice</h2>
                     <p style="color: rgba(150,180,220,0.8); margin-bottom: 2rem; text-align: center;">Swish and flick.
-                        Draw the wand movement steadily on the practice canvas.</p>
+                        Draw the wand movement steadily on the practice canvas, then type the incantation precisely.</p>
 
                     <div class="charms-layout">
-                        <div class="charms-spell-list" id="spellListContainer">
+                        <!-- Canvas Area (top) -->
+                        <div class="charms-canvas-area">
+                            <div class="canvas-container">
+                                <canvas id="spellCanvas" width="500" height="500"></canvas>
+                                <div class="canvas-guidelines"></div>
+                                <div class="canvas-instruction">Draw the spell shape here</div>
+                            </div>
+                            <div class="charm-result" id="charmResultDisplay">Select a spell to practice</div>
+                            <div class="charms-action-btns">
+                                <button class="plot-btn" id="clearCanvasBtn" style="padding: 0.5rem 2rem;">Clear Canvas</button>
+                                <button class="plot-btn harvest" id="castSpellBtn"
+                                    style="padding: 0.5rem 2rem; font-size: 1rem;" disabled>Cast Spell</button>
+                            </div>
+                        </div>
+
+                        <!-- Spell Cards Grid (below) -->
+                        <div class="spell-cards-grid" id="spellListContainer">
                             <!-- Populated by JS -->
                         </div>
+                    </div>
 
-                        <div class="canvas-container">
-                            <canvas id="spellCanvas" width="500" height="500"></canvas>
-                            <div class="canvas-guidelines"></div>
-                            <div class="canvas-instruction">Draw the spell shape here</div>
+                    <!-- PRACTICE AREA -->
+                    <div class="charms-practice-area" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(138, 180, 248, 0.2);">
+                        <h3 style="color: #d4af37; font-family: 'Cinzel', serif; text-align: center; margin-bottom: 1.5rem;">📜 Incantation Practice</h3>
+                        <p style="text-align: center; color: #a89070; font-size: 0.9rem; margin-bottom: 2rem;">Fill in the missing letters to master these advanced charms.</p>
+                        <div id="charmsPracticeContainer" class="charms-practice-grid">
+                            <!-- Populated by JS -->
                         </div>
-
-                        <div class="charm-result" id="charmResultDisplay">Select a spell to practice</div>
-                        <button class="plot-btn" id="clearCanvasBtn" style="padding: 0.5rem 2rem;">Clear Canvas</button>
-                        <button class="plot-btn harvest" id="castSpellBtn"
-                            style="padding: 0.5rem 2rem; font-size: 1rem;" disabled>Cast Spell</button>
                     </div>
                 </section>
 
