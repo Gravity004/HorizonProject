@@ -302,16 +302,15 @@ function renderShop(items) {
                     <span class="item-rarity-tag rarity-${item.rarity || 'common'}">${(item.rarity || 'common').toUpperCase()}</span>
                 </div>
                 <div class="price-tag">${priceHtml}</div>
-                // แทนที่ส่วนนี้ใน return template:
-<div class="card-buy-row">
-    <input type="number" id="qty-${item._id}" class="buy-qty-input" min="1" value="1"
-           title="Quantity" ${isFainted ? 'disabled' : ''}>
-    <button class="buy-spell-btn${isFainted ? ' disabled-btn' : ''}"
-            onclick="${isFainted ? '' : `buyItem('${item._id}')`}"
-            ${isFainted ? 'disabled title="ฟื้นฟู HP ก่อนซื้อ!"' : ''}>
-        ${isFainted ? '💤 Fainted' : 'Acquire'}
-    </button>
-</div>
+                <div class="card-buy-row">
+                    <input type="number" id="qty-${item._id}" class="buy-qty-input" min="1" value="1"
+                           title="Quantity" ${isFainted ? 'disabled' : ''}>
+                    <button class="buy-spell-btn${isFainted ? ' disabled-btn' : ''}"
+                            onclick="${isFainted ? '' : `buyItem('${item._id}')`}"
+                            ${isFainted ? 'disabled title="ฟื้นฟู HP ก่อนซื้อ!"' : ''}>
+                        ${isFainted ? '💤 Fainted' : 'Acquire'}
+                    </button>
+                </div>
             </div>
         </div>
         `;

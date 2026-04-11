@@ -209,7 +209,6 @@ router.post('/admin/adjust', isAuthenticated, hasRole(['admin', 'professor']), s
             }
 
             // Log transactions
-            const Transaction = require('../models/Transaction');
             const logs = users.map(u => ({
                 type: 'admin_adjust',
                 senderId: req.user.id,
@@ -237,7 +236,6 @@ router.post('/admin/adjust', isAuthenticated, hasRole(['admin', 'professor']), s
         target.balance = Math.max(0, target.balance + amt);
         await target.save();
 
-        const Transaction = require('../models/Transaction');
         const tx = new Transaction({
             type: 'admin_adjust',
             senderId: req.user.id,
