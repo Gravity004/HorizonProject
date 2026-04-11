@@ -1301,6 +1301,25 @@
         </main>
     </div>
 
+    <!-- Admin: Dashboard Control -->
+    <div class="admin-card">
+        <h3>🔒 Dashboard Control</h3>
+        <div class="input-group">
+            <label>ข้อความแจ้งผู้ใช้</label>
+            <input type="text" id="adminCloseMsg" class="parchment-input" placeholder="เช่น ปิดปรับปรุงระบบ 30 นาที">
+        </div>
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+            <button onclick="adminToggleDashboard(true)" class="admin-btn"
+                style="flex:1; background:#5c1a1a;color:#ff9999;border-color:#8a3d3d;">
+                🔒 ปิด Dashboard
+            </button>
+            <button onclick="adminToggleDashboard(false)" class="admin-btn"
+                style="flex:1; background:#1a3d1a;color:#6af56a;border-color:#3d5c3d;">
+                🔓 เปิด Dashboard
+            </button>
+        </div>
+    </div>
+
     <!-- Admin Item Modal -->
     <div id="adminModal" class="modal">
         <div class="modal-content parchment">
@@ -1591,24 +1610,7 @@
         </div>
     </div>
 
-    <!-- Admin: Dashboard Control -->
-    <div class="admin-card">
-        <h3>🔒 Dashboard Control</h3>
-        <div class="input-group">
-            <label>ข้อความแจ้งผู้ใช้</label>
-            <input type="text" id="adminCloseMsg" class="parchment-input" placeholder="เช่น ปิดปรับปรุงระบบ 30 นาที">
-        </div>
-        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-            <button onclick="adminToggleDashboard(true)" class="admin-btn"
-                style="flex:1; background:#5c1a1a;color:#ff9999;border-color:#8a3d3d;">
-                🔒 ปิด Dashboard
-            </button>
-            <button onclick="adminToggleDashboard(false)" class="admin-btn"
-                style="flex:1; background:#1a3d1a;color:#6af56a;border-color:#3d5c3d;">
-                🔓 เปิด Dashboard
-            </button>
-        </div>
-    </div>
+
 
 
     <!-- 3D Magical Background for Pets and Divination -->
