@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Config = require('../models/Config');
+const { isAuthenticated, hasRole } = require('../middleware/auth'); // ✅ ย้ายมาบนสุด
+const { sanitizeBody } = require('../middleware/sanitize');         // ✅ ย้ายมาบนสุด
 
 // Lightweight: get current user's inventory only (avoids calling /auth/me repeatedly)
 router.get('/me/inventory', async (req, res) => {
@@ -82,8 +84,7 @@ router.get('/top', async (req, res) => {
 });
 
 // Get all users (admin only)
-const { isAuthenticated, hasRole } = require('../middleware/auth');
-const { sanitizeBody } = require('../middleware/sanitize');
+
 
 router.get('/all', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
     try {
