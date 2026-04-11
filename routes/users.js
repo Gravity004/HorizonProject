@@ -31,8 +31,8 @@ router.get('/dashboard/status', async (req, res) => {
     }
 });
 
-// POST toggle dashboard (admin only)
-router.post('/dashboard/toggle', isAuthenticated, hasRole(['admin']), sanitizeBody, async (req, res) => {
+// POST toggle dashboard (admin/professor only)
+router.post('/dashboard/toggle', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
     try {
         const { isClosed, message } = req.body;
         let config = await Config.findOne({ key: 'dashboard_closed' });

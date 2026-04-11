@@ -210,9 +210,10 @@ router.post('/admin/adjust', isAuthenticated, hasRole(['admin', 'professor']), s
 
             // Log transactions
             const logs = users.map(u => ({
+                transactionId: generateTxId(),
                 type: 'admin_adjust',
                 senderId: req.user.id,
-                senderName: 'Admin',
+                senderName: req.user.username || 'Admin',
                 recipientId: u._id,
                 recipientName: u.username,
                 amount: amt,
@@ -237,9 +238,10 @@ router.post('/admin/adjust', isAuthenticated, hasRole(['admin', 'professor']), s
         await target.save();
 
         const tx = new Transaction({
+            transactionId: generateTxId(),
             type: 'admin_adjust',
             senderId: req.user.id,
-            senderName: 'Admin',
+            senderName: req.user.username || 'Admin',
             recipientId: target._id,
             recipientName: target.username,
             amount: amt,
