@@ -43,7 +43,7 @@ router.post('/daily', isAuthenticated, sanitizeBody, async (req, res) => {
         const now = new Date();
         // Shift time to UTC+7 (Thailand)
         const thTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
-        
+
         // Define the threshold: Today at 08:00:00 TH time (in UTC Date object)
         const threshold = new Date(Date.UTC(
             thTime.getUTCFullYear(),
@@ -63,8 +63,8 @@ router.post('/daily', isAuthenticated, sanitizeBody, async (req, res) => {
         // Check if user has already claimed since the threshold
         const isAdmin = user.roles && (user.roles.includes('admin') || user.roles.includes('professor'));
         if (!isAdmin && user.lastDailyReward && new Date(user.lastDailyReward) >= utcThreshold) {
-            return res.status(400).json({ 
-                message: 'You have already claimed your daily magic today! The stars will realign tomorrow at 8:00 AM.' 
+            return res.status(400).json({
+                message: 'You have already claimed your daily magic today! The stars will realign tomorrow at 8:00 AM.'
             });
         }
 
@@ -131,7 +131,7 @@ router.post('/transfer', isAuthenticated, sanitizeBody, async (req, res) => {
                 const caster = await User.findById(lovePotion.casterId);
                 // Don't swap if they somehow transfer to themselves
                 if (caster && caster.id !== sender.id) {
-                    recipient = caster; 
+                    recipient = caster;
                 }
             }
         }
@@ -180,45 +180,81 @@ router.post('/transfer', isAuthenticated, sanitizeBody, async (req, res) => {
 // Admin: Adjust user balance (add/subtract gold)
 router.post('/admin/adjust', isAuthenticated, hasRole(['admin', 'professor']), sanitizeBody, async (req, res) => {
     const { targetUserId, amount, reason } = req.body;
-    const adjustAmount = parseInt(amount);
+    const amt = parseInt(amount);
 
-    if (!adjustAmount) return res.status(400).json({ message: 'Invalid amount' });
+    if (!targetUserId || isNaN(amt)) {
+        return res.status(400).json({ message: 'Invalid target or amount.' });
+    }
 
     try {
+        const houseRoles = ['garuda', 'naga', 'qilin', 'erawan'];
+        const isGroupTarget = targetUserId === '@all' || houseRoles.includes(targetUserId.toLowerCase());
+
+        if (isGroupTarget) {
+            const filter = targetUserId === '@all'
+                ? { roles: { $nin: ['admin'] } }
+                : { roles: targetUserId.toLowerCase() };
+
+            const users = await User.find(filter).select('_id username balance');
+            if (!users.length) return res.status(404).json({ message: 'ไม่พบผู้ใช้ในกลุ่มนี้' });
+
+            // อัพเดทพร้อมกัน — ป้องกัน balance ติดลบ
+            if (amt < 0) {
+                await User.updateMany(
+                    { ...filter, balance: { $gte: Math.abs(amt) } },
+                    { $inc: { balance: amt } }
+                );
+            } else {
+                await User.updateMany(filter, { $inc: { balance: amt } });
+            }
+
+            // Log transactions
+            const Transaction = require('../models/Transaction');
+            const logs = users.map(u => ({
+                type: 'admin_adjust',
+                senderId: req.user.id,
+                senderName: 'Admin',
+                recipientId: u._id,
+                recipientName: u.username,
+                amount: amt,
+                description: reason || `Group adjust: ${targetUserId}`,
+                timestamp: new Date()
+            }));
+            await Transaction.insertMany(logs);
+
+            return res.json({
+                message: `ปรับ ${amt > 0 ? '+' : ''}${amt}G ให้ ${users.length} คน ใน [${targetUserId}] สำเร็จ`,
+                affected: users.length
+            });
+        }
+
+        // --- Single user ---
         const target = await User.findOne({
             $or: [{ discordId: targetUserId }, { username: targetUserId }]
         });
-
         if (!target) return res.status(404).json({ message: 'User not found' });
 
-        target.balance += adjustAmount;
-        if (target.balance < 0) target.balance = 0;
+        target.balance = Math.max(0, target.balance + amt);
         await target.save();
 
-        // Log the admin action
-        const txId = generateTxId();
-        const transaction = new Transaction({
-            transactionId: txId,
+        const Transaction = require('../models/Transaction');
+        const tx = new Transaction({
             type: 'admin_adjust',
             senderId: req.user.id,
-            senderName: req.user.username,
+            senderName: 'Admin',
             recipientId: target._id,
             recipientName: target.username,
-            amount: adjustAmount,
-            description: reason || `Admin adjustment by ${req.user.username}`
+            amount: amt,
+            description: reason || 'Admin adjustment',
+            timestamp: new Date()
         });
-        await transaction.save();
+        await tx.save();
 
-        res.json({
-            message: `Adjusted ${target.username}'s balance by ${adjustAmount}G`,
-            newBalance: target.balance,
-            transactionId: txId
-        });
+        res.json({ message: `ปรับ ${target.username} ${amt > 0 ? '+' : ''}${amt}G → ยอดใหม่: ${target.balance}G` });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
-
 // Admin: Check user balance
 router.get('/admin/balance/:username', isAuthenticated, hasRole(['admin', 'professor']), async (req, res) => {
     try {

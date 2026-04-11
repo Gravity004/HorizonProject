@@ -16,6 +16,38 @@ router.get('/me/inventory', async (req, res) => {
     }
 });
 
+// GET dashboard status
+router.get('/dashboard/status', async (req, res) => {
+    try {
+        const config = await Config.findOne({ key: 'dashboard_closed' });
+        res.json({
+            isClosed: config?.value === true,
+            message: config?.message || 'ระบบปิดชั่วคราว กรุณารอสักครู่...'
+        });
+    } catch (err) {
+        res.json({ isClosed: false });
+    }
+});
+
+// POST toggle dashboard (admin only)
+router.post('/dashboard/toggle', isAuthenticated, hasRole(['admin']), sanitizeBody, async (req, res) => {
+    try {
+        const { isClosed, message } = req.body;
+        let config = await Config.findOne({ key: 'dashboard_closed' });
+        if (!config) {
+            config = new Config({ key: 'dashboard_closed', value: !!isClosed, message: message || '' });
+        } else {
+            config.value = !!isClosed;
+            if (message !== undefined) config.message = message;
+            config.markModified('value');
+        }
+        await config.save();
+        res.json({ message: `Dashboard ${isClosed ? 'ปิด' : 'เปิด'} สำเร็จ` });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Get all users by house (for house roster)
 router.get('/house/:houseName', async (req, res) => {
     const houseName = req.params.houseName.toLowerCase();

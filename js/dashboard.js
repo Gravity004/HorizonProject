@@ -37,61 +37,74 @@ function showConfirm(title, message, onOk, onCancel) {
 // ═══════════════════════════════════════════════
 async function checkAuth() {
     try {
-        const response = await fetch('/auth/me', { credentials: 'include' });
-        const data = await response.json();
+        // ดึงข้อมูล user และ dashboard status พร้อมกัน (parallel)
+        const [statusRes, meRes] = await Promise.all([
+            fetch('/api/users/dashboard/status').catch(() => null),
+            fetch('/auth/me', { credentials: 'include' })
+        ]);
 
-        // ถูก kick ออกจาก guild หรือไม่มีสิทธิ์ — redirect ทันที
-        if (!response.ok || !data.authenticated) {
-            const dest = data?.redirect || '/?error=access_denied';
-            window.location.href = dest;
+        // ตรวจสอบ auth ก่อน
+        const data = await meRes.json();
+        if (!meRes.ok || !data.authenticated) {
+            window.location.href = data?.redirect || '/?error=access_denied';
             return;
         }
 
         currentUser = data.user;
 
-        // Check Detention
+        // ตรวจสอบ dashboard status (ถ้าดึงมาได้)
+        if (statusRes?.ok) {
+            const statusData = await statusRes.json();
+            if (statusData.isClosed) {
+                const isAdmin = currentUser.roles.includes('admin') || currentUser.roles.includes('professor');
+                if (!isAdmin) {
+                    const overlay = document.getElementById('dashboardClosedOverlay');
+                    const msg = document.getElementById('dashboardClosedMsg');
+                    if (overlay) overlay.style.display = 'flex';
+                    if (msg) msg.textContent = statusData.message || 'ระบบปิดชั่วคราว กรุณารอสักครู่...';
+                    return;
+                }
+            }
+        }
+
+        // ตรวจสอบ Detention
         if (currentUser.isDetained && currentUser.detentionEndDate) {
             const end = new Date(currentUser.detentionEndDate);
             if (end > new Date()) {
                 document.getElementById('detentionOverlay').style.display = 'flex';
                 document.getElementById('detentionReasonDisplay').textContent = currentUser.detentionReason || "Rule Violation";
-                
+
                 const minutesEl = document.getElementById('detentionMinutesDisplay');
+                const timerEl = document.getElementById('detentionTimer');
+
                 const updateMinutes = () => {
                     const secsLeft = Math.ceil((end - new Date()) / 1000);
-                    const minsLeft = Math.ceil(secsLeft / 60);
-                    if (minutesEl) minutesEl.textContent = `คุณถูกกักบริเวณ (ประเมินเวลาคงเหลือ: ${minsLeft} นาที)`;
+                    if (minutesEl) minutesEl.textContent = `คุณถูกกักบริเวณ (ประเมินเวลาคงเหลือ: ${Math.ceil(secsLeft / 60)} นาที)`;
                 };
                 updateMinutes();
 
-                const timerEl = document.getElementById('detentionTimer');
                 const interval = setInterval(() => {
-                    const now = new Date();
-                    const diff = end - now;
-                    if (diff <= 0) {
-                        clearInterval(interval);
-                        window.location.reload();
-                        return;
-                    }
+                    const diff = end - new Date();
+                    if (diff <= 0) { clearInterval(interval); window.location.reload(); return; }
                     const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
                     const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
                     const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
                     timerEl.textContent = `${h}:${m}:${s}`;
                     updateMinutes();
                 }, 1000);
-                return; // Block loading dashboard features
+                return;
             }
         }
 
+        // โหลด dashboard ปกติ
         renderUserProfile();
         setupAdminControls();
-
         fetchShopItems();
         fetchInventory();
         fetchRecipes();
         fetchBalance();
-        fetchMailbox(); // Initialize mailbox badge
-        fetchDailyQuests(); // Initialize daily quests
+        fetchMailbox();
+        fetchDailyQuests();
 
     } catch (err) {
         console.error('Auth check failed', err);
@@ -125,13 +138,13 @@ function renderHealthUI() {
     const hp = currentUser.health || 0;
     const maxHp = currentUser.maxHealth || 100;
     document.getElementById('userHpText').textContent = `${hp}/${maxHp}`;
-    
+
     const hpPercentage = Math.max(0, Math.min(100, (hp / maxHp) * 100));
     document.getElementById('userHpBar').style.width = `${hpPercentage}%`;
 
     const faintedOverlay = document.getElementById('faintedOverlay');
     const navButtons = document.querySelectorAll('.spell-btn:not([onclick*="inventory"]):not([onclick*="shop"]):not(#adminTabBtn):not([onclick*="openLogModal"])');
-    
+
     if (hp < 30) {
         // FATIGUED/FAINTED State
         faintedOverlay.classList.add('active');
@@ -143,7 +156,7 @@ function renderHealthUI() {
     }
 }
 
-window.openRecoveryInventory = function() {
+window.openRecoveryInventory = function () {
     document.getElementById('faintedOverlay').classList.remove('active');
     switchNav('inventory');
 }
@@ -205,41 +218,41 @@ async function fetchShopItems() {
 
 let currentShopCategory = 'all';
 
-window.filterShop = function(category, btnEl) {
+window.filterShop = function (category, btnEl) {
     currentShopCategory = category;
-    
+
     // Update active tab styling
     const tabs = document.querySelectorAll('.shop-category-tabs .shop-tab');
     if (tabs.length) {
         tabs.forEach(t => t.classList.remove('active'));
         if (btnEl) btnEl.classList.add('active');
     }
-    
+
     applyShopFilters();
 }
 
 // Global scope for search input
-window.filterShopBySearch = function() {
+window.filterShopBySearch = function () {
     applyShopFilters();
 }
 
 function applyShopFilters() {
     const searchInput = document.getElementById('shopSearchInput');
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-    
+
     let filtered = currentItems;
-    
+
     if (currentShopCategory !== 'all') {
         filtered = filtered.filter(item => item.type === currentShopCategory);
     }
-    
+
     if (query) {
-        filtered = filtered.filter(item => 
-            (item.name && item.name.toLowerCase().includes(query)) || 
+        filtered = filtered.filter(item =>
+            (item.name && item.name.toLowerCase().includes(query)) ||
             (item.description && item.description.toLowerCase().includes(query))
         );
     }
-    
+
     renderShop(filtered);
 }
 
@@ -248,6 +261,7 @@ function renderShop(items) {
     if (!container) return;
     const isAdmin = currentUser.roles.includes('admin') || currentUser.roles.includes('professor');
 
+    const isFainted = currentUser.health < 30;
     let isBuffed = false;
     let isCursed = false;
 
@@ -288,10 +302,16 @@ function renderShop(items) {
                     <span class="item-rarity-tag rarity-${item.rarity || 'common'}">${(item.rarity || 'common').toUpperCase()}</span>
                 </div>
                 <div class="price-tag">${priceHtml}</div>
-                <div class="card-buy-row">
-                    <input type="number" id="qty-${item._id}" class="buy-qty-input" min="1" value="1" title="Quantity">
-                    <button class="buy-spell-btn" onclick="buyItem('${item._id}')">Acquire</button>
-                </div>
+                // แทนที่ส่วนนี้ใน return template:
+<div class="card-buy-row">
+    <input type="number" id="qty-${item._id}" class="buy-qty-input" min="1" value="1"
+           title="Quantity" ${isFainted ? 'disabled' : ''}>
+    <button class="buy-spell-btn${isFainted ? ' disabled-btn' : ''}"
+            onclick="${isFainted ? '' : `buyItem('${item._id}')`}"
+            ${isFainted ? 'disabled title="ฟื้นฟู HP ก่อนซื้อ!"' : ''}>
+        ${isFainted ? '💤 Fainted' : 'Acquire'}
+    </button>
+</div>
             </div>
         </div>
         `;
@@ -309,10 +329,15 @@ window.deleteItem = async function (itemId) {
 }
 
 window.buyItem = async function (itemId) {
+
+    if (currentUser.health < 30) {
+        spawnEffect('💤', 'You are too fainted to shop! Eat food first.');
+        return;
+    }
     const item = currentItems.find(i => i._id === itemId);
     const qtyInput = document.getElementById(`qty-${itemId}`);
     const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
-    
+
     let unitPrice = item?.price || 0;
     if (currentUser?.dailyDivination?.expiryDate && new Date() < new Date(currentUser.dailyDivination.expiryDate)) {
         const buffType = currentUser.dailyDivination.buffType;
@@ -417,7 +442,7 @@ window.handleAddItem = async function (e) {
 // ═══════════════════════════════════════════════
 // ADMIN MODAL (Edit Item)
 // ═══════════════════════════════════════════════
-window.openEditItemModal = function(itemId) {
+window.openEditItemModal = function (itemId) {
     const item = currentItems.find(i => i._id === itemId);
     if (!item) return;
     document.getElementById('editItemId').value = item._id;
@@ -441,11 +466,11 @@ window.openEditItemModal = function(itemId) {
     document.getElementById('editItemModal').style.display = 'block';
 }
 
-window.closeEditItemModal = function() {
+window.closeEditItemModal = function () {
     document.getElementById('editItemModal').style.display = 'none';
 }
 
-window.handleEditItem = async function(e) {
+window.handleEditItem = async function (e) {
     e.preventDefault();
     const itemId = document.getElementById('editItemId').value;
     const itemData = {
@@ -578,7 +603,7 @@ window.selectRecipe = function (recipeId) {
     if (recipeId === 'love_potion') {
         const legendaryItems = userInv.filter(i => i.itemId?.rarity === 'legendary');
         const rareItems = userInv.filter(i => i.itemId?.rarity === 'rare');
-        
+
         const legCount = legendaryItems.reduce((s, i) => s + i.quantity, 0);
         const rareCount = rareItems.reduce((s, i) => s + i.quantity, 0);
 
@@ -592,7 +617,7 @@ window.selectRecipe = function (recipeId) {
                 <span>${rareCount}/2 ${rareCount >= 2 ? '✅' : '❌'}</span>
             </div>
         `;
-        
+
         const canCraft = legCount >= 2 && rareCount >= 2;
         const btn = document.getElementById('craftBtn');
         btn.disabled = !canCraft;
@@ -714,7 +739,7 @@ async function fetchTransactions(loadMore = false) {
     try {
         const r = await fetch(`/api/bank/transactions?skip=${userTransactionsSkip}&limit=${USER_TX_LIMIT}`, { credentials: 'include' });
         const txs = await r.json();
-        
+
         if (txs.length > 0) {
             userTransactions = userTransactions.concat(txs);
             userTransactionsSkip += USER_TX_LIMIT;
@@ -724,11 +749,11 @@ async function fetchTransactions(loadMore = false) {
 
         const btn = document.getElementById('loadMoreTxBtn');
         if (btn) btn.style.display = txs.length === USER_TX_LIMIT ? 'block' : 'none';
-        
+
     } catch (err) { console.error(err); }
 }
 
-window.loadMoreTransactions = function() {
+window.loadMoreTransactions = function () {
     fetchTransactions(true);
 }
 
@@ -859,6 +884,7 @@ function renderInventory() {
     const container = document.getElementById('inventoryContainer');
     if (!container) return;
     const inv = currentUser.inventory || [];
+    const isFainted = currentUser.health < 30; // เพิ่มบรรทัดนี้
 
     if (!inv.length) {
         container.innerHTML = '<p class="empty-msg">Your satchel is empty. Visit Diagon Alley to stock up.</p>';
@@ -871,21 +897,29 @@ function renderInventory() {
         const img = item?.image || 'assets/images/placeholder_item.png';
         const type = item?.type || 'unknown';
         const id = item?._id || slot.itemId;
-        
+
         const isEgg = name.toLowerCase().includes('egg') || name.toLowerCase().includes('ไข่');
         const isPetFood = name.toLowerCase().includes('feed') || name.toLowerCase().includes('อาหารสัตว์') || (item?.description || '').includes('สัตว์');
         const isSpecialUse = name === 'Amortentia Potion' || name === 'Name Change Card' || name === 'บัตรเปลี่ยนชื่อ';
         const isUsable = (type === 'food' || type === 'potion') && !isEgg && !isPetFood;
-        
+        const isFood = type === 'food'; // food ใช้ได้แม้ fainted เพื่อฟื้นฟู
+
         let actionButtons = '';
         if (isEgg) {
             actionButtons = `<button class="use-item-btn" onclick="startIncubating('${id}')">Use (ฟักไข่)</button><button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>`;
         } else if (isUsable || isSpecialUse) {
-            actionButtons = `<button class="use-item-btn" onclick="useItem('${id}', '${name}')">Use</button><button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>`;
+            const blockedByFaint = isFainted && !isFood;
+            actionButtons = `
+                <button class="use-item-btn${blockedByFaint ? ' disabled-btn' : ''}"
+                    onclick="${blockedByFaint ? '' : `useItem('${id}', '${name}')`}"
+                    ${blockedByFaint ? 'disabled title="ฟื้นฟู HP ด้วย Food ก่อน!"' : ''}>
+                    ${blockedByFaint ? '💤' : 'Use'}
+                </button>
+                <button class="gift-item-btn" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">Gift</button>`;
         } else {
             actionButtons = `<button class="gift-item-btn" style="width:100%;" onclick="openSendGiftModal('${id}', '${name}', '${img}', ${slot.quantity})">🎁 Gift</button>`;
         }
-        
+
         return `
             <div class="inventory-slot">
                 <img src="${img}" alt="${name}" loading="lazy">
@@ -979,17 +1013,17 @@ function showChestReward(amount) {
     `;
 
     // Spawn particles
-    const particles = Array.from({length: 20}, (_, i) => {
+    const particles = Array.from({ length: 20 }, (_, i) => {
         const angle = (i / 20) * 360;
         const dist = 80 + Math.random() * 80;
         const x = Math.cos(angle * Math.PI / 180) * dist;
         const y = Math.sin(angle * Math.PI / 180) * dist;
-        const emojis = ['✨','🌟','💫','🪙','⭐'];
+        const emojis = ['✨', '🌟', '💫', '🪙', '⭐'];
         return `<span class="chest-particle" style="
-            --px:${x}px;--py:${y}px;--d:${0.3+Math.random()*0.6}s;
+            --px:${x}px;--py:${y}px;--d:${0.3 + Math.random() * 0.6}s;
             position:absolute;font-size:1.2rem;
             animation:burstOut var(--d) ease-out forwards;
-        ">${emojis[Math.floor(Math.random()*emojis.length)]}</span>`;
+        ">${emojis[Math.floor(Math.random() * emojis.length)]}</span>`;
     }).join('');
 
     overlay.innerHTML = `
@@ -1071,7 +1105,7 @@ async function fetchMailbox() {
         const gifts = await r.json();
         _mailboxGiftsCache = gifts;
         renderMailbox(gifts);
-        
+
         // Update notification badge
         const badge = document.getElementById('mailBadge');
         if (badge) {
@@ -1098,7 +1132,7 @@ function renderMailbox(gifts) {
         const itemName = gift.itemId?.name || 'Unknown Artifact';
         const itemImg = gift.itemId?.image || 'assets/images/placeholder_item.png';
         const msgHtml = gift.message ? `<p class="gift-msg" style="font-style:italic;font-size:0.9rem;color:#5d3a1a;margin:0.4rem 0;">"${gift.message}"</p>` : '';
-        
+
         return `
             <div class="gift-card letter-style">
                 <div class="gift-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
@@ -1119,7 +1153,7 @@ function renderMailbox(gifts) {
     }).join('');
 }
 
-window.claimGift = async function(giftId) {
+window.claimGift = async function (giftId) {
     try {
         const r = await fetch('/api/gift/claim', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1143,7 +1177,7 @@ window.claimGift = async function(giftId) {
 // ═══════════════════════════════════════════════
 let _mailboxGiftsCache = [];
 
-window.openReadLetterModal = function(giftId) {
+window.openReadLetterModal = function (giftId) {
     const gift = _mailboxGiftsCache.find(g => g._id === giftId);
     if (!gift) return;
     const itemName = gift.itemId?.name || 'Unknown Artifact';
@@ -1157,11 +1191,11 @@ window.openReadLetterModal = function(giftId) {
     document.getElementById('readLetterModal').style.display = 'block';
 }
 
-window.closeReadLetterModal = function() {
+window.closeReadLetterModal = function () {
     document.getElementById('readLetterModal').style.display = 'none';
 }
 
-window.submitClaimGift = function() {
+window.submitClaimGift = function () {
     const giftId = document.getElementById('readLetterGiftId').value;
     if (giftId) { closeReadLetterModal(); claimGift(giftId); }
 }
@@ -1178,13 +1212,13 @@ window.openSendGiftModal = function (itemId, itemName, itemImg, maxQty) {
     document.getElementById('sendGiftModal').style.display = 'block';
 }
 
-window.closeSendGiftModal = function() {
+window.closeSendGiftModal = function () {
     document.getElementById('sendGiftModal').style.display = 'none';
     document.getElementById('giftModalRecipient').value = '';
     document.getElementById('giftModalMessage').value = '';
 }
 
-window.submitSendGift = async function() {
+window.submitSendGift = async function () {
     const itemId = document.getElementById('giftModalItemId').value;
     const recipientId = document.getElementById('giftModalRecipient').value.trim();
     const quantity = parseInt(document.getElementById('giftModalQuantity').value) || 1;
@@ -1197,7 +1231,7 @@ window.submitSendGift = async function() {
     try {
         const r = await fetch('/api/gift/send', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ recipientId, itemId, quantity, message }), 
+            body: JSON.stringify({ recipientId, itemId, quantity, message }),
             credentials: 'include'
         });
         const data = await r.json();
@@ -1243,7 +1277,7 @@ async function loadAdminData() {
             const val = e.target.value;
             const preview = document.getElementById('recipeImagePreview');
             if (!val || !preview) {
-                if(preview) preview.innerHTML = '';
+                if (preview) preview.innerHTML = '';
                 return;
             }
             const item = items.find(i => i._id === val);
@@ -1297,13 +1331,13 @@ window.addIngredientRow = function () {
 }
 
 function attachIngredientListener(selectElement) {
-    if(!selectElement || selectElement.dataset.listener) return;
+    if (!selectElement || selectElement.dataset.listener) return;
     selectElement.dataset.listener = 'true';
     selectElement.addEventListener('change', (e) => {
         const option = e.target.options[e.target.selectedIndex];
         const previewEl = e.target.parentElement.querySelector('.ing-preview');
-        if(!previewEl) return;
-        
+        if (!previewEl) return;
+
         if (option && option.dataset.img) {
             previewEl.src = option.dataset.img;
             previewEl.style.display = 'block';
@@ -1355,7 +1389,7 @@ window.adminAddRecipe = async function () {
                 firstRow.querySelector('.ing-item').value = '';
                 firstRow.querySelector('.ing-qty').value = '1';
                 const fPreview = firstRow.querySelector('.ing-preview');
-                if(fPreview) { fPreview.src = ''; fPreview.style.display = 'none'; }
+                if (fPreview) { fPreview.src = ''; fPreview.style.display = 'none'; }
             }
             // Remove extra rows
             document.querySelectorAll('#ingredientInputs .ingredient-row:not(:first-child)').forEach(r => r.remove());
@@ -1404,7 +1438,10 @@ window.adminAdjustGold = async function () {
 
     if (!target || isNaN(amount)) { spawnEffect('❌', 'Fill in target user and amount.'); return; }
 
-    showConfirm('Adjust Gold', `Adjust ${target}'s balance by ${amount}G?`, async () => {
+    const groupLabels = { '@all': 'ผู้ใช้ทุกคน', 'garuda': '🦅 Garuda ทั้งบ้าน', 'naga': '🐍 Naga ทั้งบ้าน', 'qilin': '🦌 Qilin ทั้งบ้าน', 'erawan': '🐘 Erawan ทั้งบ้าน' };
+    const displayName = groupLabels[target.toLowerCase()] || `"${target}"`;
+
+    showConfirm('Adjust Gold', `${amount > 0 ? 'เพิ่ม' : 'หัก'} ${Math.abs(amount)}G ${amount > 0 ? 'ให้' : 'จาก'} ${displayName}?`, async () => {
         try {
             const r = await fetch('/api/bank/admin/adjust', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1419,6 +1456,26 @@ window.adminAdjustGold = async function () {
                 document.getElementById('adminGoldReason').value = '';
             } else spawnEffect('❌', data.message);
         } catch (err) { console.error(err); }
+    });
+}
+
+window.adminToggleDashboard = async function (isClosed) {
+    const message = document.getElementById('adminCloseMsg')?.value.trim() || '';
+    const label = isClosed ? 'ปิด' : 'เปิด';
+
+    showConfirm(`${label} Dashboard`, `ยืนยัน${label} Dashboard สำหรับผู้ใช้ทั้งหมด?`, async () => {
+        try {
+            const r = await fetch('/api/users/dashboard/toggle', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isClosed, message }), credentials: 'include'
+            });
+            const data = await r.json();
+            if (r.ok) {
+                spawnEffect(isClosed ? '🔒' : '🔓', data.message);
+                const inp = document.getElementById('adminCloseMsg');
+                if (inp) inp.value = '';
+            } else spawnEffect('❌', data.message);
+        } catch (err) { spawnEffect('❌', 'Failed to toggle dashboard.'); }
     });
 }
 
@@ -1470,7 +1527,7 @@ window.openLogModal = async function () {
     adminLogsSkip = 0;
     const btn = document.getElementById('loadMoreLogsBtn');
     if (btn) btn.style.display = 'none';
-    
+
     await fetchAndRenderLogs();
 };
 
@@ -1478,7 +1535,7 @@ async function fetchAndRenderLogs() {
     try {
         const r = await fetch(`/api/bank/admin/logs?skip=${adminLogsSkip}&limit=${ADMIN_LOGS_LIMIT}`, { credentials: 'include' });
         const logs = await r.json();
-        
+
         if (logs.length > 0) {
             adminLogs = adminLogs.concat(logs);
             adminLogsSkip += ADMIN_LOGS_LIMIT;
@@ -1492,17 +1549,17 @@ async function fetchAndRenderLogs() {
     }
 }
 
-window.loadMoreLogs = async function() {
+window.loadMoreLogs = async function () {
     await fetchAndRenderLogs();
 }
 
-window.filterLogs = function() {
+window.filterLogs = function () {
     renderLogContainer();
 }
 
 function renderLogContainer() {
     const query = (document.getElementById('logSearch')?.value || '').toLowerCase();
-    
+
     const filtered = adminLogs.filter(log => {
         if (!query) return true;
         const searchStr = `${log.type} ${log.description} ${log.senderName} ${log.recipientName} ${log.amount}`.toLowerCase();
@@ -1589,12 +1646,12 @@ function openAmortenteiaModal(itemId, itemName) {
     modal.classList.add('active');
 }
 
-window.closeAmortenteiaModal = function() {
+window.closeAmortenteiaModal = function () {
     const modal = document.getElementById('amortenteiaModal');
     if (modal) modal.classList.remove('active');
 }
 
-window.submitAmortenteia = async function() {
+window.submitAmortenteia = async function () {
     const itemId = document.getElementById('amortenteiaItemId').value;
     const targetUsername = document.getElementById('amortenteiaTargetInput').value.trim();
     if (!targetUsername) {
@@ -1622,25 +1679,25 @@ window.submitAmortenteia = async function() {
 // ═══════════════════════════════════════════════
 // SERVER BOOSTERS ADMIN
 // ═══════════════════════════════════════════════
-window.loadAdminBoosters = async function() {
+window.loadAdminBoosters = async function () {
     try {
         const r = await fetch('/api/users/boosters');
-        if(r.ok) {
+        if (r.ok) {
             const data = await r.json();
             data.forEach((b, i) => {
                 const idx = i + 1;
                 const nameInp = document.getElementById(`booster${idx}Name`);
                 const countInp = document.getElementById(`booster${idx}Count`);
-                if(nameInp) nameInp.value = b.name || '';
-                if(countInp) countInp.value = b.boosts || 0;
+                if (nameInp) nameInp.value = b.name || '';
+                if (countInp) countInp.value = b.boosts || 0;
             });
         }
-    } catch(e) { console.error('Failed to load server boosters for admin', e); }
+    } catch (e) { console.error('Failed to load server boosters for admin', e); }
 }
 
-window.adminUpdateBoosters = async function() {
+window.adminUpdateBoosters = async function () {
     const boosters = [];
-    for(let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 3; i++) {
         boosters.push({
             rank: i,
             title: i === 1 ? 'Arcane Sovereign' : (i === 2 ? 'Mystic Conqueror' : 'Enchanted Vanguard'),
@@ -1657,12 +1714,12 @@ window.adminUpdateBoosters = async function() {
             credentials: 'include'
         });
         const data = await r.json();
-        if(r.ok) {
+        if (r.ok) {
             spawnEffect('✨', 'Server Boosters updated successfully!');
         } else {
             spawnEffect('❌', 'Error updating boosters');
         }
-    } catch(e) { spawnEffect('❌', 'Failed to update boosters'); }
+    } catch (e) { spawnEffect('❌', 'Failed to update boosters'); }
 }
 
 
@@ -1708,12 +1765,12 @@ function updateQuestsBadge() {
     }
 }
 
-window.openQuestsModal = function() {
+window.openQuestsModal = function () {
     document.getElementById('questsModal').style.display = 'block';
     renderQuests();
 }
 
-window.closeQuestsModal = function() {
+window.closeQuestsModal = function () {
     document.getElementById('questsModal').style.display = 'none';
 }
 
@@ -1737,7 +1794,7 @@ function renderQuests() {
         const title = questLabels[q.questType] || q.questType;
         const progressPct = Math.min(100, (q.progress / q.target) * 100);
         const rewardText = q.rewardType === 'galleons' ? `${q.rewardAmount} Galleons` : `สุ่มวัตถุดิบ (Random Material) x${q.rewardAmount}`;
-        
+
         let actionHTML = '';
         if (q.isClaimed) {
             actionHTML = `<div class="quest-claimed-stamp" style="display:block;">CLAIMED</div>`;
@@ -1763,7 +1820,7 @@ function renderQuests() {
     }).join('');
 }
 
-window.claimQuest = async function(questId) {
+window.claimQuest = async function (questId) {
     try {
         const res = await fetch('/api/quests/claim', {
             method: 'POST',
@@ -1772,7 +1829,7 @@ window.claimQuest = async function(questId) {
             credentials: 'include'
         });
         const data = await res.json();
-        
+
         if (res.ok) {
             spawnEffect('✨', data.message);
             currentUser.balance = data.balance;
@@ -1889,9 +1946,9 @@ function renderIncubator(incubator) {
             <p style="color:#a89070; font-size:0.8rem; margin:0 0 1rem 0;">ความคืบหน้า: ${Math.floor(elapsedPct)}%</p>
             <div class="inc-btn-wrap" style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
                 ${isReadyToHatch
-                    ? `<button class="conjure-btn" style="animation:pulse 1.5s infinite;" onclick="hatchEgg()">🐣 ฟักไข่เดี๋ยวนี้!</button>`
-                    : `<button class="buy-spell-btn" onclick="boostIncubation()">⚗️ ใช้ Incubation Potion (-24hr)</button>`
-                }
+            ? `<button class="conjure-btn" style="animation:pulse 1.5s infinite;" onclick="hatchEgg()">🐣 ฟักไข่เดี๋ยวนี้!</button>`
+            : `<button class="buy-spell-btn" onclick="boostIncubation()">⚗️ ใช้ Incubation Potion (-24hr)</button>`
+        }
             </div>
         </div>
     `;
@@ -1932,7 +1989,7 @@ function renderMyPets(pets, activePetId) {
         const isFedToday = pet.lastFed && new Date(pet.lastFed).toDateString() === today;
         const isPettedToday = pet.lastPetted && new Date(pet.lastPetted).toDateString() === today;
 
-        const rarityColors = { common:'#8ab4f8', rare:'#dd88ff', epic:'#ff9f40', legendary:'#ffd700' };
+        const rarityColors = { common: '#8ab4f8', rare: '#dd88ff', epic: '#ff9f40', legendary: '#ffd700' };
         const rc = rarityColors[pet.rarity] || '#8ab4f8';
 
         return `
@@ -2120,27 +2177,27 @@ async function toggleActivePet(petId, currentlyActive) {
     }
 }
 
-window.transferPetPrompt = function(petId) {
+window.transferPetPrompt = function (petId) {
     document.getElementById('transferPetId').value = petId;
     document.getElementById('transferPetTargetInput').value = '';
     document.getElementById('transferPetModal').classList.add('active');
 }
 
-window.closeTransferPetModal = function() {
+window.closeTransferPetModal = function () {
     document.getElementById('transferPetModal').classList.remove('active');
 }
 
-window.submitTransferPet = function() {
+window.submitTransferPet = function () {
     const petId = document.getElementById('transferPetId').value;
     const toUser = document.getElementById('transferPetTargetInput').value.trim();
-    
+
     if (!toUser) {
         spawnEffect('❌', 'Please enter a recipient username.');
         return;
     }
-    
+
     closeTransferPetModal();
-    
+
     showConfirm('โอนสัตว์เลี้ยง', `แน่ใจหรือไม่ที่จะส่งสัตว์เลี้ยงตัวนี้ให้ ${toUser}?`, async () => {
         try {
             const res = await fetch('/api/pets/transfer', {
@@ -2292,7 +2349,7 @@ function renderDivination(data) {
 }
 
 let selectedReadingType = 'tea_leaves';
-window.setReadingType = function(type) {
+window.setReadingType = function (type) {
     selectedReadingType = type;
     ['divineTea', 'divineTarot'].forEach(id => {
         const btn = document.getElementById(id);
@@ -2303,7 +2360,7 @@ window.setReadingType = function(type) {
     if (activeBtn) activeBtn.style.background = 'rgba(212,175,55,0.3)';
 };
 
-window.drawReading = async function() {
+window.drawReading = async function () {
     const btn = document.getElementById('drawReadingBtn');
     if (btn) { btn.disabled = true; btn.textContent = '🔮 กำลังพยากรณ์...'; }
 
@@ -2331,7 +2388,7 @@ window.drawReading = async function() {
     }
 };
 
-window.cleanseCurse = async function() {
+window.cleanseCurse = async function () {
     showConfirm('ล้างคำสาป', 'ใช้ Cleansing Potion เพื่อล้างคำสาปใช่ไหม?', async () => {
         try {
             const res = await fetch('/api/divination/cleanse', { method: 'POST', credentials: 'include' });
@@ -2469,7 +2526,7 @@ function initDashboardThreeJS() {
     function animate() {
         requestAnimationFrame(animate);
         if (!dashboardMagicActive) return;
-        
+
         time += 0.01;
         camera.position.x += (mouseX * 0.1 - camera.position.x) * 0.05;
         camera.position.y += (-mouseY * 0.1 - camera.position.y) * 0.05;
@@ -2518,7 +2575,7 @@ function updateMagicBgCanvas(tabId) {
     if (tabId === 'pets' || tabId === 'divination') {
         if (!dashboardMagicScene) initDashboardThreeJS();
         dashboardMagicActive = true;
-        
+
         // Ensure elements don't block canvas randomly
         canvas.style.display = 'block';
         // Let it layout before fading in
@@ -2531,9 +2588,9 @@ function updateMagicBgCanvas(tabId) {
         }
     } else {
         canvas.style.opacity = '0';
-        setTimeout(() => { 
-            if(canvas.style.opacity === '0') {
-                dashboardMagicActive = false; 
+        setTimeout(() => {
+            if (canvas.style.opacity === '0') {
+                dashboardMagicActive = false;
                 canvas.style.display = 'none';
             }
         }, 1000);
