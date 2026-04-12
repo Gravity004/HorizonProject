@@ -74,7 +74,7 @@ router.post('/daily', isAuthenticated, sanitizeBody, async (req, res) => {
         // ── Divination buff ────────────────────────────────────────────────────────
         if (user.dailyDivination && user.dailyDivination.expiryDate && new Date() < new Date(user.dailyDivination.expiryDate)) {
             if (user.dailyDivination.buffType === 'bonus_daily_reward') {
-                const bonus = user.dailyDivination.readingType === 'tarot' ? 150 : 100;
+                const bonus = 50;
                 reward += bonus;
             } else if (user.dailyDivination.buffType === 'bonus_income_20') {
                 reward = Math.floor(reward * 1.2);

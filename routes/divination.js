@@ -8,7 +8,7 @@ const { isAuthenticated, isNotDetained } = require('../middleware/auth');
 const TEA_LEAVES = [
     // Good omens
     { symbol: 'Sun', emoji: '☀️', isOmen: false, buffType: 'bonus_income_20', buffName: 'Blessing of the Sun', desc: 'รายได้ทุกทางเพิ่ม 20% ตลอดวันนี้', effect: '+20% income' },
-    { symbol: 'Star', emoji: '⭐', isOmen: false, buffType: 'bonus_daily_reward', buffName: 'Star\'s Favour', desc: 'รับ Galleons เพิ่ม 100 เมื่อเก็บรางวัลรายวัน', effect: '+100G daily reward' },
+    { symbol: 'Star', emoji: '⭐', isOmen: false, buffType: 'bonus_daily_reward', buffName: 'Star\'s Favour', desc: 'รับ Galleons เพิ่ม 50 เมื่อเก็บรางวัลรายวัน', effect: '+50G daily reward' },
     { symbol: 'Crown', emoji: '👑', isOmen: false, buffType: 'shop_discount', buffName: 'Merchant\'s Crown', desc: 'ไอเทมทุกชิ้นในร้านค้าลดราคา 10% เฉพาะวันนี้', effect: '10% shop discount' },
     { symbol: 'Flower', emoji: '🌸', isOmen: false, buffType: 'herb_boost', buffName: 'Garden Blessing', desc: 'สมุนไพรในแปลงเติบโตเร็วขึ้น 30% วันนี้', effect: '+30% herb growth' },
     { symbol: 'Bird', emoji: '🕊️', isOmen: false, buffType: 'extra_forest_entry', buffName: 'Wings of Fortune', desc: 'เข้าป่าหิมพานต์ได้เพิ่มอีก 1 ครั้งวันนี้', effect: '+1 forest entry' },
@@ -24,7 +24,7 @@ const TEA_LEAVES = [
 const TAROT_CARDS = [
     // Good
     { symbol: 'The Star', emoji: '🌟', isOmen: false, buffType: 'bonus_income_20', buffName: 'The Star', desc: 'ดวงงาม! รายได้ทุกทางเพิ่ม 20% ตลอดวันนี้', effect: '+20% income' },
-    { symbol: 'The Sun', emoji: '🌞', isOmen: false, buffType: 'bonus_daily_reward', buffName: 'The Sun', desc: 'วันแห่งความเจริญ! รับโบนัส 150G ในรางวัลรายวัน', effect: '+150G daily reward' },
+    { symbol: 'The Sun', emoji: '🌞', isOmen: false, buffType: 'bonus_daily_reward', buffName: 'The Sun', desc: 'วันแห่งความเจริญ! รับโบนัส 50G ในรางวัลรายวัน', effect: '+50G daily reward' },
     { symbol: 'The Empress', emoji: '🌿', isOmen: false, buffType: 'herb_boost', buffName: 'The Empress', desc: 'พลังแห่งธรรมชาติ! สมุนไพรโตเร็วขึ้น 30%', effect: '+30% herb growth' },
     { symbol: 'The Merchant', emoji: '🛍️', isOmen: false, buffType: 'shop_discount', buffName: 'The Merchant', desc: 'ไอเทมในร้านค้าลดราคา 10% เฉพาะคุณวันนี้', effect: '10% shop discount' },
     { symbol: 'The Chariot', emoji: '⚡', isOmen: false, buffType: 'craft_bonus', buffName: 'The Chariot', desc: 'พลังความเร็ว! การคราฟต์มีโอกาสสำเร็จ +15% วันนี้', effect: '+15% craft success' },
