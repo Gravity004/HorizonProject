@@ -9,6 +9,7 @@ const helmet = require('helmet');
 
 // Import Config
 require('./config/passport');
+const database = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 12500;
@@ -47,17 +48,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // ── MongoDB connection — single pool, capped for M0 free tier ──────────────
-const mongoClientPromise = mongoose.connect(process.env.MONGODB_URI, {
-    maxPoolSize: 5,               // M0 allows ~500 total; 5 per instance is safe on Vercel
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-}).then(m => {
-    console.log('MongoDB Connected');
-    return m.connection.getClient();
-}).catch(err => {
-    console.error('MongoDB connection error:', err);
-    throw err;
-});
+const mongoClientPromise = database.connect();
 
 const MongoStore = require('connect-mongo');
 
@@ -83,10 +74,7 @@ app.use(session({
 app.use(passport?.initialize());
 app.use(passport?.session());
 
-// Database Connection
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.log(err));
+// Database connection is managed via config/database instance
 
 // Static Files
 app.use('/assets', express.static(path.join(__dirname, 'frontend/dist/assets')));
