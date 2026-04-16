@@ -9,26 +9,10 @@ const helmet = require('helmet');
 
 // Import Config
 require('./config/passport');
+const database = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 12500;
-
-// ── Security: Helmet (safe config — allows existing inline scripts/styles) ──
-app.use(helmet({
-    contentSecurityPolicy: false,  // Inline scripts exist; enable CSP later after refactor
-    crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: { policy: 'same-site' }
-}));
-
-// Rate Limiter to prevent spam/freezing
-const rateLimit = require('express-rate-limit');
-const limiter = rateLimit({
-    windowMs: 5 * 60 * 1000, // 5 minutes
-    max: 1000, // increased to 1000 to be safer
-    message: { message: "Too many requests from this IP, please try again later." }
-});
-app.use('/api', limiter); // removed trailing slash for better matching
-app.use('/auth', limiter);
 
 if (!process.env.MONGODB_URI) {
     console.error('CRITICAL: MONGODB_URI is not defined in environment variables!');
@@ -64,17 +48,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // ── MongoDB connection — single pool, capped for M0 free tier ──────────────
-const mongoClientPromise = mongoose.connect(process.env.MONGODB_URI, {
-    maxPoolSize: 5,               // M0 allows ~500 total; 5 per instance is safe on Vercel
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-}).then(m => {
-    console.log('MongoDB Connected');
-    return m.connection.getClient();
-}).catch(err => {
-    console.error('MongoDB connection error:', err);
-    throw err;
-});
+const mongoClientPromise = database.connect();
 
 const MongoStore = require('connect-mongo');
 
@@ -100,38 +74,11 @@ app.use(session({
 app.use(passport?.initialize());
 app.use(passport?.session());
 
+// Database connection is managed via config/database instance
+
 // Static Files
-// assets (images): 7 days — new items always have new filenames, so adding images is always safe
-// js/css: 1 day — files change on deploy, keep short to avoid stale code
-app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'assets/images/Eternity1.png')));
-app.use('/assets', express.static(path.join(__dirname, 'assets'), { maxAge: '7d', etag: true }));
-app.use('/css',    express.static(path.join(__dirname, 'css'),    { maxAge: '1d', etag: true }));
-app.use('/js',     express.static(path.join(__dirname, 'js'),     { maxAge: '1d', etag: true }));
-
-// Serve root HTML files
-app.get(['/', '/index.html'], (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/rachata_school.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'rachata_school.html'));
-});
-
-app.get('/rachata_house.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'rachata_house.html'));
-});
-
-app.get('/winchester.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'winchester.html'));
-});
-
-app.get('/student_council.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'student_council.html'));
-});
-
-app.get('/world_guide.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'world_guide.html'));
-});
+app.use('/assets', express.static(path.join(__dirname, 'frontend/dist/assets')));
+app.use(express.static(path.join(__dirname, 'assets'))); // Original assets for components
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -160,12 +107,13 @@ app.use('/api/pets', petRoutes);
 app.use('/api/divination', divinationRoutes);
 app.use('/api/classroom', classroomRoutes);
 
-const { checkGuildMembership } = require('./middleware/auth');
-
-// ✅ คนที่ออก guild จะถูก redirect ออกทันที
-app.get(['/dashboard', '/dashboard/*path'], checkGuildMembership, (req, res) => {
-    res.sendFile(path.join(__dirname, 'dashboard.html'));
-});
+// Serve Vue SPA (only in production)
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, 'frontend/dist')));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
+    });
+}
 
 app.get(['/classroom', '/classroom/*path'], checkGuildMembership, (req, res) => {
     res.sendFile(path.join(__dirname, 'classroom.html'));
