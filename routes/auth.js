@@ -6,12 +6,28 @@ const { checkGuildMembership } = require('../middleware/auth');
 // Redirect to Discord login
 router.get('/discord', passport.authenticate('discord'));
 
-// Discord callback URL
-router.get('/discord/callback', passport.authenticate('discord', {
-    failureRedirect: '/'
-}), (req, res) => {
-    res.redirect('/dashboard');
-});
+// Discord callback — ส่ง error code กลับไปที่ homepage
+router.get('/discord/callback',
+    passport.authenticate('discord', {
+        failureRedirect: '/?error=access_denied',
+        failureMessage: true
+    }),
+    (req, res) => {
+        // ตรวจสอบ failure message จาก passport strategy
+        if (req.session?.messages?.length) {
+            const msg = req.session.messages[req.session.messages.length - 1];
+            req.session.messages = [];
+            const errorMap = {
+                'not_in_guild': 'not_in_guild',
+                'no_house_assigned': 'no_role',
+                'server_not_configured': 'server_not_configured',
+            };
+            const errorCode = errorMap[msg] || 'access_denied';
+            return res.redirect(`/?error=${errorCode}`);
+        }
+        res.redirect('/dashboard');
+    }
+);
 
 router.get('/logout', (req, res) => {
     req.logout((err) => {
