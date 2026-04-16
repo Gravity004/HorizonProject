@@ -11,6 +11,10 @@ const helmet = require('helmet');
 require('./config/passport');
 const database = require('./config/database');
 
+// Import Middleware & Controllers (OOP / ISO Layers)
+const { checkGuildMembership } = require('./middleware/auth');
+const viewController = require('./controllers/ViewController');
+
 const app = express();
 const PORT = process.env.PORT || 12500;
 
@@ -115,21 +119,9 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
-app.get(['/classroom', '/classroom/*path'], checkGuildMembership, (req, res) => {
-    res.sendFile(path.join(__dirname, 'classroom.html'));
-});
+app.get(['/classroom', '/classroom/*path'], checkGuildMembership, (req, res) => viewController.serveClassroom(req, res));
 
-// Serve Vue SPA (only in production, only if dist folder was built)
-if (process.env.NODE_ENV === 'production') {
-    const fs = require('fs');
-    const distPath = path.join(__dirname, 'frontend/dist');
-    if (fs.existsSync(distPath)) {
-        app.use(express.static(distPath));
-        app.get('/{*path}', (req, res) => {
-            res.sendFile(path.join(distPath, 'index.html'));
-        });
-    }
-}
+// Redundant SPA logic removed for clarity as lines 111-116 handle it.
 
 // Start Server
 if (require.main === module) {
